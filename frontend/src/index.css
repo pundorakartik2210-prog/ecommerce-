@@ -1523,42 +1523,84 @@ a {
 
 .size-chips-container {
   display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-top: 20px;
+  margin-bottom: 28px;
 }
 
 .size-chip {
-  padding: 10px 20px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
+  position: relative;
+  flex: 1;
+  padding: 22px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
   background: var(--bg-white);
   cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  transition: var(--transition);
-  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 105px;
 }
 
 .size-chip:hover {
-  border-color: var(--brand-accent);
-  background: var(--bg-cream);
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
+/* Active / Selected state */
 .size-chip.active {
-  background: var(--brand-primary);
-  color: var(--bg-white);
-  border-color: var(--brand-primary);
-  box-shadow: var(--shadow-sm);
+  border: 2px solid #000000;
+  background: var(--bg-white);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-.chip-price {
-  font-size: 11px;
-  opacity: 0.8;
-  font-weight: 500;
-  margin-top: 2px;
+.size-chip.active:hover {
+  border-color: #000000;
+  transform: translateY(-2px);
+}
+
+/* Badge (Price/kg) styling */
+.chip-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-white);
+  border: 1.5px solid #cbd5e1;
+  color: #0f172a;
+  border-radius: 8px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Active state for badge */
+.size-chip.active .chip-badge {
+  background: #c2410c; /* Deep fire red-orange */
+  color: #ffffff;
+  border-color: #c2410c;
+  box-shadow: 0 4px 12px rgba(194, 65, 12, 0.2);
+}
+
+/* Weight text inside chip */
+.chip-weight-text {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.size-chip.active .chip-weight-text {
+  color: #000000;
 }
 
 /* Ingredients */

@@ -67,9 +67,9 @@ export default function ProductGrid({
               aria-label="Filter by weight"
             >
               <option value="all">All Sizes</option>
-              <option value="250g">250g Tubs</option>
-              <option value="500g">500g Tubs</option>
               <option value="1kg">1kg Tubs</option>
+              <option value="2.5kg">2.5kg Tubs</option>
+              <option value="5kg">5kg Tubs</option>
             </select>
 
             {/* Sort by dropdown */}

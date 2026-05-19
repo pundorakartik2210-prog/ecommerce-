@@ -8,11 +8,11 @@ export const PRODUCTS = [
     description: "Our Classic Creamy Peanut Butter is crafted using only premium dry-roasted peanuts and a tiny pinch of pink Himalayan sea salt. Slow-ground to a silky, luxurious texture, it delivers a rich, authentic flavor that melts in your mouth. Perfect for spreading, smoothies, or enjoying straight from the spoon.",
     rating: 4.8,
     reviewsCount: 1240,
-    baseWeight: "500g",
+    baseWeight: "1kg",
     prices: {
-      "250g": 199,
-      "500g": 349,
-      "1kg": 599
+      "1kg": 599,
+      "2.5kg": 1299,
+      "5kg": 2199
     },
     nutrition: {
       servingSize: "2 tbsp (32g)",
@@ -28,7 +28,7 @@ export const PRODUCTS = [
     ingredients: ["100% Organic Dry-Roasted Peanuts", "Pink Himalayan Sea Salt"],
     reviews: [
       { id: 1, author: "Aarav S.", rating: 5, date: "2026-05-10", comment: "Absolutely the smoothest peanut butter I have ever bought. Perfect consistency, and not oily at all!" },
-      { id: 2, author: "Priya M.", rating: 4, date: "2026-05-08", comment: "Very natural taste. Love that there is no added sugar or cheap palm oils. Will definitely order the 1kg tub next time!" },
+      { id: 2, author: "Priya M.", rating: 4, date: "2026-05-08", comment: "Very natural taste. Love that there is no added sugar or cheap palm oils. Will definitely order the 5kg tub next time!" },
       { id: 3, author: "David K.", rating: 5, date: "2026-04-29", comment: "Pure, delicious taste. Great value for organic ingredients." }
     ],
     image: "/src/assets/classic_creamy.png",
@@ -44,11 +44,11 @@ export const PRODUCTS = [
     description: "For those who believe texture is everything! Our All-Natural Extra Crunchy Peanut Butter features our signature smooth paste loaded with generously sized chunks of perfectly dry-roasted peanuts. Every spoonful offers a delightful, deep roasted nutty crunch that elevates sandwiches, oats, and protein shakes.",
     rating: 4.9,
     reviewsCount: 982,
-    baseWeight: "500g",
+    baseWeight: "1kg",
     prices: {
-      "250g": 209,
-      "500g": 369,
-      "1kg": 629
+      "1kg": 629,
+      "2.5kg": 1399,
+      "5kg": 2399
     },
     nutrition: {
       servingSize: "2 tbsp (32g)",
@@ -79,11 +79,11 @@ export const PRODUCTS = [
     description: "Indulge your sweet tooth guilt-free! We have combined our velvety smooth peanut butter with single-origin premium dark cacao and a touch of organic coconut sugar. The result is a luxurious, intensely rich chocolate spread that contains 70% less sugar than traditional chocolate spreads, while providing a healthy punch of protein.",
     rating: 4.7,
     reviewsCount: 843,
-    baseWeight: "500g",
+    baseWeight: "1kg",
     prices: {
-      "250g": 249,
-      "500g": 429,
-      "1kg": 749
+      "1kg": 749,
+      "2.5kg": 1699,
+      "5kg": 2999
     },
     nutrition: {
       servingSize: "2 tbsp (32g)",
@@ -114,11 +114,11 @@ export const PRODUCTS = [
     description: "Designed for fitness enthusiasts and athletes, our High-Protein Power Butter is supercharged with premium grass-fed whey protein isolate. Each serving packs a whopping 12 grams of bioavailable protein to aid muscle recovery and keep you full longer. It maintains a wonderfully smooth texture without any gritty protein powder taste.",
     rating: 4.9,
     reviewsCount: 1540,
-    baseWeight: "500g",
+    baseWeight: "1kg",
     prices: {
-      "250g": 279,
-      "500g": 479,
-      "1kg": 829
+      "1kg": 1199,
+      "2.5kg": 2300,
+      "5kg": 4000
     },
     nutrition: {
       servingSize: "2 tbsp (32g)",
@@ -149,11 +149,11 @@ export const PRODUCTS = [
     description: "For the ultimate purist. Our Pure Sugar-Free Peanut Butter contains exactly one ingredient: certified organic, dry-roasted peanuts. Absolutely no added oils, salts, sweeteners, or preservatives. It's fully Keto, Paleo, and diabetic-friendly, allowing you to enjoy the raw, buttery, unadulterated flavor of nature's finest peanuts.",
     rating: 4.6,
     reviewsCount: 651,
-    baseWeight: "500g",
+    baseWeight: "1kg",
     prices: {
-      "250g": 189,
-      "500g": 329,
-      "1kg": 569
+      "1kg": 569,
+      "2.5kg": 1249,
+      "5kg": 2099
     },
     nutrition: {
       servingSize: "2 tbsp (32g)",
@@ -184,11 +184,11 @@ export const PRODUCTS = [
     description: "Experience the ultimate nut butter harmony! We ground premium California almonds and high-grade peanuts together with a slow drizzle of organic wildflower honey. This unique blend offers a sophisticated, mildly sweet, sweet-savory profile rich in Vitamin E, monounsaturated fats, and clean sustained energy.",
     rating: 4.8,
     reviewsCount: 310,
-    baseWeight: "500g",
+    baseWeight: "1kg",
     prices: {
-      "250g": 299,
-      "500g": 529,
-      "1kg": 899
+      "1kg": 899,
+      "2.5kg": 1999,
+      "5kg": 3499
     },
     nutrition: {
       servingSize: "2 tbsp (32g)",

@@ -9,7 +9,7 @@ export default function ProductDetailsModal({
   cart,
   onUpdateCartQuantity
 }) {
-  const [selectedWeight, setSelectedWeight] = useState("500g");
+  const [selectedWeight, setSelectedWeight] = useState("1kg");
 
   if (!product) return null;
 
@@ -159,16 +159,22 @@ export default function ProductDetailsModal({
               {/* Size Chip Selector */}
               <div className="size-selector-label">Choose Tub Weight</div>
               <div className="size-chips-container">
-                {Object.keys(prices).map(weight => (
-                  <div 
-                    key={weight}
-                    className={`size-chip ${selectedWeight === weight ? 'active' : ''}`}
-                    onClick={() => setSelectedWeight(weight)}
-                  >
-                    <span>{weight}</span>
-                    <span className="chip-price">₹{prices[weight]}</span>
-                  </div>
-                ))}
+                {Object.keys(prices).map(weight => {
+                  const weightNum = parseFloat(weight);
+                  const unitPrice = Math.round(prices[weight] / weightNum);
+                  return (
+                    <div 
+                      key={weight}
+                      className={`size-chip ${selectedWeight === weight ? 'active' : ''}`}
+                      onClick={() => setSelectedWeight(weight)}
+                    >
+                      <span className="chip-badge">
+                        {selectedWeight === weight && "🔥 "}₹{unitPrice}/kg
+                      </span>
+                      <span className="chip-weight-text">{weightNum} kg</span>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Ingredients Box */}

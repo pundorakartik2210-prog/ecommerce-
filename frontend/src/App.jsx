@@ -62,7 +62,7 @@ export default function App() {
   };
 
   // 2. Add to Cart Handler
-  const handleAddToCart = (product, weight = "500g") => {
+  const handleAddToCart = (product, weight = "1kg") => {
     setCart(prevCart => {
       const existingIdx = prevCart.findIndex(item => item.id === product.id && item.selectedWeight === weight);
       if (existingIdx > -1) {

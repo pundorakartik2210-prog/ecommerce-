@@ -7,27 +7,27 @@ const MOCK_DB_ORDERS = {
     total: 948,
     statusStep: 4,
     items: [
-      { name: "Classic Creamy Peanut Butter", selectedWeight: "500g", quantity: 2, price: 349 },
-      { name: "Organic Pure Sugar-Free", selectedWeight: "250g", quantity: 1, price: 189 }
+      { name: "Classic Creamy Peanut Butter", selectedWeight: "1kg", quantity: 2, price: 599 },
+      { name: "Organic Pure Sugar-Free", selectedWeight: "2.5kg", quantity: 1, price: 1249 }
     ]
   },
   "NUV-58920": {
     orderId: "NUV-58920",
     date: "2026-05-15",
-    total: 429,
+    total: 749,
     statusStep: 2,
     items: [
-      { name: "Dark Chocolate Dream Butter", selectedWeight: "500g", quantity: 1, price: 429 }
+      { name: "Dark Chocolate Dream Butter", selectedWeight: "1kg", quantity: 1, price: 749 }
     ]
   },
   "NUV-90184": {
     orderId: "NUV-90184",
     date: "2026-05-16",
-    total: 1048,
+    total: 4699,
     statusStep: 1,
     items: [
-      { name: "High-Protein Power Butter", selectedWeight: "1kg", quantity: 1, price: 829 },
-      { name: "All-Natural Extra Crunchy", selectedWeight: "250g", quantity: 1, price: 209 }
+      { name: "High-Protein Power Butter", selectedWeight: "2.5kg", quantity: 1, price: 2300 },
+      { name: "All-Natural Extra Crunchy", selectedWeight: "5kg", quantity: 1, price: 2399 }
     ]
   }
 };
