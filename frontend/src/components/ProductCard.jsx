@@ -44,9 +44,10 @@ export default function ProductCard({
             src={image} 
             alt={name} 
             style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover',
+              width: '85%', 
+              height: '85%', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 12px 20px rgba(0,0,0,0.18))',
               transition: 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
             }} 
             className="product-card-img"

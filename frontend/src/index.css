@@ -2699,3 +2699,13 @@ a {
 .product-card:hover .product-card-img {
   transform: scale(1.06);
 }
+
+/* Elegant floating animation for promotional slider jars */
+@keyframes floatJar {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}

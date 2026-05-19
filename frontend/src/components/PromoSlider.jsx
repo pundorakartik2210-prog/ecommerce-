@@ -10,7 +10,8 @@ const SLIDES = [
     color: "#5c3a21",
     jarColor: "#e29543",
     lidColor: "#8c6239",
-    labelTitle: "Classic Creamy"
+    labelTitle: "Classic Creamy",
+    image: "/src/assets/classic_creamy.png"
   },
   {
     id: 2,
@@ -21,7 +22,8 @@ const SLIDES = [
     color: "#1e3e62",
     jarColor: "#7c98b3",
     lidColor: "#153250",
-    labelTitle: "Power Butter"
+    labelTitle: "Power Butter",
+    image: "/src/assets/fitness_power.png"
   },
   {
     id: 3,
@@ -32,7 +34,8 @@ const SLIDES = [
     color: "#543310",
     jarColor: "#ae8660",
     lidColor: "#462507",
-    labelTitle: "Chocolate Dream"
+    labelTitle: "Chocolate Dream",
+    image: "/src/assets/chocolate_dream.png"
   }
 ];
 
@@ -84,15 +87,30 @@ export default function PromoSlider({ onShopNow }) {
 
         {/* Premium Jar Illustration */}
         <div className="slide-illustration">
-          <div className="jar-mockup" style={{ borderColor: current.color }}>
-            <div className="jar-lid" style={{ background: current.lidColor, borderColor: current.color }}></div>
-            <div className="jar-label" style={{ borderColor: current.color }}>
-              <span className="jar-label-brand">Nuvera</span>
-              <span className="jar-label-logo">🥜</span>
-              <span className="jar-label-title" style={{ color: current.color }}>{current.labelTitle}</span>
+          {current.image ? (
+            <img 
+              src={current.image} 
+              alt={current.labelTitle} 
+              className="slide-jar-img"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '300px',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 20px 35px rgba(0,0,0,0.35))',
+                animation: 'floatJar 6s ease-in-out infinite'
+              }}
+            />
+          ) : (
+            <div className="jar-mockup" style={{ borderColor: current.color }}>
+              <div className="jar-lid" style={{ background: current.lidColor, borderColor: current.color }}></div>
+              <div className="jar-label" style={{ borderColor: current.color }}>
+                <span className="jar-label-brand">Nuvera</span>
+                <span className="jar-label-logo">🥜</span>
+                <span className="jar-label-title" style={{ color: current.color }}>{current.labelTitle}</span>
+              </div>
+              <div className="jar-content-preview" style={{ background: current.jarColor }}></div>
             </div>
-            <div className="jar-content-preview" style={{ background: current.jarColor }}></div>
-          </div>
+          )}
         </div>
       </div>
 
