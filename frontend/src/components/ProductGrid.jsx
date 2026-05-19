@@ -8,7 +8,9 @@ export default function ProductGrid({
   onAddToCart, 
   onProductClick,
   activeCategory,
-  onResetSearch
+  onResetSearch,
+  cart,
+  onUpdateCartQuantity
 }) {
   const [sortBy, setSortBy] = useState("featured");
   const [weightFilter, setWeightFilter] = useState("all");
@@ -96,6 +98,8 @@ export default function ProductGrid({
                 onWishlistToggle={onWishlistToggle}
                 onAddToCart={onAddToCart}
                 onProductClick={onProductClick}
+                cart={cart}
+                onUpdateCartQuantity={onUpdateCartQuantity}
               />
             ))}
           </div>

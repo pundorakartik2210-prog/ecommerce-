@@ -5,10 +5,15 @@ export default function ProductCard({
   isWishlisted, 
   onWishlistToggle, 
   onAddToCart, 
-  onProductClick 
+  onProductClick,
+  cart,
+  onUpdateCartQuantity
 }) {
   const { id, name, tag, tagline, rating, reviewsCount, baseWeight, prices, color, bgGradient, image } = product;
   const basePrice = prices[baseWeight];
+
+  const cartItem = cart?.find(item => item.id === id && item.selectedWeight === baseWeight);
+  const quantityInCart = cartItem ? cartItem.quantity : 0;
 
   return (
     <div className="product-card">
@@ -111,19 +116,41 @@ export default function ProductCard({
             <span className="card-price">{basePrice}</span>
           </div>
           
-          <button 
-            className="card-add-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product, baseWeight);
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Add
-          </button>
+          {quantityInCart > 0 ? (
+            <div className="card-qty-selector" onClick={(e) => e.stopPropagation()}>
+              <button 
+                className="qty-btn minus"
+                onClick={() => onUpdateCartQuantity(id, baseWeight, -1)}
+                aria-label="Decrease quantity"
+              >
+                —
+              </button>
+              <span className="qty-val">
+                {quantityInCart}
+              </span>
+              <button 
+                className="qty-btn plus"
+                onClick={() => onUpdateCartQuantity(id, baseWeight, 1)}
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button 
+              className="card-add-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart(product, baseWeight);
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add
+            </button>
+          )}
         </div>
       </div>
     </div>

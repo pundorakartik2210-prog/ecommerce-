@@ -73,9 +73,6 @@ export default function App() {
         return [...prevCart, { ...product, selectedWeight: weight, quantity: 1 }];
       }
     });
-    
-    // Route to shopping cart page for immediate premium visual feedback!
-    setCurrentPage("cart");
   };
 
   // 3. Update Cart Item Quantity
@@ -146,9 +143,10 @@ export default function App() {
     setCart([]);
   };
 
-  // 8. Total counts for Navbar badges
+  // 8. Total counts for Navbar badges & sticky summary
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
+  const totalCartPrice = cart.reduce((sum, item) => sum + (item.prices[item.selectedWeight] * item.quantity), 0);
 
   // 9. Filter the database by Search Query
   const filteredProductsBySearch = PRODUCTS.filter(prod => {
@@ -214,6 +212,8 @@ export default function App() {
                   onProductClick={(prod) => setSelectedProduct(prod)}
                   activeCategory={activeCategory}
                   onResetSearch={handleResetSearch}
+                  cart={cart}
+                  onUpdateCartQuantity={handleUpdateCartQuantity}
                 />
               </>
             )}
@@ -266,6 +266,8 @@ export default function App() {
           onAddToCart={handleAddToCart}
           onWishlistToggle={handleWishlistToggle}
           isWishlisted={wishlist.some(item => item.id === selectedProduct.id)}
+          cart={cart}
+          onUpdateCartQuantity={handleUpdateCartQuantity}
         />
       )}
 
@@ -286,6 +288,30 @@ export default function App() {
           setIsLoginOpen(false);
         }}
       />
+
+      {/* Sticky Bottom View Cart Bar */}
+      {currentPage === 'store' && cartCount > 0 && (
+        <div className="sticky-cart-bar">
+          <div className="sticky-cart-container container">
+            <div className="sticky-cart-info">
+              <span className="sticky-cart-count">
+                🛒 <strong>{cartCount}</strong> {cartCount === 1 ? 'item' : 'items'} added
+              </span>
+              <span className="sticky-cart-divider">|</span>
+              <span className="sticky-cart-total">
+                Total: <strong>₹{totalCartPrice}</strong>
+              </span>
+            </div>
+            <button className="sticky-cart-btn" onClick={() => setCurrentPage("cart")}>
+              <span>View Cart</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
