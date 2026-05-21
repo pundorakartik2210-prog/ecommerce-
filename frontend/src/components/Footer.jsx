@@ -1,21 +1,17 @@
 import React from 'react';
+import logoImg from '../assets/logo_final.png';
 
-export default function Footer({ onPolicyClick, onTrackClick }) {
+export default function Footer({ onPolicyClick, onTrackClick, onAboutClick }) {
   return (
     <footer className="footer-wrapper">
       <div className="container">
-        
+
         <div className="footer-grid">
-          
+
           {/* Column 1: Brand Info */}
           <div>
             <div className="brand-logo" style={{ cursor: 'default' }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M12 3a9 9 0 0 1 9 9c0 2.274 -1.354 4.828 -3.22 6.78a2 2 0 0 1 -1.43 .62h-8.7c-.54 0 -1.055 -.22 -1.43 -.62c-1.866 -1.952 -3.22 -4.506 -3.22 -6.78a9 9 0 0 1 9 -9z" fill="var(--brand-accent)" stroke="var(--brand-primary)" strokeWidth="2" />
-                <path d="M8 9a4 4 0 0 1 8 0" stroke="var(--brand-primary)" strokeWidth="2" />
-                <line x1="9" y1="13" x2="15" y2="13" stroke="var(--brand-primary)" strokeWidth="2" />
-              </svg>
+              <img src={`${logoImg}?v=2`} alt="Nuvera Naturals Logo" className="footer-logo-img" />
               <div className="brand-name" style={{ color: 'white', fontSize: '22px' }}>Nuvera<span style={{ color: 'var(--brand-accent)' }}>Naturals</span></div>
             </div>
             <p className="footer-brand-desc">
@@ -58,7 +54,7 @@ export default function Footer({ onPolicyClick, onTrackClick }) {
           <div>
             <h4 className="footer-col-title">Company Info</h4>
             <ul className="footer-links">
-              <li><a href="#about" onClick={(e) => { e.preventDefault(); onPolicyClick('about'); }}>About Us</a></li>
+              <li><a href="#about" onClick={(e) => { e.preventDefault(); onAboutClick(); }}>About Us</a></li>
               <li><a href="#contact" onClick={(e) => { e.preventDefault(); onPolicyClick('contact'); }}>Contact Details</a></li>
               <li><a href="#privacy" onClick={(e) => { e.preventDefault(); onPolicyClick('privacy'); }}>Privacy Policy</a></li>
               <li><a href="#return" onClick={(e) => { e.preventDefault(); onPolicyClick('return'); }}>Return & Refund Policy</a></li>

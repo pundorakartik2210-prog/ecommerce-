@@ -95,7 +95,7 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
       const emailLower = googleEmail.toLowerCase();
       // Register if first time
       if (!users.some(u => u.email.toLowerCase() === emailLower)) {
-        const googleUser = { name: googleName, email: googleEmail } = decoded;
+        const googleUser = { name: googleName, email: googleEmail };
         localStorage.setItem("nuvera_registered_users", JSON.stringify([...users, { name: googleName, email: emailLower, password: "__google__" }]));
         setSuccessMsg("Account created with Google!");
 

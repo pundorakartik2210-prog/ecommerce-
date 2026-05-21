@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { initiateRazorpayPayment } from './utils/razorpay';
 import { PRODUCTS } from './data/products';
 import Navbar from './components/Navbar';
-import CategoryBar from './components/CategoryBar';
 import PromoSlider from './components/PromoSlider';
 import ProductGrid from './components/ProductGrid';
 import ProductDetailsModal from './components/ProductDetailsModal';
@@ -13,8 +12,9 @@ import Footer from './components/Footer';
 import PolicyModals from './components/PolicyModals';
 import SignInModal from './components/SignInModal';
 import SignUpModal from './components/SignUpModal';
-import SidebarPanel from './components/SidebarPanel';
 import AdminPanel from './components/AdminPanel';
+import QualityBenefits from './components/QualityBenefits';
+import AboutUs from './components/AboutUs';
 
 export default function App() {
   const [cart, setCart] = useState([]);
@@ -175,6 +175,9 @@ export default function App() {
       case "tracking":
         document.title = "Shipment Tracking & Status | Nuvera Naturals Dispatch";
         break;
+      case "about":
+        document.title = "About Our Safety Standards & Sourcing | Nuvera Naturals";
+        break;
       default:
         document.title = "Nuvera Naturals | Premium Organic Peanut Butter";
     }
@@ -297,9 +300,12 @@ export default function App() {
       <Navbar 
         cartCount={cartCount}
         wishlistCount={wishlistCount}
-        onCartClick={() => setCurrentPage("cart")}
-        onWishlistClick={() => setCurrentPage("wishlist")}
-        onTrackingClick={() => setCurrentPage("tracking")}
+        onStoreClick={() => { setActivePolicy(null); setCurrentPage("store"); }}
+        onCartClick={() => { setActivePolicy(null); setCurrentPage("cart"); }}
+        onWishlistClick={() => { setActivePolicy(null); setCurrentPage("wishlist"); }}
+        onTrackingClick={() => { setActivePolicy(null); setCurrentPage("tracking"); }}
+        onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
+        activeTab={currentPage}
         onSearch={handleSearch}
         onLogoClick={handleResetSearch}
         user={user}
@@ -311,31 +317,20 @@ export default function App() {
       <div className="main-content">
         <div className="app-body-container container">
           
-          {/* Flipkart-Style Sticky Left Navigation Sidebar */}
-          <SidebarPanel 
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            cartCount={cartCount}
-            wishlistCount={wishlistCount}
-            user={user}
-          />
-
           {/* Right Main Dynamic Content Area */}
           <div className="main-content-wrapper">
             
             {currentPage === 'store' && (
               <>
-                {/* 2. Category selection */}
-                <CategoryBar 
-                  activeCategory={activeCategory}
-                  onCategoryChange={(catId) => { setActiveCategory(catId); }}
-                />
 
                 {/* Carousel Banner Promos */}
                 <PromoSlider onShopNow={() => {
                   const el = document.getElementById("products-catalog");
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }} />
+
+                {/* Quality Standards and Benefits Section */}
+                <QualityBenefits />
 
                 {/* Main Product Catalog */}
                 <ProductGrid 
@@ -379,6 +374,10 @@ export default function App() {
               />
             )}
 
+            {currentPage === 'about' && (
+              <AboutUs />
+            )}
+
           </div>
 
         </div>
@@ -388,6 +387,7 @@ export default function App() {
       <Footer 
         onPolicyClick={(policyType) => setActivePolicy(policyType)}
         onTrackClick={() => setCurrentPage("tracking")}
+        onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
       />
 
       {/* --- MODALS OVERLAYS --- */}

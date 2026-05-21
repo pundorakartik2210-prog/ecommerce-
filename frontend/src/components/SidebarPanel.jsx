@@ -18,14 +18,11 @@ export default function SidebarPanel({
         <div className="profile-details">
           <span className="profile-greeting">Welcome back,</span>
           <span className="profile-name">{user ? user.name : "Guest Shopper"}</span>
-          <span className="profile-membership-badge">
-            {user ? "✨ Gold Club Member" : "🌿 Premium Shopper"}
-          </span>
         </div>
       </div>
 
       <div className="sidebar-menu-header">
-        <h3 className="menu-title">Account Navigation</h3>
+        <h3 className="menu-title">Pantry Menu</h3>
       </div>
       <div className="sidebar-menu-list">
         
@@ -74,7 +71,7 @@ export default function SidebarPanel({
             <circle cx="5.5" cy="18.5" r="2.5"></circle>
             <circle cx="18.5" cy="18.5" r="2.5"></circle>
           </svg>
-          <span className="menu-label">Track Order</span>
+          <span className="menu-label">Orders</span>
         </button>
 
       </div>

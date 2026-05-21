@@ -8,6 +8,7 @@ const SLIDES = [
     desc: "Experience pure, unadulterated nut butter handcrafted with love. Slow-roasted to perfection with zero hydrogenated oils. Save 20% today!",
     couponCode: "PEANUT20",
     color: "#5c3a21",
+    gradient: "linear-gradient(135deg, #7c4f30 0%, #3e2614 100%)",
     jarColor: "#e29543",
     lidColor: "#8c6239",
     labelTitle: "Classic Creamy",
@@ -20,6 +21,7 @@ const SLIDES = [
     desc: "Engineered with grass-fed whey isolate and organic MCT oil. A whopping 12g of clean protein per serving. Buy 2 tubs and get free delivery!",
     couponCode: "FITPOWER",
     color: "#1e3e62",
+    gradient: "linear-gradient(135deg, #254b75 0%, #11243b 100%)",
     jarColor: "#7c98b3",
     lidColor: "#153250",
     labelTitle: "Power Butter",
@@ -32,6 +34,7 @@ const SLIDES = [
     desc: "Single-origin premium dark cacao swirled with roasted peanut butter. 70% less sugar than conventional spreads. Clean eating never tasted so good!",
     couponCode: "CHOCOLOVE",
     color: "#543310",
+    gradient: "linear-gradient(135deg, #6b431c 0%, #2f1d07 100%)",
     jarColor: "#ae8660",
     lidColor: "#462507",
     labelTitle: "Chocolate Dream",
@@ -63,7 +66,7 @@ export default function PromoSlider({ onShopNow }) {
     <div className="promo-slider-container">
       <div 
         className="promo-slide" 
-        style={{ backgroundColor: current.color }}
+        style={{ background: current.gradient }}
         key={current.id}
       >
         {/* Vector leaf graphic simulation overlay */}
@@ -92,13 +95,6 @@ export default function PromoSlider({ onShopNow }) {
               src={current.image} 
               alt={current.labelTitle} 
               className="slide-jar-img"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '300px',
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 20px 35px rgba(0,0,0,0.35))',
-                animation: 'floatJar 6s ease-in-out infinite'
-              }}
             />
           ) : (
             <div className="jar-mockup" style={{ borderColor: current.color }}>
