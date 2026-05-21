@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { initiateRazorpayPayment } from './utils/razorpay';
 import { PRODUCTS } from './data/products';
 import Navbar from './components/Navbar';
 import CategoryBar from './components/CategoryBar';
@@ -10,18 +11,57 @@ import WishlistPage from './components/WishlistPage';
 import OrderTracking from './components/OrderTracking';
 import Footer from './components/Footer';
 import PolicyModals from './components/PolicyModals';
-import LoginModal from './components/LoginModal';
+import SignInModal from './components/SignInModal';
+import SignUpModal from './components/SignUpModal';
 import SidebarPanel from './components/SidebarPanel';
+import AdminPanel from './components/AdminPanel';
 
 export default function App() {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+
+  // Products state — persisted to localStorage so admin edits survive page refresh
+  const [products, setProducts] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nuvera_products');
+      return stored ? JSON.parse(stored) : PRODUCTS;
+    } catch {
+      return PRODUCTS;
+    }
+  });
+
+  // Admin panel visibility
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  // Persist products whenever they change
+  useEffect(() => {
+    localStorage.setItem('nuvera_products', JSON.stringify(products));
+  }, [products]);
+
+  // Product CRUD handlers (used by AdminPanel)
+  const handleAddProduct = (newProduct) => {
+    setProducts(prev => [...prev, newProduct]);
+  };
+  const handleUpdateProduct = (updatedProduct) => {
+    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  };
+  const handleDeleteProduct = (productId) => {
+    setProducts(prev => prev.filter(p => p.id !== productId));
+  };
   
   // User Authentication State
-  const [user, setUser] = useState(null); // { email, name }
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("nuvera_active_user");
+    try {
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }); // { email, name }
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   
   // Drawer/Modal Visibility States
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -30,6 +70,95 @@ export default function App() {
 
   // sessionOrders tracks mock orders created in this active user session
   const [sessionOrders, setSessionOrders] = useState({});
+  const [globalVerifying, setGlobalVerifying] = useState(false);
+  const [globalVerifyError, setGlobalVerifyError] = useState("");
+  const [globalVerifySuccess, setGlobalVerifySuccess] = useState("");
+
+  // Listen for order verification links in URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const confirmOrder = params.get('confirm_order');
+    const orderId = params.get('order_id');
+    const code = params.get('code');
+
+    if (confirmOrder === '1' && orderId && code) {
+      setGlobalVerifying(true);
+      setGlobalVerifyError('');
+      setGlobalVerifySuccess('');
+
+      // Step 1: Verify the email confirmation link
+      fetch('http://127.0.0.1:8000/api/orders/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ orderId, code }),
+      })
+        .then((res) => res.json())
+        .then(async (data) => {
+          if (!data.success) {
+            setGlobalVerifyError(data.message || 'Failed to verify order.');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+          }
+
+          // Step 2: Order verified — now collect payment via Razorpay
+          const verifiedOrder = data.order;
+          setGlobalVerifySuccess('Order confirmed! Launching secure payment...');
+
+          try {
+            await initiateRazorpayPayment({
+              orderId: verifiedOrder.orderId,
+              amount:  verifiedOrder.total,
+              name:    verifiedOrder.name,
+              email:   verifiedOrder.email,
+            });
+
+            // Step 3: Payment successful — commit the order
+            const trackingOrder = {
+              orderId:    verifiedOrder.orderId,
+              date:       verifiedOrder.date,
+              total:      verifiedOrder.total,
+              statusStep: 0,
+              items: verifiedOrder.cart.map((item) => ({
+                name:           item.name,
+                selectedWeight: item.selectedWeight,
+                quantity:       item.quantity,
+                price:          item.prices[item.selectedWeight],
+              })),
+            };
+
+            setSessionOrders((prev) => ({ ...prev, [orderId]: trackingOrder }));
+            window.history.replaceState({}, document.title, window.location.pathname);
+
+            setGlobalVerifySuccess(`Payment successful! Order ${orderId} placed. Redirecting...`);
+            setTimeout(() => {
+              setCart([]);
+              setCurrentPage('tracking');
+              setGlobalVerifying(false);
+              setGlobalVerifySuccess('');
+            }, 2000);
+          } catch (payErr) {
+            // Payment was cancelled or failed — do NOT place the order
+            setGlobalVerifyError(
+              payErr.message || 'Payment failed. Your order has NOT been placed.'
+            );
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        })
+        .catch(() => {
+          setGlobalVerifyError('Connection error. Could not verify your order link.');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        });
+    }
+  }, []);
+
+  // Sync user state changes to localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("nuvera_active_user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("nuvera_active_user");
+    }
+  }, [user]);
 
   // Dynamic Tab Titles for SPA SEO Optimization
   useEffect(() => {
@@ -54,6 +183,10 @@ export default function App() {
   // 1. Search filter callback
   const handleSearch = (query) => {
     setSearchQuery(query);
+    if (query.trim() !== "") {
+      setCurrentPage("store");
+      setActiveCategory("all");
+    }
   };
 
   const handleResetSearch = () => {
@@ -149,7 +282,7 @@ export default function App() {
   const totalCartPrice = cart.reduce((sum, item) => sum + (item.prices[item.selectedWeight] * item.quantity), 0);
 
   // 9. Filter the database by Search Query
-  const filteredProductsBySearch = PRODUCTS.filter(prod => {
+  const filteredProductsBySearch = products.filter(prod => {
     const matchesSearch = searchQuery.trim() === "" || 
       prod.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       prod.tagline.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -170,7 +303,8 @@ export default function App() {
         onSearch={handleSearch}
         onLogoClick={handleResetSearch}
         user={user}
-        onLoginClick={() => setIsLoginOpen(true)}
+        onLoginClick={() => setIsSignInOpen(true)}
+        onSignUpClick={() => setIsSignUpOpen(true)}
         onLogout={() => setUser(null)}
       />
 
@@ -225,7 +359,7 @@ export default function App() {
                 onRemoveItem={handleRemoveCartItem}
                 onCheckoutComplete={handleCheckoutComplete}
                 user={user}
-                onLoginPrompt={() => setIsLoginOpen(true)}
+                onLoginPrompt={() => setIsSignInOpen(true)}
                 onContinueShopping={() => setCurrentPage('store')}
               />
             )}
@@ -279,13 +413,31 @@ export default function App() {
         />
       )}
 
-      {/* Secure Auth Modal Overlay */}
-      <LoginModal 
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
+      {/* Sign In Modal */}
+      <SignInModal
+        isOpen={isSignInOpen}
+        onClose={() => setIsSignInOpen(false)}
         onLoginSuccess={(userProfile) => {
           setUser(userProfile);
-          setIsLoginOpen(false);
+          setIsSignInOpen(false);
+        }}
+        onSwitchToSignUp={() => {
+          setIsSignInOpen(false);
+          setIsSignUpOpen(true);
+        }}
+      />
+
+      {/* Sign Up Modal */}
+      <SignUpModal
+        isOpen={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
+        onLoginSuccess={(userProfile) => {
+          setUser(userProfile);
+          setIsSignUpOpen(false);
+        }}
+        onSwitchToSignIn={() => {
+          setIsSignUpOpen(false);
+          setIsSignInOpen(true);
         }}
       />
 
@@ -294,13 +446,18 @@ export default function App() {
         <div className="sticky-cart-bar">
           <div className="sticky-cart-container container">
             <div className="sticky-cart-info">
-              <span className="sticky-cart-count">
-                🛒 <strong>{cartCount}</strong> {cartCount === 1 ? 'item' : 'items'} added
-              </span>
-              <span className="sticky-cart-divider">|</span>
-              <span className="sticky-cart-total">
-                Total: <strong>₹{totalCartPrice}</strong>
-              </span>
+              <div className="sticky-cart-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span className="sticky-cart-badge">{cartCount}</span>
+              </div>
+              <div className="sticky-cart-details">
+                <span className="sticky-cart-count">{cartCount} {cartCount === 1 ? 'Item' : 'Items'}</span>
+                <span className="sticky-cart-total">Total: ₹{totalCartPrice}</span>
+              </div>
             </div>
             <button className="sticky-cart-btn" onClick={() => setCurrentPage("cart")}>
               <span>View Cart</span>
@@ -309,6 +466,103 @@ export default function App() {
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </button>
+          </div>
+        </div>
+      )}
+
+      {globalVerifying && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(92, 58, 33, 0.4)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          color: 'var(--brand-primary)'
+        }}>
+          <div style={{
+            background: 'var(--bg-white)',
+            padding: '40px 32px',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-lg)',
+            textAlign: 'center',
+            maxWidth: '440px',
+            width: '90%',
+            borderTop: '5px solid var(--brand-accent)'
+          }}>
+            {globalVerifyError ? (
+              <>
+                <div style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  borderRadius: '50%', 
+                  background: 'rgba(234, 67, 53, 0.1)', 
+                  border: '2px solid rgba(234, 67, 53, 0.3)',
+                  color: 'var(--error)', 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  margin: '0 auto 16px'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--error)', fontSize: '20px', margin: '0 0 8px 0' }}>Verification Failed</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 20px 0', lineHeight: '1.4' }}>{globalVerifyError}</p>
+                <button 
+                  onClick={() => setGlobalVerifying(false)}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'var(--brand-primary)',
+                    color: 'var(--bg-white)',
+                    border: 'none',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Return to Store
+                </button>
+              </>
+            ) : globalVerifySuccess ? (
+              <>
+                <div style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  borderRadius: '50%', 
+                  background: 'rgba(40, 167, 69, 0.1)', 
+                  border: '2px solid rgba(40, 167, 69, 0.3)',
+                  color: 'var(--success)', 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  margin: '0 auto 16px'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--brand-primary)', fontSize: '20px', margin: '0 0 8px 0' }}>Order Confirmed!</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>{globalVerifySuccess}</p>
+              </>
+            ) : (
+              <>
+                <div className="success-icon-badge" style={{ margin: '0 auto 20px', width: '56px', height: '56px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="spin" style={{ color: 'var(--brand-accent)' }}>
+                    <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12"></circle>
+                  </svg>
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--brand-primary)', fontSize: '20px', margin: '0 0 8px 0' }}>Verifying Confirmation Link</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Please hold on while we secure and place your order...</p>
+              </>
+            )}
           </div>
         </div>
       )}

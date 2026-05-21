@@ -219,7 +219,7 @@ export default function ProductDetailsModal({
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        justify-content: 'center',
+                        justifyContent: 'center',
                         transition: 'var(--transition)'
                       }}
                     >
@@ -243,7 +243,7 @@ export default function ProductDetailsModal({
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        justify-content: 'center',
+                        justifyContent: 'center',
                         transition: 'var(--transition)'
                       }}
                     >

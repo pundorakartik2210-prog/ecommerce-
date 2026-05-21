@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import OrderVerificationModal from './OrderVerificationModal';
 
 export default function CartPage({
   cart,
@@ -14,6 +15,9 @@ export default function CartPage({
   const [appliedCode, setAppliedCode] = useState("");
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [generatedOrderId, setGeneratedOrderId] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState("");
+  const [isPendingLoading, setIsPendingLoading] = useState(false);
 
   const subtotal = cart.reduce((sum, item) => sum + (item.prices[item.selectedWeight] * item.quantity), 0);
   const discountAmount = Math.round(subtotal * discount);
@@ -37,16 +41,48 @@ export default function CartPage({
     setCouponCode("");
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!user) {
       onLoginPrompt();
       return;
     }
-    const orderNum = Math.floor(10000 + Math.random() * 90000);
-    const orderId = `NUV-${orderNum}`;
-    setGeneratedOrderId(orderId);
+    
+    setIsPendingLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/orders/pending', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.name,
+          cart: cart,
+          total: total
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setPendingOrderId(data.orderId);
+        setIsVerifying(true);
+      } else {
+        alert(data.message || "Failed to initiate secure order checkout. Please try again.");
+      }
+    } catch (err) {
+      alert("Network error: Could not reach the server to initiate checkout.");
+    } finally {
+      setIsPendingLoading(false);
+    }
+  };
+
+  const handleVerificationSuccess = (verifiedOrder) => {
+    setIsVerifying(false);
+    setGeneratedOrderId(verifiedOrder.orderId);
     setCheckoutSuccess(true);
-    onCheckoutComplete(orderId, cart, total);
+    onCheckoutComplete(verifiedOrder.orderId, cart, total);
   };
 
   if (checkoutSuccess) {
@@ -252,14 +288,17 @@ export default function CartPage({
               <button 
                 className="checkout-btn" 
                 onClick={handleCheckout}
+                disabled={isPendingLoading}
                 style={{ 
                   width: '100%', 
                   padding: '12px', 
                   fontSize: '14px',
-                  background: !user ? 'var(--brand-secondary)' : 'var(--brand-primary)' 
+                  background: !user ? 'var(--brand-secondary)' : 'var(--brand-primary)',
+                  opacity: isPendingLoading ? 0.7 : 1,
+                  cursor: isPendingLoading ? 'not-allowed' : 'pointer'
                 }}
               >
-                {!user ? "Login to Place Order" : "Place Order (Secure)"}
+                {isPendingLoading ? "Sending Verification Mail..." : (!user ? "Login to Place Order" : "Place Order (Secure)")}
               </button>
             </div>
           </div>
@@ -290,6 +329,16 @@ export default function CartPage({
           </button>
         </div>
       )}
+
+      <OrderVerificationModal
+        isOpen={isVerifying}
+        orderId={pendingOrderId}
+        name={user ? user.name : ""}
+        email={user ? user.email : ""}
+        total={total}
+        onClose={() => setIsVerifying(false)}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
     </div>
   );
 }

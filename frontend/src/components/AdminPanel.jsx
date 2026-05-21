@@ -1,0 +1,597 @@
+import React, { useState, useEffect } from 'react';
+
+const ADMIN_CREDENTIALS = { email: 'nuvera@gmail.com', password: '123456' };
+const MOCK_ORDERS = [
+  { id: 'NUV-12495', date: '2026-05-12', customer: 'Rahul Sharma', email: 'rahul@example.com', total: 948, status: 'Delivered', items: [{ name: 'Classic Creamy Peanut Butter 1kg', qty: 2, price: 599 }] },
+  { id: 'NUV-58920', date: '2026-05-15', customer: 'Priya Mehta', email: 'priya@example.com', total: 749, status: 'Shipped', items: [{ name: 'Dark Chocolate Dream Butter 1kg', qty: 1, price: 749 }] },
+  { id: 'NUV-90184', date: '2026-05-16', customer: 'Aarav Singh', email: 'aarav@example.com', total: 4699, status: 'Packed', items: [{ name: 'High-Protein Power Butter 2.5kg', qty: 1, price: 2300 }, { name: 'All-Natural Extra Crunchy 5kg', qty: 1, price: 2399 }] },
+  { id: 'NUV-34512', date: '2026-05-17', customer: 'Sneha Gupta', email: 'sneha@example.com', total: 1199, status: 'Ordered', items: [{ name: 'High-Protein Power Butter 1kg', qty: 1, price: 1199 }] },
+  { id: 'NUV-67831', date: '2026-05-18', customer: 'Vikram Agarwal', email: 'vikram@example.com', total: 1798, status: 'Ordered', items: [{ name: 'Honey Almond Peanut Blend 1kg', qty: 2, price: 899 }] },
+  { id: 'NUV-23409', date: '2026-05-19', customer: 'Meera Reddy', email: 'meera@example.com', total: 569, status: 'Shipped', items: [{ name: 'Organic Pure Sugar-Free 1kg', qty: 1, price: 569 }] },
+];
+
+const STATUS_COLORS = {
+  Ordered: { bg: '#eff6ff', text: '#2563eb', dot: '#3b82f6' },
+  Packed:  { bg: '#fef9c3', text: '#a16207', dot: '#eab308' },
+  Shipped: { bg: '#fff7ed', text: '#c2410c', dot: '#f97316' },
+  'Out for Delivery': { bg: '#f0fdf4', text: '#16a34a', dot: '#22c55e' },
+  Delivered: { bg: '#f0fdf4', text: '#166534', dot: '#16a34a' },
+};
+
+const BLANK_PRODUCT = {
+  id: '', name: '', tag: '', type: 'creamy', tagline: '', description: '',
+  rating: 4.5, reviewsCount: 0, baseWeight: '1kg',
+  prices: { '1kg': 0, '2.5kg': 0, '5kg': 0 },
+  nutrition: { servingSize: '2 tbsp (32g)', calories: '', protein: '', totalFat: '', saturatedFat: '', carbs: '', dietaryFiber: '', sugars: '', sodium: '' },
+  ingredients: [],
+  reviews: [],
+  image: '', color: '#E29543',
+  bgGradient: 'linear-gradient(135deg, #F8E2C4 0%, #D4A36A 100%)'
+};
+
+export default function AdminPanel({ products, onAddProduct, onUpdateProduct, onDeleteProduct, onClose, sessionOrders }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('nuvera_admin_auth') === '1');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [orders, setOrders] = useState(() => {
+    const stored = localStorage.getItem('nuvera_admin_orders');
+    return stored ? JSON.parse(stored) : MOCK_ORDERS;
+  });
+  const [productModal, setProductModal] = useState(null); // null | { mode:'add'|'edit', product }
+  const [productForm, setProductForm] = useState(BLANK_PRODUCT);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [ingredientsInput, setIngredientsInput] = useState('');
+  const [notification, setNotification] = useState(null);
+
+  // Merge session orders into admin orders list
+  const allOrders = [...orders];
+  Object.values(sessionOrders || {}).forEach(so => {
+    if (!allOrders.find(o => o.id === so.orderId)) {
+      allOrders.unshift({
+        id: so.orderId,
+        date: so.date,
+        customer: 'Online Customer',
+        email: 'customer@nuvera.com',
+        total: so.total,
+        status: 'Ordered',
+        items: so.items?.map(i => ({ name: `${i.name} (${i.selectedWeight})`, qty: i.quantity, price: i.price })) || []
+      });
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('nuvera_admin_orders', JSON.stringify(orders));
+  }, [orders]);
+
+  const showNotif = (msg, type = 'success') => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (loginEmail.trim() === ADMIN_CREDENTIALS.email && loginPassword === ADMIN_CREDENTIALS.password) {
+      localStorage.setItem('nuvera_admin_auth', '1');
+      setIsLoggedIn(true);
+      setLoginError('');
+    } else {
+      setLoginError('Invalid credentials. Please try again.');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('nuvera_admin_auth');
+    setIsLoggedIn(false);
+  };
+
+  const handleOrderStatusChange = (orderId, newStatus) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    showNotif(`Order ${orderId} status updated to ${newStatus}`);
+  };
+
+  const openAddProduct = () => {
+    setProductForm({ ...BLANK_PRODUCT, id: 'pb-' + Date.now() });
+    setIngredientsInput('');
+    setProductModal({ mode: 'add' });
+  };
+
+  const openEditProduct = (prod) => {
+    setProductForm({ ...prod });
+    setIngredientsInput((prod.ingredients || []).join(', '));
+    setProductModal({ mode: 'edit' });
+  };
+
+  const handleFormChange = (field, value) => {
+    setProductForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePriceChange = (weight, val) => {
+    setProductForm(prev => ({ ...prev, prices: { ...prev.prices, [weight]: Number(val) } }));
+  };
+
+  const handleNutritionChange = (field, val) => {
+    setProductForm(prev => ({ ...prev, nutrition: { ...prev.nutrition, [field]: val } }));
+  };
+
+  const handleSaveProduct = () => {
+    const finalProduct = {
+      ...productForm,
+      ingredients: ingredientsInput.split(',').map(s => s.trim()).filter(Boolean),
+    };
+    if (!finalProduct.name.trim()) { showNotif('Product name is required!', 'error'); return; }
+    if (productModal.mode === 'add') {
+      onAddProduct(finalProduct);
+      showNotif('Product launched successfully! 🚀');
+    } else {
+      onUpdateProduct(finalProduct);
+      showNotif('Product updated successfully! ✅');
+    }
+    setProductModal(null);
+  };
+
+  const handleDeleteProduct = (prod) => setDeleteConfirm(prod);
+
+  const confirmDelete = () => {
+    onDeleteProduct(deleteConfirm.id);
+    showNotif(`"${deleteConfirm.name}" has been removed.`, 'error');
+    setDeleteConfirm(null);
+  };
+
+  // ---- Stats ----
+  const totalRevenue = allOrders.reduce((s, o) => s + o.total, 0);
+  const totalOrders = allOrders.length;
+  const totalProducts = products.length;
+  const pendingOrders = allOrders.filter(o => o.status === 'Ordered' || o.status === 'Packed').length;
+
+  // ---- Login Screen ----
+  if (!isLoggedIn) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          {[...Array(20)].map((_, i) => (
+            <div key={i} style={{ position: 'absolute', width: Math.random() * 4 + 1 + 'px', height: Math.random() * 4 + 1 + 'px', borderRadius: '50%', background: '#e29543', opacity: Math.random() * 0.5 + 0.1, left: Math.random() * 100 + '%', top: Math.random() * 100 + '%', animation: `float ${Math.random() * 5 + 5}s ease-in-out infinite alternate` }} />
+          ))}
+        </div>
+
+        <div style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '48px 40px', width: '100%', maxWidth: '440px', boxShadow: '0 32px 80px rgba(0,0,0,0.5)', position: 'relative' }}>
+          <button onClick={onClose} style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', boxShadow: '0 8px 24px rgba(226,149,67,0.3)' }}>🛡️</div>
+            <h1 style={{ color: '#f8fafc', fontSize: '26px', fontWeight: '800', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Admin Portal</h1>
+            <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>Nuvera Naturals Command Center</p>
+          </div>
+
+          {loginError && (
+            <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '12px 16px', color: '#fca5a5', fontSize: '13px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>⚠️ {loginError}</div>
+          )}
+
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Email Address</label>
+              <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="nuvera@gmail.com" required style={{ width: '100%', padding: '12px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input type={showLoginPassword ? 'text' : 'password'} value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••" required style={{ width: '100%', padding: '12px 44px 12px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px' }}>{showLoginPassword ? '🙈' : '👁️'}</button>
+              </div>
+            </div>
+            <button type="submit" style={{ padding: '14px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '15px', fontWeight: '800', cursor: 'pointer', marginTop: '8px', boxShadow: '0 4px 16px rgba(226,149,67,0.3)', transition: 'transform 0.2s' }}>
+              🔐 Access Admin Panel
+            </button>
+          </form>
+
+          <p style={{ textAlign: 'center', color: '#475569', fontSize: '12px', marginTop: '24px', marginBottom: 0 }}>Protected area — authorized personnel only</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Admin Layout ----
+  const navItems = [
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { id: 'orders', icon: '📦', label: 'Orders', badge: pendingOrders > 0 ? pendingOrders : null },
+    { id: 'products', icon: '🏪', label: 'Products' },
+    { id: 'analytics', icon: '📈', label: 'Analytics' },
+  ];
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#0f172a' }}>
+      {/* Notification Toast */}
+      {notification && (
+        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 10000, padding: '14px 20px', borderRadius: '12px', background: notification.type === 'error' ? '#7f1d1d' : '#14532d', border: `1px solid ${notification.type === 'error' ? '#ef4444' : '#22c55e'}`, color: '#f8fafc', fontSize: '14px', fontWeight: '600', boxShadow: '0 8px 32px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: '10px', animation: 'slideInRight 0.3s ease' }}>
+          {notification.type === 'error' ? '❌' : '✅'} {notification.msg}
+        </div>
+      )}
+
+      {/* Sidebar */}
+      <div style={{ width: '240px', flexShrink: 0, background: '#1e293b', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', padding: '0' }}>
+        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🥜</div>
+            <div>
+              <div style={{ color: '#f8fafc', fontWeight: '800', fontSize: '15px' }}>Nuvera Admin</div>
+              <div style={{ color: '#64748b', fontSize: '11px' }}>Command Center</div>
+            </div>
+          </div>
+        </div>
+
+        <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => setActiveSection(item.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: activeSection === item.id ? 'linear-gradient(135deg, rgba(226,149,67,0.2), rgba(201,124,43,0.1))' : 'transparent', color: activeSection === item.id ? '#e29543' : '#94a3b8', fontWeight: activeSection === item.id ? '700' : '600', fontSize: '14px', textAlign: 'left', width: '100%', transition: 'all 0.2s', position: 'relative', borderLeft: activeSection === item.id ? '3px solid #e29543' : '3px solid transparent' }}>
+              <span style={{ fontSize: '16px' }}>{item.icon}</span>
+              {item.label}
+              {item.badge && <span style={{ marginLeft: 'auto', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '2px 6px', borderRadius: '20px' }}>{item.badge}</span>}
+            </button>
+          ))}
+        </nav>
+
+        <div style={{ padding: '16px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: 'transparent', color: '#64748b', fontSize: '13px', fontWeight: '600', width: '100%', marginBottom: '8px' }}>
+            🏪 View Store
+          </button>
+          <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.1)', color: '#f87171', fontSize: '13px', fontWeight: '600', width: '100%' }}>
+            🚪 Sign Out
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Top Bar */}
+        <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1e293b', flexShrink: 0 }}>
+          <div>
+            <h1 style={{ color: '#f8fafc', fontSize: '22px', fontWeight: '800', margin: 0 }}>
+              {navItems.find(n => n.id === activeSection)?.icon} {navItems.find(n => n.id === activeSection)?.label}
+            </h1>
+            <p style={{ color: '#64748b', fontSize: '13px', margin: '2px 0 0' }}>Nuvera Naturals Admin — {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '800', fontSize: '14px' }}>N</div>
+          </div>
+        </div>
+
+        {/* Page Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: '#0f172a' }}>
+
+          {/* ====== DASHBOARD ====== */}
+          {activeSection === 'dashboard' && (
+            <div>
+              {/* KPI Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
+                {[
+                  { label: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: '💰', color: '#22c55e', bgGrad: 'rgba(34,197,94,0.1)' },
+                  { label: 'Total Orders', value: totalOrders, icon: '📦', color: '#3b82f6', bgGrad: 'rgba(59,130,246,0.1)' },
+                  { label: 'Products Live', value: totalProducts, icon: '🏪', color: '#e29543', bgGrad: 'rgba(226,149,67,0.1)' },
+                  { label: 'Pending Orders', value: pendingOrders, icon: '⏳', color: '#f59e0b', bgGrad: 'rgba(245,158,11,0.1)' },
+                ].map((card, i) => (
+                  <div key={i} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', height: '80px', borderRadius: '50%', background: card.bgGrad, pointerEvents: 'none' }} />
+                    <div style={{ fontSize: '28px', marginBottom: '12px' }}>{card.icon}</div>
+                    <div style={{ color: card.color, fontSize: '28px', fontWeight: '800', lineHeight: 1 }}>{card.value}</div>
+                    <div style={{ color: '#64748b', fontSize: '13px', fontWeight: '600', marginTop: '6px' }}>{card.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Recent Orders */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '16px', fontWeight: '700' }}>📋 Recent Orders</h3>
+                  {allOrders.slice(0, 5).map(order => (
+                    <div key={order.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div>
+                        <div style={{ color: '#f8fafc', fontWeight: '700', fontSize: '13px' }}>{order.id}</div>
+                        <div style={{ color: '#64748b', fontSize: '11px' }}>{order.customer}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ color: '#e29543', fontWeight: '700', fontSize: '13px' }}>₹{order.total.toLocaleString('en-IN')}</div>
+                        <span style={{ background: STATUS_COLORS[order.status]?.bg || '#1e293b', color: STATUS_COLORS[order.status]?.text || '#94a3b8', fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px' }}>{order.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Product Summary */}
+                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '16px', fontWeight: '700' }}>🥜 Product Catalog</h3>
+                  {products.map((prod, i) => (
+                    <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: prod.bgGradient || '#334155', flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
+                        <div style={{ color: '#64748b', fontSize: '11px' }}>From ₹{prod.prices['1kg']}</div>
+                      </div>
+                      <span style={{ background: 'rgba(226,149,67,0.15)', color: '#e29543', fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{prod.tag}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ====== ORDERS ====== */}
+          {activeSection === 'orders' && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '700' }}>All Orders ({allOrders.length})</h2>
+              </div>
+              <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      {['Order ID', 'Customer', 'Date', 'Items', 'Total', 'Status', 'Action'].map(h => (
+                        <th key={h} style={{ padding: '14px 16px', color: '#64748b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allOrders.map((order, i) => {
+                      const sc = STATUS_COLORS[order.status] || {};
+                      return (
+                        <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                          <td style={{ padding: '14px 16px', color: '#e29543', fontWeight: '700', fontSize: '13px' }}>{order.id}</td>
+                          <td style={{ padding: '14px 16px' }}>
+                            <div style={{ color: '#f8fafc', fontSize: '13px', fontWeight: '600' }}>{order.customer}</div>
+                            <div style={{ color: '#64748b', fontSize: '11px' }}>{order.email}</div>
+                          </td>
+                          <td style={{ padding: '14px 16px', color: '#94a3b8', fontSize: '12px' }}>{order.date}</td>
+                          <td style={{ padding: '14px 16px', color: '#94a3b8', fontSize: '12px' }}>{order.items?.length || 1} item{(order.items?.length || 1) > 1 ? 's' : ''}</td>
+                          <td style={{ padding: '14px 16px', color: '#22c55e', fontWeight: '700', fontSize: '13px' }}>₹{order.total.toLocaleString('en-IN')}</td>
+                          <td style={{ padding: '14px 16px' }}>
+                            <span style={{ background: sc.bg || '#1e293b', color: sc.text || '#94a3b8', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sc.dot || '#64748b', display: 'inline-block' }} />
+                              {order.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 16px' }}>
+                            <select value={order.status} onChange={e => handleOrderStatusChange(order.id, e.target.value)}
+                              style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', outline: 'none' }}>
+                              {['Ordered', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ====== PRODUCTS ====== */}
+          {activeSection === 'products' && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '700' }}>Product Catalog ({products.length})</h2>
+                <button onClick={openAddProduct} style={{ background: 'linear-gradient(135deg, #e29543, #c97c2b)', border: 'none', borderRadius: '10px', color: '#fff', padding: '10px 20px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 14px rgba(226,149,67,0.3)' }}>
+                  🚀 Launch New Product
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                {products.map(prod => (
+                  <div key={prod.id} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', transition: 'transform 0.2s' }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                    <div style={{ height: '100px', background: prod.bgGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                      <div style={{ width: '60px', height: '80px', background: '#fff', border: `3px solid ${prod.color}`, borderRadius: '10px 10px 14px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: '20px' }}>🥜</span>
+                      </div>
+                      <span style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px' }}>{prod.tag}</span>
+                    </div>
+                    <div style={{ padding: '16px' }}>
+                      <h3 style={{ color: '#f8fafc', fontSize: '15px', fontWeight: '700', margin: '0 0 4px' }}>{prod.name}</h3>
+                      <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.4' }}>{prod.tagline}</p>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                        {Object.entries(prod.prices || {}).map(([w, p]) => (
+                          <span key={w} style={{ background: 'rgba(226,149,67,0.12)', color: '#e29543', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>{w}: ₹{p}</span>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => openEditProduct(prod)} style={{ flex: 1, padding: '8px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', color: '#60a5fa', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>✏️ Edit</button>
+                        <button onClick={() => handleDeleteProduct(prod)} style={{ flex: 1, padding: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#f87171', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>🗑️ Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ====== ANALYTICS ====== */}
+          {activeSection === 'analytics' && (
+            <div>
+              <h2 style={{ color: '#f8fafc', margin: '0 0 24px', fontSize: '18px', fontWeight: '700' }}>Revenue & Performance Analytics</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '15px', fontWeight: '700' }}>📊 Order Status Distribution</h3>
+                  {['Ordered', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map(status => {
+                    const count = allOrders.filter(o => o.status === status).length;
+                    const pct = allOrders.length > 0 ? (count / allOrders.length) * 100 : 0;
+                    const sc = STATUS_COLORS[status] || {};
+                    return (
+                      <div key={status} style={{ marginBottom: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>{status}</span>
+                          <span style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '700' }}>{count} orders</span>
+                        </div>
+                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: sc.dot || '#64748b', borderRadius: '3px', transition: 'width 0.6s ease' }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '15px', fontWeight: '700' }}>🏆 Top Products by Revenue</h3>
+                  {products.slice(0, 5).map((prod, i) => {
+                    const revenue = allOrders.reduce((sum, o) => {
+                      const match = o.items?.find(item => item.name?.includes(prod.name.split(' ')[0]));
+                      return sum + (match ? match.price * match.qty : 0);
+                    }, 0);
+                    return (
+                      <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <span style={{ color: '#e29543', fontWeight: '800', fontSize: '14px', width: '20px' }}>#{i + 1}</span>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: prod.bgGradient, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
+                        </div>
+                        <span style={{ color: '#22c55e', fontWeight: '700', fontSize: '12px' }}>₹{prod.prices['1kg']}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Summary Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                {[
+                  { label: 'Avg Order Value', value: `₹${Math.round(totalRevenue / Math.max(totalOrders, 1)).toLocaleString('en-IN')}`, icon: '📐' },
+                  { label: 'Delivered Orders', value: allOrders.filter(o => o.status === 'Delivered').length, icon: '✅' },
+                  { label: 'Active Products', value: products.length, icon: '🛍️' },
+                ].map((stat, i) => (
+                  <div key={i} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>{stat.icon}</div>
+                    <div style={{ color: '#e29543', fontSize: '28px', fontWeight: '800' }}>{stat.value}</div>
+                    <div style={{ color: '#64748b', fontSize: '13px', marginTop: '4px' }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ===== Product Modal (Add/Edit) ===== */}
+      {productModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', width: '100%', maxWidth: '680px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.6)' }}>
+            <div style={{ padding: '24px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '800' }}>
+                {productModal.mode === 'add' ? '🚀 Launch New Product' : '✏️ Edit Product'}
+              </h2>
+              <button onClick={() => setProductModal(null)} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: '#94a3b8', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+            </div>
+
+            <div style={{ overflowY: 'auto', padding: '28px', flex: 1 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                {/* Name */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={labelStyle}>Product Name *</label>
+                  <input value={productForm.name} onChange={e => handleFormChange('name', e.target.value)} style={inputStyle} placeholder="e.g. Classic Creamy Peanut Butter" />
+                </div>
+                {/* Tag */}
+                <div>
+                  <label style={labelStyle}>Badge / Tag</label>
+                  <input value={productForm.tag} onChange={e => handleFormChange('tag', e.target.value)} style={inputStyle} placeholder="e.g. Best Seller" />
+                </div>
+                {/* Type */}
+                <div>
+                  <label style={labelStyle}>Product Type</label>
+                  <select value={productForm.type} onChange={e => handleFormChange('type', e.target.value)} style={inputStyle}>
+                    {['creamy', 'crunchy', 'chocolate', 'high-protein', 'sugar-free'].map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                {/* Tagline */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={labelStyle}>Short Tagline</label>
+                  <input value={productForm.tagline} onChange={e => handleFormChange('tagline', e.target.value)} style={inputStyle} placeholder="Catchy one-liner for the product card" />
+                </div>
+                {/* Description */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={labelStyle}>Full Description</label>
+                  <textarea value={productForm.description} onChange={e => handleFormChange('description', e.target.value)} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Detailed product description..." />
+                </div>
+                {/* Prices */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={labelStyle}>Prices (₹)</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                    {['1kg', '2.5kg', '5kg'].map(w => (
+                      <div key={w}>
+                        <label style={{ ...labelStyle, fontSize: '10px', marginBottom: '4px' }}>{w}</label>
+                        <input type="number" value={productForm.prices[w] || ''} onChange={e => handlePriceChange(w, e.target.value)} style={inputStyle} placeholder="0" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Color */}
+                <div>
+                  <label style={labelStyle}>Jar Color (hex)</label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input type="color" value={productForm.color} onChange={e => handleFormChange('color', e.target.value)} style={{ width: '44px', height: '40px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'none' }} />
+                    <input value={productForm.color} onChange={e => handleFormChange('color', e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="#E29543" />
+                  </div>
+                </div>
+                {/* Rating */}
+                <div>
+                  <label style={labelStyle}>Rating (0-5)</label>
+                  <input type="number" min="0" max="5" step="0.1" value={productForm.rating} onChange={e => handleFormChange('rating', parseFloat(e.target.value))} style={inputStyle} />
+                </div>
+                {/* Ingredients */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={labelStyle}>Ingredients (comma-separated)</label>
+                  <textarea value={ingredientsInput} onChange={e => setIngredientsInput(e.target.value)} rows={2} style={{ ...inputStyle, resize: 'vertical' }} placeholder="100% Organic Peanuts, Pink Himalayan Salt, ..." />
+                </div>
+
+                {/* Nutrition */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ ...labelStyle, fontSize: '13px', marginBottom: '12px' }}>🧬 Nutrition Facts (per serving)</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                    {[['calories', 'Calories'], ['protein', 'Protein'], ['totalFat', 'Total Fat'], ['carbs', 'Carbs'], ['dietaryFiber', 'Fiber'], ['sugars', 'Sugars'], ['saturatedFat', 'Sat. Fat'], ['sodium', 'Sodium']].map(([field, lbl]) => (
+                      <div key={field}>
+                        <label style={{ ...labelStyle, fontSize: '10px', marginBottom: '4px' }}>{lbl}</label>
+                        <input value={productForm.nutrition?.[field] || ''} onChange={e => handleNutritionChange(field, e.target.value)} style={inputStyle} placeholder={lbl} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: '20px 28px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', justifyContent: 'flex-end', flexShrink: 0 }}>
+              <button onClick={() => setProductModal(null)} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#94a3b8', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSaveProduct} style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '14px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 14px rgba(226,149,67,0.3)' }}>
+                {productModal.mode === 'add' ? '🚀 Launch Product' : '✅ Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Delete Confirm Modal ===== */}
+      {deleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#1e293b', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 32px 80px rgba(239,68,68,0.2)' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗑️</div>
+            <h3 style={{ color: '#f8fafc', fontWeight: '800', fontSize: '20px', margin: '0 0 8px' }}>Delete Product?</h3>
+            <p style={{ color: '#94a3b8', fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' }}>
+              Are you sure you want to remove <strong style={{ color: '#f8fafc' }}>"{deleteConfirm.name}"</strong> from the catalog? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button onClick={() => setDeleteConfirm(null)} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#94a3b8', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
+              <button onClick={confirmDelete} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #dc2626, #b91c1c)', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 14px rgba(220,38,38,0.3)' }}>🗑️ Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const inputStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: '8px', color: '#f8fafc', fontSize: '13px', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit'
+};
+const labelStyle = {
+  display: 'block', color: '#64748b', fontSize: '11px', fontWeight: '700',
+  textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px'
+};

@@ -12,6 +12,7 @@ export default function Navbar({
   onLogoClick,
   user,
   onLoginClick,
+  onSignUpClick,
   onLogout
 }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -183,17 +184,20 @@ export default function Navbar({
               )}
             </div>
           ) : (
-            <button 
-              className="nav-action-btn" 
-              onClick={onLoginClick}
-              style={{ background: 'var(--brand-primary)', color: 'var(--bg-white)' }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-              Sign In
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                className="nav-signin-btn" 
+                onClick={onLoginClick}
+              >
+                Sign In
+              </button>
+              <button 
+                className="nav-signup-btn" 
+                onClick={onSignUpClick}
+              >
+                Sign Up
+              </button>
+            </div>
           )}
 
         </div>

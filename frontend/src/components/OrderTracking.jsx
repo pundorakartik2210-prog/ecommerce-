@@ -214,7 +214,7 @@ export default function OrderTracking({ sessionOrders }) {
         </div>
 
         {/* Right column: Timeline and details */}
-        <div className="cart-summary-desktop-card" style={{ flexShrink: 0 }}>
+        <div className="cart-summary-desktop-card" style={{ flexShrink: 0, position: 'relative', top: 'auto' }}>
           {hasSearched ? (
             trackedOrder ? (
               <div style={{
