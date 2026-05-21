@@ -68,11 +68,23 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState("store"); // "store" | "cart" | "wishlist" | "tracking"
   const [activePolicy, setActivePolicy] = useState(null); // 'about' | 'contact' | 'privacy' | 'return' | null
 
-  // sessionOrders tracks mock orders created in this active user session
-  const [sessionOrders, setSessionOrders] = useState({});
+  // sessionOrders tracks orders placed by the current user — persisted to localStorage
+  const [sessionOrders, setSessionOrders] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nuvera_session_orders');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
   const [globalVerifying, setGlobalVerifying] = useState(false);
   const [globalVerifyError, setGlobalVerifyError] = useState("");
   const [globalVerifySuccess, setGlobalVerifySuccess] = useState("");
+
+  // Persist session orders whenever they change
+  useEffect(() => {
+    localStorage.setItem('nuvera_session_orders', JSON.stringify(sessionOrders));
+  }, [sessionOrders]);
 
   // Listen for order verification links in URL params
   useEffect(() => {
@@ -151,12 +163,16 @@ export default function App() {
     }
   }, []);
 
-  // Sync user state changes to localStorage
+  // Sync user state changes to localStorage and redirect admin
   useEffect(() => {
     if (user) {
       localStorage.setItem("nuvera_active_user", JSON.stringify(user));
+      if (user.email === 'nuvera@gmail.com') {
+        setShowAdmin(true);
+      }
     } else {
       localStorage.removeItem("nuvera_active_user");
+      setShowAdmin(false);
     }
   }, [user]);
 
@@ -195,6 +211,14 @@ export default function App() {
   const handleResetSearch = () => {
     setSearchQuery("");
     setActiveCategory("all");
+  };
+
+  const handleAdminPortalClick = () => {
+    if (user?.email === 'nuvera@gmail.com') {
+      setShowAdmin(true);
+    } else {
+      setIsSignInOpen(true);
+    }
   };
 
   // 2. Add to Cart Handler
@@ -265,11 +289,12 @@ export default function App() {
         name: item.name,
         selectedWeight: item.selectedWeight,
         quantity: item.quantity,
-        price: item.prices[item.selectedWeight]
+        // Safe fallback: use price directly if prices map is missing
+        price: (item.prices && item.prices[item.selectedWeight]) || item.price || 0
       }))
     };
 
-    // Store in session tracker
+    // Store in persistent session tracker
     setSessionOrders(prev => ({
       ...prev,
       [orderId]: trackingOrder
@@ -305,6 +330,7 @@ export default function App() {
         onWishlistClick={() => { setActivePolicy(null); setCurrentPage("wishlist"); }}
         onTrackingClick={() => { setActivePolicy(null); setCurrentPage("tracking"); }}
         onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
+        onAdminClick={handleAdminPortalClick}
         activeTab={currentPage}
         onSearch={handleSearch}
         onLogoClick={handleResetSearch}
@@ -565,6 +591,35 @@ export default function App() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Floating Admin Toggle Button (Premium style matching the brand) */}
+      {(!user || user.email === 'nuvera@gmail.com') && (
+        <button
+          onClick={handleAdminPortalClick}
+          className="floating-admin-toggle"
+          title="Admin Control Center"
+          aria-label="Admin Control Center"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Admin Portal</span>
+        </button>
+      )}
+
+      {/* Admin Panel Command Center overlay */}
+      {showAdmin && (
+        <AdminPanel
+          products={products}
+          onAddProduct={handleAddProduct}
+          onUpdateProduct={handleUpdateProduct}
+          onDeleteProduct={handleDeleteProduct}
+          onClose={() => setShowAdmin(false)}
+          sessionOrders={sessionOrders}
+          onLogout={() => setUser(null)}
+        />
       )}
 
     </div>

@@ -29,34 +29,36 @@ const BLANK_PRODUCT = {
   bgGradient: 'linear-gradient(135deg, #F8E2C4 0%, #D4A36A 100%)'
 };
 
-export default function AdminPanel({ products, onAddProduct, onUpdateProduct, onDeleteProduct, onClose, sessionOrders }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('nuvera_admin_auth') === '1');
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
+export default function AdminPanel({ products, onAddProduct, onUpdateProduct, onDeleteProduct, onClose, sessionOrders, onLogout }) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [orders, setOrders] = useState(() => {
     const stored = localStorage.getItem('nuvera_admin_orders');
     return stored ? JSON.parse(stored) : MOCK_ORDERS;
+  });
+  // Track status overrides for session (checkout-flow) orders separately
+  const [sessionOrderStatuses, setSessionOrderStatuses] = useState(() => {
+    const stored = localStorage.getItem('nuvera_session_order_statuses');
+    return stored ? JSON.parse(stored) : {};
   });
   const [productModal, setProductModal] = useState(null); // null | { mode:'add'|'edit', product }
   const [productForm, setProductForm] = useState(BLANK_PRODUCT);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [ingredientsInput, setIngredientsInput] = useState('');
   const [notification, setNotification] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
 
-  // Merge session orders into admin orders list
+  // Merge session orders into admin orders list, applying any admin-set status overrides
   const allOrders = [...orders];
   Object.values(sessionOrders || {}).forEach(so => {
     if (!allOrders.find(o => o.id === so.orderId)) {
+      const overrideStatus = sessionOrderStatuses[so.orderId] || 'Ordered';
       allOrders.unshift({
         id: so.orderId,
         date: so.date,
         customer: 'Online Customer',
         email: 'customer@nuvera.com',
         total: so.total,
-        status: 'Ordered',
+        status: overrideStatus,
         items: so.items?.map(i => ({ name: `${i.name} (${i.selectedWeight})`, qty: i.quantity, price: i.price })) || []
       });
     }
@@ -66,40 +68,41 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
     localStorage.setItem('nuvera_admin_orders', JSON.stringify(orders));
   }, [orders]);
 
+  useEffect(() => {
+    localStorage.setItem('nuvera_session_order_statuses', JSON.stringify(sessionOrderStatuses));
+  }, [sessionOrderStatuses]);
+
   const showNotif = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (loginEmail.trim() === ADMIN_CREDENTIALS.email && loginPassword === ADMIN_CREDENTIALS.password) {
-      localStorage.setItem('nuvera_admin_auth', '1');
-      setIsLoggedIn(true);
-      setLoginError('');
-    } else {
-      setLoginError('Invalid credentials. Please try again.');
-    }
-  };
-
   const handleLogout = () => {
-    localStorage.removeItem('nuvera_admin_auth');
-    setIsLoggedIn(false);
+    onLogout?.();
   };
 
   const handleOrderStatusChange = (orderId, newStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    const isPersistedOrder = orders.find(o => o.id === orderId);
+    if (isPersistedOrder) {
+      // Update in the main persisted orders list
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    } else {
+      // Session/checkout order — store status override separately
+      setSessionOrderStatuses(prev => ({ ...prev, [orderId]: newStatus }));
+    }
     showNotif(`Order ${orderId} status updated to ${newStatus}`);
   };
 
   const openAddProduct = () => {
-    setProductForm({ ...BLANK_PRODUCT, id: 'pb-' + Date.now() });
+    // Deep clone to prevent shared nested references (prices, nutrition) across products
+    setProductForm({ ...JSON.parse(JSON.stringify(BLANK_PRODUCT)), id: 'pb-' + Date.now() });
     setIngredientsInput('');
     setProductModal({ mode: 'add' });
   };
 
   const openEditProduct = (prod) => {
-    setProductForm({ ...prod });
+    // Deep clone to prevent mutations to nested prices/nutrition from leaking into the source product
+    setProductForm(JSON.parse(JSON.stringify(prod)));
     setIngredientsInput((prod.ingredients || []).join(', '));
     setProductModal({ mode: 'edit' });
   };
@@ -114,6 +117,31 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
 
   const handleNutritionChange = (field, val) => {
     setProductForm(prev => ({ ...prev, nutrition: { ...prev.nutrition, [field]: val } }));
+  };
+
+  // Convert uploaded file to base64 and store it in productForm.image
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showNotif('Please select a valid image file.', 'error');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showNotif('Image must be under 2 MB.', 'error');
+      return;
+    }
+    setImageLoading(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setProductForm(prev => ({ ...prev, image: ev.target.result }));
+      setImageLoading(false);
+    };
+    reader.onerror = () => {
+      showNotif('Failed to read image file.', 'error');
+      setImageLoading(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveProduct = () => {
@@ -145,52 +173,6 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
   const totalOrders = allOrders.length;
   const totalProducts = products.length;
   const pendingOrders = allOrders.filter(o => o.status === 'Ordered' || o.status === 'Packed').length;
-
-  // ---- Login Screen ----
-  if (!isLoggedIn) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          {[...Array(20)].map((_, i) => (
-            <div key={i} style={{ position: 'absolute', width: Math.random() * 4 + 1 + 'px', height: Math.random() * 4 + 1 + 'px', borderRadius: '50%', background: '#e29543', opacity: Math.random() * 0.5 + 0.1, left: Math.random() * 100 + '%', top: Math.random() * 100 + '%', animation: `float ${Math.random() * 5 + 5}s ease-in-out infinite alternate` }} />
-          ))}
-        </div>
-
-        <div style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '48px 40px', width: '100%', maxWidth: '440px', boxShadow: '0 32px 80px rgba(0,0,0,0.5)', position: 'relative' }}>
-          <button onClick={onClose} style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.08)', border: 'none', color: '#94a3b8', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-
-          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', boxShadow: '0 8px 24px rgba(226,149,67,0.3)' }}>🛡️</div>
-            <h1 style={{ color: '#f8fafc', fontSize: '26px', fontWeight: '800', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Admin Portal</h1>
-            <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>Nuvera Naturals Command Center</p>
-          </div>
-
-          {loginError && (
-            <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '12px 16px', color: '#fca5a5', fontSize: '13px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>⚠️ {loginError}</div>
-          )}
-
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Email Address</label>
-              <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="nuvera@gmail.com" required style={{ width: '100%', padding: '12px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-            </div>
-            <div>
-              <label style={{ display: 'block', color: '#94a3b8', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <input type={showLoginPassword ? 'text' : 'password'} value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••" required style={{ width: '100%', padding: '12px 44px 12px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
-                <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px' }}>{showLoginPassword ? '🙈' : '👁️'}</button>
-              </div>
-            </div>
-            <button type="submit" style={{ padding: '14px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '15px', fontWeight: '800', cursor: 'pointer', marginTop: '8px', boxShadow: '0 4px 16px rgba(226,149,67,0.3)', transition: 'transform 0.2s' }}>
-              🔐 Access Admin Panel
-            </button>
-          </form>
-
-          <p style={{ textAlign: 'center', color: '#475569', fontSize: '12px', marginTop: '24px', marginBottom: 0 }}>Protected area — authorized personnel only</p>
-        </div>
-      </div>
-    );
-  }
 
   // ---- Admin Layout ----
   const navItems = [
@@ -381,10 +363,18 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                   <div key={prod.id} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', transition: 'transform 0.2s' }}
                     onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                     onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                    <div style={{ height: '100px', background: prod.bgGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                      <div style={{ width: '60px', height: '80px', background: '#fff', border: `3px solid ${prod.color}`, borderRadius: '10px 10px 14px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: '20px' }}>🥜</span>
-                      </div>
+                    <div style={{ height: '100px', background: prod.bgGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                      {prod.image ? (
+                        <img
+                          src={prod.image}
+                          alt={prod.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        />
+                      ) : (
+                        <div style={{ width: '60px', height: '80px', background: '#fff', border: `3px solid ${prod.color}`, borderRadius: '10px 10px 14px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: '20px' }}>🥜</span>
+                        </div>
+                      )}
                       <span style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px' }}>{prod.tag}</span>
                     </div>
                     <div style={{ padding: '16px' }}>
@@ -484,6 +474,100 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
 
             <div style={{ overflowY: 'auto', padding: '28px', flex: 1 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+
+                {/* ===== IMAGE UPLOAD SECTION ===== */}
+                <div style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '20px' }}>
+                  <label style={{ ...labelStyle, marginBottom: '14px', fontSize: '12px' }}>🖼️ Product Image</label>
+
+                  <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    {/* Preview */}
+                    <div style={{
+                      width: '120px', height: '120px', flexShrink: 0,
+                      borderRadius: '12px',
+                      background: productForm.image ? 'transparent' : 'rgba(255,255,255,0.06)',
+                      border: '2px dashed rgba(226,149,67,0.4)',
+                      overflow: 'hidden',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      position: 'relative'
+                    }}>
+                      {imageLoading ? (
+                        <span style={{ fontSize: '24px', animation: 'spin 1s linear infinite' }}>⏳</span>
+                      ) : productForm.image ? (
+                        <img
+                          src={productForm.image}
+                          alt="Product preview"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          onError={() => handleFormChange('image', '')}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center', color: '#475569' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '4px' }}>🖼️</div>
+                          <div style={{ fontSize: '10px', fontWeight: '600' }}>No image</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Controls */}
+                    <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {/* File Upload Button */}
+                      <div>
+                        <label
+                          htmlFor="product-image-upload"
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '8px',
+                            padding: '9px 18px',
+                            background: 'linear-gradient(135deg, #e29543, #c97c2b)',
+                            border: 'none', borderRadius: '8px',
+                            color: '#fff', fontSize: '13px', fontWeight: '700',
+                            cursor: 'pointer', userSelect: 'none',
+                            boxShadow: '0 4px 12px rgba(226,149,67,0.3)'
+                          }}
+                        >
+                          📁 Upload Image
+                        </label>
+                        <input
+                          id="product-image-upload"
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={handleImageUpload}
+                        />
+                        <span style={{ color: '#475569', fontSize: '11px', marginLeft: '10px' }}>Max 2 MB · JPG, PNG, WEBP</span>
+                      </div>
+
+                      {/* URL fallback */}
+                      <div>
+                        <label style={{ ...labelStyle, fontSize: '10px', marginBottom: '5px' }}>Or paste an image URL</label>
+                        <input
+                          type="url"
+                          value={productForm.image && !productForm.image.startsWith('data:') ? productForm.image : ''}
+                          onChange={e => handleFormChange('image', e.target.value)}
+                          style={{ ...inputStyle, fontSize: '12px' }}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+
+                      {/* Clear image */}
+                      {productForm.image && (
+                        <button
+                          type="button"
+                          onClick={() => handleFormChange('image', '')}
+                          style={{
+                            alignSelf: 'flex-start',
+                            padding: '6px 14px',
+                            background: 'rgba(239,68,68,0.12)',
+                            border: '1px solid rgba(239,68,68,0.25)',
+                            borderRadius: '7px',
+                            color: '#f87171', fontSize: '12px', fontWeight: '700', cursor: 'pointer'
+                          }}
+                        >
+                          🗑️ Remove Image
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Name */}
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={labelStyle}>Product Name *</label>
@@ -518,7 +602,8 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                     {['1kg', '2.5kg', '5kg'].map(w => (
                       <div key={w}>
                         <label style={{ ...labelStyle, fontSize: '10px', marginBottom: '4px' }}>{w}</label>
-                        <input type="number" value={productForm.prices[w] || ''} onChange={e => handlePriceChange(w, e.target.value)} style={inputStyle} placeholder="0" />
+                        {/* Use !== undefined check so a price of 0 shows as "0" not empty string */}
+                        <input type="number" value={productForm.prices[w] !== undefined ? productForm.prices[w] : ''} onChange={e => handlePriceChange(w, e.target.value)} style={inputStyle} placeholder="0" />
                       </div>
                     ))}
                   </div>

@@ -11,6 +11,7 @@ export default function Navbar({
   onWishlistClick, 
   onTrackingClick, 
   onAboutClick,
+  onAdminClick,
   activeTab,
   onSearch,
   onLogoClick,
@@ -251,6 +252,25 @@ export default function Navbar({
                     <span>About Us</span>
                   </div>
                 </button>
+
+                {/* 6. Admin Portal */}
+                {(!user || user.email === 'nuvera@gmail.com') && (
+                  <button 
+                    className="dropdown-nav-btn"
+                    onClick={() => {
+                      onAdminClick?.();
+                      setShowUserDropdown(false);
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--brand-accent)' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                      </svg>
+                      <span style={{ fontWeight: '700' }}>Admin Portal</span>
+                    </div>
+                  </button>
+                )}
 
                 <div className="dropdown-divider"></div>
 

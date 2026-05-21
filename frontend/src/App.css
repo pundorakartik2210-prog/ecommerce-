@@ -182,3 +182,49 @@
     border-right-color: var(--border);
   }
 }
+
+/* Floating Admin Toggle Button (Premium style matching the brand) */
+.floating-admin-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 998; /* just under overlays but above everything else */
+  background: var(--brand-primary);
+  color: var(--bg-white);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 32px rgba(92, 58, 33, 0.25);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+}
+
+.floating-admin-toggle:hover {
+  background: var(--brand-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(226, 149, 67, 0.4);
+}
+
+.floating-admin-toggle svg {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-admin-toggle:hover svg {
+  transform: rotate(15deg) scale(1.1);
+}
+
+/* Offset for mobile screens if sticky bottom cart bar is active */
+@media (max-width: 768px) {
+  .floating-admin-toggle {
+    bottom: 80px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}

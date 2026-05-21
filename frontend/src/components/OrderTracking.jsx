@@ -60,21 +60,8 @@ export default function OrderTracking({ sessionOrders }) {
       return;
     }
 
-    if (query.startsWith("NUV-")) {
-      const randomStep = Math.floor(Math.random() * 5);
-      const generatedOrder = {
-        orderId: query,
-        date: new Date().toISOString().split('T')[0],
-        total: 599,
-        statusStep: randomStep,
-        items: [
-          { name: "Classic Creamy Peanut Butter", selectedWeight: "1kg", quantity: 1, price: 599 }
-        ]
-      };
-      setTrackedOrder(generatedOrder);
-    } else {
-      setTrackedOrder(null);
-    }
+    // Order not found in either source — show "not found" UI
+    setTrackedOrder(null);
   };
 
   const handleQuickSelect = (orderId) => {
