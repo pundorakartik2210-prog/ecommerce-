@@ -15,6 +15,7 @@ import SignUpModal from './components/SignUpModal';
 import AdminPanel from './components/AdminPanel';
 import QualityBenefits from './components/QualityBenefits';
 import AboutUs from './components/AboutUs';
+import { API_BASE_URL } from './config';
 
 export default function App() {
   const [cart, setCart] = useState([]);
@@ -99,7 +100,7 @@ export default function App() {
       setGlobalVerifySuccess('');
 
       // Step 1: Verify the email confirmation link
-      fetch('http://127.0.0.1:8000/api/orders/verify', {
+      fetch(`${API_BASE_URL}/api/orders/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ orderId, code }),

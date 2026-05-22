@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import OrderVerificationModal from './OrderVerificationModal';
+import { API_BASE_URL } from '../config';
 
 export default function CartPage({
   cart,
@@ -49,7 +50,7 @@ export default function CartPage({
     
     setIsPendingLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/orders/pending', {
+      const response = await fetch(`${API_BASE_URL}/api/orders/pending`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

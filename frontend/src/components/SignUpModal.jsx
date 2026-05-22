@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+import { API_BASE_URL } from '../config';
 
 // Inline JWT decoder - no extra package needed
 const decodeJWT = (token) => {
@@ -67,7 +68,7 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
     setSuccessMsg("Account created! Signing you in...");
 
     // Send welcome email via Laravel backend using EmailJS
-    fetch('http://127.0.0.1:8000/api/welcome-email', {
+    fetch(`${API_BASE_URL}/api/welcome-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -100,7 +101,7 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
         setSuccessMsg("Account created with Google!");
 
         // Send welcome email via Laravel backend using EmailJS
-        fetch('http://127.0.0.1:8000/api/welcome-email', {
+        fetch(`${API_BASE_URL}/api/welcome-email`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

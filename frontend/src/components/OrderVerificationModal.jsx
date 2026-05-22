@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initiateRazorpayPayment } from '../utils/razorpay';
+import { API_BASE_URL } from '../config';
 
 export default function OrderVerificationModal({
   isOpen,
@@ -71,7 +72,7 @@ export default function OrderVerificationModal({
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/orders/status/${orderId}`
+          `${API_BASE_URL}/api/orders/status/${orderId}`
         );
         if (!response.ok) return;
         const data = await response.json();

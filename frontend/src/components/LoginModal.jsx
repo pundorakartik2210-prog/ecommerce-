@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 export default function LoginModal({ isOpen, initialMode = "signin", onClose, onLoginSuccess }) {
   const [authMode, setAuthMode] = useState("signin"); // "signin" | "signup"
@@ -101,7 +102,7 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
       setSuccessMsg("Account created successfully!");
 
       // Send welcome email via Laravel backend using EmailJS
-      fetch('http://127.0.0.1:8000/api/welcome-email', {
+      fetch(`${API_BASE_URL}/api/welcome-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

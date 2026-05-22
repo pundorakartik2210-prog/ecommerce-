@@ -3,7 +3,9 @@
  * Helpers to load the Razorpay SDK and drive the payment modal.
  */
 
-const BACKEND = 'http://127.0.0.1:8000';
+import { API_BASE_URL } from '../config';
+
+const BACKEND = API_BASE_URL;
 
 /**
  * Dynamically injects the Razorpay checkout script.
