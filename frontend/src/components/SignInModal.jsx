@@ -43,11 +43,6 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
     }
   };
 
-  const handleAutofill = () => {
-    setEmail("customer@nuvera.com");
-    setPassword("password123");
-    setErrorMsg("");
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -298,43 +293,6 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
             </button>
           </form>
 
-          <div 
-            className="login-quick-badge" 
-            style={{ 
-              marginTop: '28px', 
-              padding: '16px', 
-              background: 'rgba(226, 149, 67, 0.06)', 
-              border: '1px dashed rgba(226, 149, 67, 0.3)',
-              borderRadius: 'var(--radius-md)',
-              textAlign: 'center'
-            }}
-          >
-            <h4 style={{ margin: '0 0 4px', fontSize: '13px', color: 'var(--brand-secondary)', fontWeight: '750' }}>
-              💡 Demo Credentials
-            </h4>
-            <p style={{ margin: '0 0 12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Click below to auto-fill the demo account.
-            </p>
-            <button 
-              type="button" 
-              className="quick-login-shortcut-btn" 
-              onClick={handleAutofill}
-              style={{
-                width: '100%',
-                padding: '8px 16px',
-                fontSize: '12px',
-                fontWeight: '700',
-                background: 'var(--brand-accent)',
-                color: 'var(--brand-dark-text)',
-                border: 'none',
-                borderRadius: 'var(--radius-full)',
-                cursor: 'pointer',
-                transition: 'var(--transition)'
-              }}
-            >
-              ⚡ Auto-Fill Demo Profile
-            </button>
-          </div>
 
           <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
             Don't have an account?{' '}

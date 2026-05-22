@@ -56,13 +56,6 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
     }
   };
 
-  const handleQuickAutofill = () => {
-    setEmail("customer@nuvera.com");
-    setPassword("password123");
-    setName("Rahul");
-    setConfirmPassword("password123");
-    setErrorMsg("");
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -419,17 +412,6 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
               </span>
             )}
           </div>
-
-          {/* Quick Demo Credentials Info Bar (Only show in Sign In for mock sandbox checkout testing) */}
-          {authMode === 'signin' && (
-            <div className="login-quick-badge" style={{ marginTop: '24px' }}>
-              <h4>💡 Quick Demo Sandbox Login</h4>
-              <p>Testing checkout validations? Tap below to pre-fill active mock sandbox credentials.</p>
-              <button type="button" className="quick-login-shortcut-btn" onClick={handleQuickAutofill}>
-                ⚡ Auto-Fill Demo Profile
-              </button>
-            </div>
-          )}
 
         </div>
 

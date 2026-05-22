@@ -184,10 +184,14 @@ export default function CartPage({
                       alignItems: 'center'
                     }}
                   >
-                    <div className="drawer-item-img" style={{ width: '48px', height: '60px' }}>
-                      <div className="drawer-item-jar" style={{ background: item.color, width: '34px', height: '48px' }}>
-                        <div style={{ position: 'absolute', top: '-6px', left: '50%', transform: 'translateX(-50%)', width: '22px', height: '5px', background: 'var(--brand-accent)' }}></div>
-                      </div>
+                    <div className="drawer-item-img" style={{ width: '54px', height: '64px', overflow: 'hidden' }}>
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      ) : (
+                        <div className="drawer-item-jar" style={{ background: item.color, width: '34px', height: '48px', position: 'relative' }}>
+                          <div style={{ position: 'absolute', top: '-6px', left: '50%', transform: 'translateX(-50%)', width: '22px', height: '5px', background: 'var(--brand-accent)' }}></div>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="drawer-item-info" style={{ marginLeft: '20px' }}>

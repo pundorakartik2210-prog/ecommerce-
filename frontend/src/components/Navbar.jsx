@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { PRODUCTS } from '../data/products';
-import logoImg from '../assets/logo_final.png';
+import logoImg from '../assets/logo_final_white.png';
 import logoTextImg from '../assets/logo-text-clean.png';
 
-export default function Navbar({ 
-  cartCount, 
-  wishlistCount, 
+export default function Navbar({
+  cartCount,
+  wishlistCount,
   onStoreClick,
-  onCartClick, 
-  onWishlistClick, 
-  onTrackingClick, 
+  onCartClick,
+  onWishlistClick,
+  onTrackingClick,
   onAboutClick,
   onAdminClick,
   activeTab,
@@ -48,8 +48,8 @@ export default function Navbar({
     onSearch(val); // Real-time filtering
 
     if (val.trim().length > 1) {
-      const filtered = PRODUCTS.filter(p => 
-        p.name.toLowerCase().includes(val.toLowerCase()) || 
+      const filtered = PRODUCTS.filter(p =>
+        p.name.toLowerCase().includes(val.toLowerCase()) ||
         p.tagline.toLowerCase().includes(val.toLowerCase())
       ).slice(0, 5);
       setSuggestions(filtered);
@@ -75,10 +75,10 @@ export default function Navbar({
   return (
     <nav className="navbar-sticky">
       <div className="navbar-container">
-        
+
         {/* Brand Logo & Name */}
         <div className="brand-logo" onClick={onLogoClick}>
-          <img src={logoImg} alt="Nuvera Naturals Logo" className="navbar-logo-img" />
+          <img src={`${logoImg}?v=10`} alt="Nuvera Naturals Logo" className="navbar-logo-img" style={{ mixBlendMode: 'normal' }} />
           <img src={logoTextImg} alt="Nuvera Naturals" className="navbar-logo-text-img" />
         </div>
 
@@ -86,10 +86,10 @@ export default function Navbar({
         <div className="search-wrapper" ref={searchRef}>
           <form onSubmit={handleSearchSubmit}>
             <div className="search-bar-container">
-              <input 
-                type="text" 
-                className="search-input" 
-                placeholder="Search premium peanut butters (e.g., Creamy, Sugar-Free...)" 
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search premium peanut butters (e.g., Creamy, Sugar-Free...)"
                 value={searchTerm}
                 onChange={handleSearchChange}
                 onFocus={() => searchTerm.trim().length > 1 && setShowSuggestions(true)}
@@ -107,28 +107,28 @@ export default function Navbar({
           {showSuggestions && suggestions.length > 0 && (
             <div className="search-suggestions">
               {suggestions.map(prod => (
-                <div 
-                  key={prod.id} 
-                  className="suggestion-item" 
+                <div
+                  key={prod.id}
+                  className="suggestion-item"
                   onClick={() => handleSuggestionClick(prod.name)}
                 >
                   <div className="suggestion-img">
                     {/* Tiny Jar Preview */}
                     <div style={{
-                      width: '20px', 
-                      height: '28px', 
+                      width: '20px',
+                      height: '28px',
                       border: '1.5px solid var(--brand-primary)',
                       borderRadius: '3px',
                       background: prod.color,
                       position: 'relative'
                     }}>
                       <div style={{
-                        position: 'absolute', 
-                        top: '-4px', 
-                        left: '50%', 
-                        transform: 'translateX(-50%)', 
-                        width: '14px', 
-                        height: '4px', 
+                        position: 'absolute',
+                        top: '-4px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '14px',
+                        height: '4px',
                         background: 'var(--brand-accent)',
                         border: '1px solid var(--brand-primary)'
                       }}></div>
@@ -146,10 +146,10 @@ export default function Navbar({
 
         {/* Right Actions (Profile Dropdown Menu) */}
         <div className="nav-actions">
-          
+
           <div className="nav-user-container" ref={userMenuRef}>
-            <div 
-              className="profile-avatar-chip" 
+            <div
+              className="profile-avatar-chip"
               onClick={() => setShowUserDropdown(!showUserDropdown)}
             >
               <div className="profile-avatar-circle">
@@ -164,7 +164,7 @@ export default function Navbar({
             {showUserDropdown && (
               <div className="user-profile-dropdown">
                 {/* 1. Shop Store */}
-                <button 
+                <button
                   className={`dropdown-nav-btn ${activeTab === 'store' ? 'active' : ''}`}
                   onClick={() => {
                     onStoreClick();
@@ -181,7 +181,7 @@ export default function Navbar({
                 </button>
 
                 {/* 2. My Cart */}
-                <button 
+                <button
                   className={`dropdown-nav-btn ${activeTab === 'cart' ? 'active' : ''}`}
                   onClick={() => {
                     onCartClick();
@@ -200,7 +200,7 @@ export default function Navbar({
                 </button>
 
                 {/* 3. My Wishlist */}
-                <button 
+                <button
                   className={`dropdown-nav-btn ${activeTab === 'wishlist' ? 'active' : ''}`}
                   onClick={() => {
                     onWishlistClick();
@@ -217,7 +217,7 @@ export default function Navbar({
                 </button>
 
                 {/* 4. Orders */}
-                <button 
+                <button
                   className={`dropdown-nav-btn ${activeTab === 'tracking' ? 'active' : ''}`}
                   onClick={() => {
                     onTrackingClick();
@@ -236,7 +236,7 @@ export default function Navbar({
                 </button>
 
                 {/* 5. About Us */}
-                <button 
+                <button
                   className={`dropdown-nav-btn ${activeTab === 'about' ? 'active' : ''}`}
                   onClick={() => {
                     onAboutClick();
@@ -276,7 +276,7 @@ export default function Navbar({
 
                 {/* Authentication Action */}
                 {user ? (
-                  <button 
+                  <button
                     className="dropdown-action-btn logout-btn"
                     onClick={() => {
                       onLogout();
@@ -292,8 +292,8 @@ export default function Navbar({
                   </button>
                 ) : (
                   <div className="dropdown-auth-actions">
-                    <button 
-                      className="dropdown-action-btn login-btn" 
+                    <button
+                      className="dropdown-action-btn login-btn"
                       onClick={() => {
                         onLoginClick();
                         setShowUserDropdown(false);
@@ -306,8 +306,8 @@ export default function Navbar({
                       </svg>
                       <span>Sign In</span>
                     </button>
-                    <button 
-                      className="dropdown-action-btn signup-btn" 
+                    <button
+                      className="dropdown-action-btn signup-btn"
                       onClick={() => {
                         onSignUpClick();
                         setShowUserDropdown(false);

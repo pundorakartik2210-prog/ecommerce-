@@ -391,6 +391,7 @@ export default function App() {
                 onRemoveItem={handleWishlistToggle}
                 onMoveToCart={handleMoveWishlistToCart}
                 onContinueShopping={() => setCurrentPage('store')}
+                onProductClick={(prod) => setSelectedProduct(prod)}
               />
             )}
 

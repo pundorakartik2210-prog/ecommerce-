@@ -27,55 +27,6 @@ export default function PolicyModals({ activePolicy, onClose }) {
           </>
         );
 
-      case 'contact':
-        return (
-          <>
-            <h2 className="policy-title">Contact Our Hub</h2>
-            <div className="policy-content" style={{ maxWidth: '640px', margin: '0 auto' }}>
-              <p style={{ textAlign: 'center', marginBottom: '24px' }}>
-                Have questions about our peanut butter sourcing? Need help tracking a bulk corporate delivery? Our customer support heroes are ready to spread the joy!
-              </p>
-              
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '1fr 1fr', 
-                gap: '20px', 
-                marginBottom: '32px' 
-              }}>
-                <div style={{ background: 'var(--bg-cream)', padding: '20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-                  <h4 style={{ color: 'var(--brand-primary)', margin: '0 0 8px 0', fontSize: '15px' }}>📞 Phone Support</h4>
-                  <p style={{ fontSize: '13px', margin: 0 }}>+91 (800) 555-NATURALS</p>
-                  <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>Mon - Sat: 9:00 AM - 6:00 PM IST</p>
-                </div>
-                <div style={{ background: 'var(--bg-cream)', padding: '20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-                  <h4 style={{ color: 'var(--brand-primary)', margin: '0 0 8px 0', fontSize: '15px' }}>✉️ Email Support</h4>
-                  <p style={{ fontSize: '13px', margin: 0 }}>hello@nuveranaturals.com</p>
-                  <p style={{ fontSize: '11px', color: 'var(--text-light)' }}>We reply within 3 business hours!</p>
-                </div>
-              </div>
-
-              <h3>Main Production Facility</h3>
-              <p style={{ fontSize: '13px', lineHeight: '1.6' }}>
-                <strong>Nuvera Naturals Labs Pvt Ltd.</strong><br/>
-                Plot 48, Organic Fields Industrial Area,<br/>
-                Whitefield, Bangalore, Karnataka - 560066, India.
-              </p>
-              
-              <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '24px 0' }} />
-              
-              {/* Simple Mock Contact Form */}
-              <h3 style={{ marginTop: '0' }}>Drop Us A Quick Note</h3>
-              <form onSubmit={(e) => { e.preventDefault(); alert("Message sent successfully! We will reach out shortly."); onClose(); }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <input type="text" placeholder="Your Name" required style={{ padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)' }} />
-                  <input type="email" placeholder="Your Email" required style={{ padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)' }} />
-                </div>
-                <textarea rows="3" placeholder="How can we help? (e.g. tracking issues, bulk orders...)" required style={{ padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', resize: 'vertical' }}></textarea>
-                <button type="submit" className="checkout-btn" style={{ padding: '10px 20px', fontSize: '14px' }}>Send Message</button>
-              </form>
-            </div>
-          </>
-        );
 
       case 'privacy':
         return (

@@ -4,7 +4,8 @@ export default function WishlistPage({
   wishlist,
   onRemoveItem,
   onMoveToCart,
-  onContinueShopping
+  onContinueShopping,
+  onProductClick
 }) {
   const [selectedTag, setSelectedTag] = useState("all");
 
@@ -83,8 +84,13 @@ export default function WishlistPage({
                       justifyContent: 'space-between'
                     }}
                   >
-                    {/* Visual Jar Preview */}
-                    <div style={{ position: 'relative' }}>
+                    {/* Graphic Media Section */}
+                    <div 
+                      className="card-media" 
+                      onClick={() => onProductClick && onProductClick(item)}
+                      style={{ cursor: onProductClick ? 'pointer' : 'default' }}
+                    >
+                      {/* Remove from Wishlist Button */}
                       <button 
                         style={{
                           position: 'absolute',
@@ -104,7 +110,10 @@ export default function WishlistPage({
                           boxShadow: 'var(--shadow-sm)',
                           transition: 'var(--transition)'
                         }}
-                        onClick={() => onRemoveItem(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveItem(item);
+                        }}
                         title="Remove from Wishlist"
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -113,11 +122,35 @@ export default function WishlistPage({
                         </svg>
                       </button>
 
-                      <div className="product-img-container" style={{ minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div className="product-jar" style={{ background: item.color, width: '48px', height: '68px' }}>
-                          <div style={{ position: 'absolute', top: '-8px', left: '50%', transform: 'translateX(-50%)', width: '32px', height: '8px', background: 'var(--brand-accent)' }}></div>
+                      {item.image ? (
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="product-card-img"
+                        />
+                      ) : (
+                        /* CSS Glassmorphism Jar Mockup */
+                        <div className="card-jar-mockup" style={{ borderColor: 'var(--brand-primary)', margin: 'auto' }}>
+                          <div className="card-jar-lid" style={{ background: item.color, borderColor: 'var(--brand-primary)' }}></div>
+                          <div className="card-jar-label" style={{ borderColor: 'var(--brand-primary)' }}>
+                            <span className="card-jar-brand">Nuvera</span>
+                            <span className="card-jar-title" style={{ color: item.color }}>
+                              {item.type === 'sugar-free' ? 'Pure' : item.type === 'high-protein' ? 'Power' : item.type === 'chocolate' ? 'Choc' : 'Classic'}
+                            </span>
+                          </div>
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '8px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '56px',
+                            height: '18px',
+                            borderRadius: '4px',
+                            background: item.color,
+                            opacity: 0.85
+                          }}></div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     <div className="product-info" style={{ padding: '16px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>

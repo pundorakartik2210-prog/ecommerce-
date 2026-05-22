@@ -227,7 +227,6 @@ a {
 .navbar-logo-img {
   width: 38px;
   height: 38px;
-  mix-blend-mode: multiply;
 }
 
 .navbar-logo-text-img {
@@ -513,6 +512,29 @@ a {
   position: relative;
 }
 
+/* Snappy Entrance Keyframes */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleInFade {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .promo-slide {
   border-radius: 20px;
   overflow: hidden;
@@ -524,7 +546,7 @@ a {
   justify-content: space-between;
   color: var(--bg-white);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .slide-graphic-bg {
@@ -537,6 +559,31 @@ a {
   background-size: cover;
   pointer-events: none;
   z-index: 1;
+}
+
+/* Decorative glassmorphic background elements */
+.slide-blob-1 {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+  top: -50px;
+  left: -50px;
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.slide-blob-2 {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(226, 149, 67, 0.12) 0%, transparent 70%);
+  bottom: -100px;
+  left: 20%;
+  filter: blur(50px);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .slide-content {
@@ -565,6 +612,7 @@ a {
   margin-bottom: 16px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  animation: slideUpFade 0.35s ease-out both;
 }
 
 .slide-title {
@@ -574,6 +622,8 @@ a {
   line-height: 1.15;
   margin: 0 0 16px 0;
   letter-spacing: -0.5px;
+  animation: slideUpFade 0.4s ease-out both;
+  animation-delay: 0.05s;
 }
 
 .slide-title span {
@@ -586,6 +636,16 @@ a {
   color: rgba(255, 255, 255, 0.88);
   margin-bottom: 28px;
   max-width: 480px;
+  animation: slideUpFade 0.4s ease-out both;
+  animation-delay: 0.1s;
+}
+
+.slide-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: slideUpFade 0.4s ease-out both;
+  animation-delay: 0.15s;
 }
 
 .slide-btn {
@@ -611,12 +671,94 @@ a {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* Coupon badge inside slide */
+.slide-coupon-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-full);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.slide-coupon-badge:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.slide-coupon-badge:active {
+  transform: translateY(0);
+}
+
+.slide-coupon-badge.copied {
+  background: rgba(46, 125, 50, 0.25);
+  border-color: rgba(46, 125, 50, 0.6);
+  color: #e8f5e9;
+}
+
+.coupon-label {
+  opacity: 0.8;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.coupon-code {
+  font-family: monospace;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: var(--brand-accent);
+}
+
+.slide-coupon-badge.copied .coupon-code {
+  color: #fff;
+}
+
+.coupon-icon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.slide-coupon-badge:hover .coupon-icon {
+  opacity: 1;
+}
+
+.copied-tooltip {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(46, 125, 50, 0.95);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  pointer-events: none;
+  animation: fadeIn 0.15s ease-out both;
+  white-space: nowrap;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
 .slide-illustration {
   position: relative;
   width: 45%;
   height: 100%;
   display: block;
   overflow: hidden;
+  animation: scaleInFade 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.05s;
 }
 
 .slide-jar-img {
@@ -710,33 +852,38 @@ a {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: var(--radius-full);
-  background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(92, 58, 33, 0.15); /* Contrast border for white backgrounds */
+  box-shadow: 0 4px 16px rgba(92, 58, 33, 0.12); /* Drop shadow to define the circle shape */
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0; /* Reset default browser button padding that shifts content */
   cursor: pointer;
   z-index: 20;
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   color: var(--brand-primary);
 }
 
 .slider-arrow:hover {
   background: var(--brand-accent);
   color: var(--brand-dark-text);
-  transform: translateY(-50%) scale(1.05);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(92, 58, 33, 0.22);
+  border-color: var(--brand-accent);
 }
 
 .slider-arrow.left {
-  left: 4px;
+  left: -3px; /* Centers the button on the slide left boundary */
 }
 
 .slider-arrow.right {
-  right: 4px;
+  right: -3px; /* Centers the button on the slide right boundary */
 }
 
 .slider-dots {
@@ -1498,8 +1645,9 @@ a {
 }
 
 .modal-close-btn:hover {
-  background: var(--brand-accent);
-  color: var(--brand-dark-text);
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
   transform: rotate(90deg);
 }
 
@@ -2167,51 +2315,283 @@ a {
   gap: 10px;
 }
 
-.footer-links li a {
+.footer-icon-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: rgba(250, 248, 245, 0.75);
   font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
 
-.footer-links li a:hover {
+.footer-icon-link:hover {
   color: var(--brand-accent);
   padding-left: 6px;
 }
 
+.footer-icon-link .link-icon {
+  color: var(--brand-accent);
+  transition: all 0.3s ease;
+  opacity: 0.85;
+}
+
+.footer-icon-link:hover .link-icon {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+.policy-icon-container {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease !important;
+}
+
+.policy-icon-container .policy-icon {
+  display: block;
+  transition: transform 0.25s ease !important;
+}
+
+/* Disable hover shifts and color changes on the whole link text for policy items */
+.footer-icon-link.policy-link:hover {
+  padding-left: 0 !important;
+  color: rgba(250, 248, 245, 0.75) !important;
+}
+
+/* Lift and scale the icon container specifically on hover of link, contact item, or container itself */
+.footer-icon-link.policy-link:hover .policy-icon-container,
+.footer-contact-item:hover .policy-icon-container,
+.policy-icon-container:hover {
+  transform: translateY(-2px) scale(1.08) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Info - Blue/Cyan */
+.policy-icon-info {
+  background: rgba(0, 188, 212, 0.18);
+  color: #00bcd4;
+  border: 1px solid rgba(0, 188, 212, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .policy-icon-info,
+.footer-contact-item:hover .policy-icon-info,
+.policy-icon-info:hover {
+  background: rgba(0, 188, 212, 0.28);
+  border-color: rgba(0, 188, 212, 0.5);
+  color: #00e5ff;
+}
+
+/* Mail - Amber/Orange */
+.policy-icon-mail {
+  background: rgba(255, 152, 0, 0.18);
+  color: #ff9800;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .policy-icon-mail,
+.footer-contact-item:hover .policy-icon-mail,
+.policy-icon-mail:hover {
+  background: rgba(255, 152, 0, 0.28);
+  border-color: rgba(255, 152, 0, 0.5);
+  color: #ffb74d;
+}
+
+/* Shield - Security Green */
+.policy-icon-shield {
+  background: rgba(76, 175, 80, 0.18);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .policy-icon-shield,
+.footer-contact-item:hover .policy-icon-shield,
+.policy-icon-shield:hover {
+  background: rgba(76, 175, 80, 0.28);
+  border-color: rgba(76, 175, 80, 0.5);
+  color: #81c784;
+}
+
+/* Return/Refresh - Purple/Magenta */
+.policy-icon-refresh {
+  background: rgba(156, 39, 176, 0.18);
+  color: #ba68c8;
+  border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .policy-icon-refresh,
+.footer-contact-item:hover .policy-icon-refresh,
+.policy-icon-refresh:hover {
+  background: rgba(156, 39, 176, 0.28);
+  border-color: rgba(156, 39, 176, 0.5);
+  color: #e040fb;
+}
+
+/* Phone - Rose/Pink */
+.policy-icon-phone {
+  background: rgba(233, 30, 99, 0.18);
+  color: #f06292;
+  border: 1px solid rgba(240, 98, 146, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .policy-icon-phone,
+.footer-contact-item:hover .policy-icon-phone,
+.policy-icon-phone:hover {
+  background: rgba(233, 30, 99, 0.28);
+  border-color: rgba(240, 98, 146, 0.5);
+  color: #ff80ab;
+}
+
+.footer-icon-link .link-icon-chevron {
+  color: rgba(250, 248, 245, 0.4);
+  transition: all 0.3s ease;
+}
+
+.footer-icon-link:hover .link-icon-chevron {
+  transform: translateX(4px);
+  color: var(--brand-accent);
+}
+
+/* Shop Butters icon colors */
+/* Classic Creamy - Warm Cream/Peanut Butter */
+.shop-icon-creamy {
+  background: rgba(226, 149, 67, 0.18);
+  color: #e29543;
+  border: 1px solid rgba(226, 149, 67, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .shop-icon-creamy,
+.shop-icon-creamy:hover {
+  background: rgba(226, 149, 67, 0.3);
+  border-color: rgba(226, 149, 67, 0.5);
+  color: #f5a84d;
+}
+
+/* Extra Crunchy - Toasted Golden */
+.shop-icon-crunchy {
+  background: rgba(255, 193, 7, 0.18);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .shop-icon-crunchy,
+.shop-icon-crunchy:hover {
+  background: rgba(255, 193, 7, 0.3);
+  border-color: rgba(255, 193, 7, 0.5);
+  color: #ffd54f;
+}
+
+/* Dark Chocolate Dream - Rich Cocoa Brown */
+.shop-icon-choco {
+  background: rgba(121, 85, 72, 0.25);
+  color: #a1887f;
+  border: 1px solid rgba(121, 85, 72, 0.35);
+}
+
+.footer-icon-link.policy-link:hover .shop-icon-choco,
+.shop-icon-choco:hover {
+  background: rgba(121, 85, 72, 0.38);
+  border-color: rgba(161, 136, 127, 0.5);
+  color: #c9a89e;
+}
+
+/* High Protein Power - Energetic Green */
+.shop-icon-protein {
+  background: rgba(56, 142, 60, 0.18);
+  color: #66bb6a;
+  border: 1px solid rgba(56, 142, 60, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .shop-icon-protein,
+.shop-icon-protein:hover {
+  background: rgba(56, 142, 60, 0.3);
+  border-color: rgba(102, 187, 106, 0.5);
+  color: #a5d6a7;
+}
+
+/* Organic Sugar-Free - Nature Teal */
+.shop-icon-organic {
+  background: rgba(0, 150, 136, 0.18);
+  color: #26a69a;
+  border: 1px solid rgba(0, 150, 136, 0.3);
+}
+
+.footer-icon-link.policy-link:hover .shop-icon-organic,
+.shop-icon-organic:hover {
+  background: rgba(0, 150, 136, 0.3);
+  border-color: rgba(38, 166, 154, 0.5);
+  color: #80cbc4;
+}
+
 .footer-contact-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   margin-bottom: 12px;
   color: rgba(250, 248, 245, 0.75);
 }
 
-.footer-contact-item svg {
+.footer-contact-item svg:not(.policy-icon) {
   margin-top: 2px;
   color: var(--brand-accent);
 }
 
+.footer-socials-container {
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: inline-block;
+}
+
+.footer-socials-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(250, 248, 245, 0.5);
+  margin: 0 0 10px 0;
+}
+
 .footer-socials {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
 }
 
 .footer-social-btn {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--bg-cream);
-  transition: var(--transition);
+  cursor: pointer;
 }
 
-.footer-social-btn:hover {
-  background: var(--brand-accent);
-  color: var(--brand-dark-text);
-  transform: translateY(-2px);
+/* Facebook - Blue */
+.footer-social-fb {
+  background: rgba(24, 119, 242, 0.18);
+  color: #5b9cf6;
+  border: 1px solid rgba(91, 156, 246, 0.3);
+}
+
+/* Instagram - Pink/Purple */
+.footer-social-ig {
+  background: rgba(214, 51, 132, 0.18);
+  color: #f06292;
+  border: 1px solid rgba(240, 98, 146, 0.3);
+}
+
+/* Twitter/X - Sky Blue */
+.footer-social-tw {
+  background: rgba(29, 161, 242, 0.18);
+  color: #4fc3f7;
+  border: 1px solid rgba(79, 195, 247, 0.3);
 }
 
 .footer-bottom {
@@ -3336,40 +3716,134 @@ a {
   margin-bottom: 40px;
 }
 
+/* Card theme custom styling */
+.benefit-card.roasted {
+  --card-theme-color: #d97706;
+  /* Roasted peanut orange */
+  --card-theme-gradient: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+  --card-theme-bg: rgba(217, 119, 6, 0.02);
+  --card-theme-border: rgba(217, 119, 6, 0.12);
+  --card-theme-shadow: rgba(217, 119, 6, 0.15);
+}
+
+.benefit-card.protein {
+  --card-theme-color: #8c6239;
+  /* Rich brown */
+  --card-theme-gradient: linear-gradient(135deg, #a67c52 0%, #5c3a21 100%);
+  --card-theme-bg: rgba(140, 98, 57, 0.02);
+  --card-theme-border: rgba(140, 98, 57, 0.12);
+  --card-theme-shadow: rgba(140, 98, 57, 0.15);
+}
+
+.benefit-card.pure {
+  --card-theme-color: #2e7d32;
+  /* Organic green */
+  --card-theme-gradient: linear-gradient(135deg, #4caf50 0%, #1b5e20 100%);
+  --card-theme-bg: rgba(46, 125, 50, 0.02);
+  --card-theme-border: rgba(46, 125, 50, 0.12);
+  --card-theme-shadow: rgba(46, 125, 50, 0.15);
+}
+
 .benefit-card {
-  background: var(--bg-cream);
-  border: 1px solid rgba(237, 231, 222, 0.6);
+  background: var(--card-theme-bg, var(--bg-cream));
+  border: 1.5px solid var(--card-theme-border, rgba(237, 231, 222, 0.6));
   border-radius: var(--radius-md);
   padding: 32px 28px;
-  transition: var(--transition);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+
+.benefit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--card-theme-color);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .benefit-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
   background: var(--bg-white);
-  border-color: var(--brand-accent);
-  box-shadow: var(--shadow-md);
+  border-color: var(--card-theme-color);
+  box-shadow: 0 16px 36px rgba(92, 58, 33, 0.08), 0 4px 12px var(--card-theme-shadow);
+}
+
+.benefit-card:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .benefit-icon-wrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-hover) 100%);
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--card-theme-gradient, linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-hover) 100%));
   color: var(--bg-white);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(226, 149, 67, 0.3);
-  transition: var(--transition);
+  margin-bottom: 24px;
+  box-shadow: 0 6px 16px var(--card-theme-shadow, rgba(226, 149, 67, 0.3));
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
 }
 
 .benefit-card:hover .benefit-icon-wrapper {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.15) rotate(8deg);
+  box-shadow: 0 8px 24px var(--card-theme-shadow);
+}
+
+/* Micro-animations inside the icons */
+.benefit-svg {
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.arrow-path {
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-origin: center;
+}
+
+.benefit-card:hover .arrow-path {
+  transform: translateX(3px);
+}
+
+.steam-line {
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+  transform-origin: bottom;
+}
+
+.benefit-card:hover .steam-line-1 {
+  transform: translateY(-3px);
+  opacity: 0.6;
+}
+
+.benefit-card:hover .steam-line-2 {
+  transform: translateY(-5px);
+  opacity: 0.4;
+}
+
+.benefit-card:hover .steam-line-3 {
+  transform: translateY(-4px);
+  opacity: 0.5;
+}
+
+.shield-path {
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-origin: center;
+}
+
+.benefit-card:hover .shield-path {
+  transform: scale(1.12);
 }
 
 .benefit-title {

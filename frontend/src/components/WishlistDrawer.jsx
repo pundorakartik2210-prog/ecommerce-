@@ -39,10 +39,14 @@ export default function WishlistDrawer({
                 <div key={item.id} className="drawer-item" style={{ alignItems: 'flex-start' }}>
                   
                   {/* Visual Jar Preview */}
-                  <div className="drawer-item-img">
-                    <div className="drawer-item-jar" style={{ background: item.color, height: '42px', width: '28px' }}>
-                      <div style={{ position: 'absolute', top: '-4px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '4px', background: 'var(--brand-accent)' }}></div>
-                    </div>
+                  <div className="drawer-item-img" style={{ overflow: 'hidden' }}>
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <div className="drawer-item-jar" style={{ background: item.color, height: '42px', width: '28px', position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: '-4px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '4px', background: 'var(--brand-accent)' }}></div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="drawer-item-info">

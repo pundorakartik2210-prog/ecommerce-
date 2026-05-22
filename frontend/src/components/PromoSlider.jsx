@@ -44,13 +44,19 @@ const SLIDES = [
 
 export default function PromoSlider({ onShopNow }) {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % SLIDES.length);
     }, 6000); // Auto scroll every 6 seconds
     return () => clearInterval(timer);
-  }, []);
+  }, [activeSlide]);
+
+  // Reset copied state on slide change
+  useEffect(() => {
+    setCopied(false);
+  }, [activeSlide]);
 
   const nextSlide = () => {
     setActiveSlide(prev => (prev + 1) % SLIDES.length);
@@ -58,6 +64,12 @@ export default function PromoSlider({ onShopNow }) {
 
   const prevSlide = () => {
     setActiveSlide(prev => (prev - 1 + SLIDES.length) % SLIDES.length);
+  };
+
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const current = SLIDES[activeSlide];
@@ -74,26 +86,48 @@ export default function PromoSlider({ onShopNow }) {
           backgroundImage: `radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08) 0%, transparent 60%)`
         }}></div>
 
+        {/* Decorative glassmorphic background elements */}
+        <div className="slide-blob-1"></div>
+        <div className="slide-blob-2"></div>
+
         <div className="slide-content">
           <span className="slide-badge">{current.badge}</span>
           <h2 className="slide-title" dangerouslySetInnerHTML={{ __html: current.title }}></h2>
           <p className="slide-description">{current.desc}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="slide-actions">
             <button className="slide-btn" onClick={onShopNow}>
               Shop The Collection
             </button>
-            <span style={{ fontSize: '13px', fontWeight: '800', letterSpacing: '0.5px', color: 'var(--brand-accent)' }}>
-              Use Code: {current.couponCode}
-            </span>
+            <div 
+              className={`slide-coupon-badge ${copied ? 'copied' : ''}`}
+              onClick={() => handleCopyCode(current.couponCode)}
+              title="Click to copy coupon code"
+            >
+              <span className="coupon-label">CODE:</span>
+              <span className="coupon-code">{current.couponCode}</span>
+              <span className="coupon-icon">
+                {copied ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                )}
+              </span>
+              {copied && <span className="copied-tooltip">Copied!</span>}
+            </div>
           </div>
         </div>
 
         {/* Premium Jar Illustration */}
         <div className="slide-illustration">
           {current.image ? (
-            <img 
-              src={current.image} 
-              alt={current.labelTitle} 
+            <img
+              src={current.image}
+              alt={current.labelTitle}
               className="slide-jar-img"
             />
           ) : (
@@ -112,23 +146,21 @@ export default function PromoSlider({ onShopNow }) {
 
       {/* Navigation Arrows */}
       <button className="slider-arrow left" onClick={prevSlide} aria-label="Previous slide">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polygon points="12 19 5 12 12 5"></polygon>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
       <button className="slider-arrow right" onClick={nextSlide} aria-label="Next slide">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polygon points="12 5 19 12 12 19"></polygon>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
       </button>
 
       {/* Bottom Indicator Dots */}
       <div className="slider-dots">
         {SLIDES.map((_, idx) => (
-          <div 
-            key={idx} 
+          <div
+            key={idx}
             className={`slider-dot ${idx === activeSlide ? 'active' : ''}`}
             onClick={() => setActiveSlide(idx)}
           ></div>
