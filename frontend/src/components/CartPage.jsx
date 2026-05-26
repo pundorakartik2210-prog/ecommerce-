@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import OrderVerificationModal from './OrderVerificationModal';
-import { API_BASE_URL } from '../config';
 
 export default function CartPage({
   cart,
@@ -11,7 +10,6 @@ export default function CartPage({
   onLoginPrompt,
   onContinueShopping
 }) {
-  const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [appliedCode, setAppliedCode] = useState("");
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
@@ -25,32 +23,15 @@ export default function CartPage({
   const deliveryFee = subtotal > 500 || subtotal === 0 ? 0 : 49;
   const total = subtotal - discountAmount + deliveryFee;
 
-  const handleApplyCoupon = () => {
-    const code = couponCode.toUpperCase().trim();
-    if (code === "PEANUT20") {
-      setDiscount(0.20);
-      setAppliedCode("PEANUT20 (20% OFF)");
-    } else if (code === "FITPOWER") {
-      setDiscount(0.15);
-      setAppliedCode("FITPOWER (15% OFF)");
-    } else if (code === "CHOCOLOVE") {
-      setDiscount(0.10);
-      setAppliedCode("CHOCOLOVE (10% OFF)");
-    } else {
-      alert("Invalid coupon code! Try PEANUT20, FITPOWER, or CHOCOLOVE.");
-    }
-    setCouponCode("");
-  };
-
   const handleCheckout = async () => {
     if (!user) {
       onLoginPrompt();
       return;
     }
-    
+
     setIsPendingLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/orders/pending`, {
+      const response = await fetch('http://127.0.0.1:8000/api/orders/pending', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,22 +86,22 @@ export default function CartPage({
         </div>
         <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--brand-primary)', fontSize: '26px', margin: '0 0 12px 0' }}>Order Successfully Placed!</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: '1.6', margin: '0 0 24px 0' }}>
-          Thank you for choosing Nuvera Naturals! Your premium, slow-roasted organic peanut butter order is being processed and will ship shortly.
+          Thank you for choosing nuvera natural! Your premium, slow-roasted organic peanut butter order is being processed and will ship shortly.
         </p>
-        
+
         <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Your Trackable Order ID:
         </span>
         <div className="order-number-box" style={{ margin: '12px auto', fontSize: '22px', maxWidth: '240px', padding: '12px' }}>
           {generatedOrderId}
         </div>
-        
+
         <p style={{ color: 'var(--brand-accent)', fontSize: '13px', fontWeight: '800', margin: '12px 0 32px 0' }}>
           💡 Copy this Order ID to track your BlueDart shipment in the "Track Order" page!
         </p>
 
-        <button 
-          className="empty-state-btn" 
+        <button
+          className="empty-state-btn"
           onClick={onContinueShopping}
           style={{ width: '100%', maxWidth: '280px', margin: '0 auto' }}
         >
@@ -134,7 +115,7 @@ export default function CartPage({
   const isFreeShipping = subtotal >= 500;
 
   return (
-    <div style={{ padding: '0 10px' }}>
+    <div style={{ padding: '0 10px', maxWidth: '1200px', margin: '0 auto' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', color: 'var(--brand-primary)', margin: '0 0 20px 0' }}>Shopping Cart</h2>
 
       {cart.length > 0 && (
@@ -159,8 +140,8 @@ export default function CartPage({
             </div>
           </div>
           <div className="shipping-progress-track">
-            <div 
-              className={`shipping-progress-fill ${isFreeShipping ? 'unlocked' : ''}`} 
+            <div
+              className={`shipping-progress-fill ${isFreeShipping ? 'unlocked' : ''}`}
               style={{ width: `${shippingPercent}%` }}
             ></div>
           </div>
@@ -169,50 +150,66 @@ export default function CartPage({
 
       {cart.length > 0 ? (
         <div className="cart-page-layout">
-          
+
           {/* Left: Cart Items List */}
           <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: '20px' }}>
               {cart.map((item, index) => {
                 const price = item.prices[item.selectedWeight];
                 return (
-                  <div 
-                    key={`${item.id}-${item.selectedWeight}-${index}`} 
-                    className="drawer-item" 
-                    style={{ 
-                      padding: '20px 0', 
+                  <div
+                    key={`${item.id}-${item.selectedWeight}-${index}`}
+                    className="drawer-item"
+                    style={{
+                      padding: '20px 0',
                       borderBottom: index === cart.length - 1 ? 'none' : '1px solid var(--border-color)',
-                      alignItems: 'center'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '20px',
+                      flexWrap: 'wrap'
                     }}
                   >
-                    <div className="drawer-item-img" style={{ width: '54px', height: '64px', overflow: 'hidden' }}>
-                      {item.image ? (
-                        <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                      ) : (
-                        <div className="drawer-item-jar" style={{ background: item.color, width: '34px', height: '48px', position: 'relative' }}>
-                          <div style={{ position: 'absolute', top: '-6px', left: '50%', transform: 'translateX(-50%)', width: '22px', height: '5px', background: 'var(--brand-accent)' }}></div>
+                    {/* Left block: Image and Name details */}
+                    <div style={{ display: 'flex', alignItems: 'center', flex: '2 1 300px', minWidth: 0 }}>
+                      <div className="drawer-item-img" style={{ width: '54px', height: '64px', overflow: 'hidden', flexShrink: 0 }}>
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        ) : (
+                          <div className="drawer-item-jar" style={{ background: item.color, width: '34px', height: '48px', position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: '-6px', left: '50%', transform: 'translateX(-50%)', width: '22px', height: '5px', background: 'var(--brand-accent)' }}></div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ marginLeft: '20px', minWidth: 0 }}>
+                        <h4 className="drawer-item-name" style={{ fontSize: '15px', color: 'var(--text-primary)', margin: '0 0 4px 0', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                          {item.name}
+                        </h4>
+                        <div className="drawer-item-meta" style={{ fontSize: '12px', margin: 0 }}>
+                          Pack Size: <strong>{item.selectedWeight}</strong>
                         </div>
-                      )}
-                    </div>
-                    
-                    <div className="drawer-item-info" style={{ marginLeft: '20px' }}>
-                      <h4 className="drawer-item-name" style={{ fontSize: '15px', color: 'var(--text-primary)', margin: '0 0 4px 0' }}>{item.name}</h4>
-                      <div className="drawer-item-meta" style={{ fontSize: '12px' }}>Pack Size: <strong>{item.selectedWeight}</strong></div>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: '10px' }}>
-                        <div className="qty-adjuster" style={{ padding: '4px 10px' }}>
-                          <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.selectedWeight, -1)} style={{ fontSize: '14px' }}>-</button>
-                          <span className="qty-val" style={{ fontSize: '14px', minWidth: '20px' }}>{item.quantity}</span>
-                          <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.selectedWeight, 1)} style={{ fontSize: '14px' }}>+</button>
-                        </div>
-                        <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--brand-primary)' }}>₹{price * item.quantity}</span>
                       </div>
                     </div>
 
-                    <button 
-                      className="item-remove-btn" 
+                    {/* Middle-Right block: Quantity Selector & Price */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '32px', flex: '1 0 auto', justifyContent: 'flex-end' }}>
+                      <div className="qty-adjuster" style={{ padding: '4px 10px', flexShrink: 0 }}>
+                        <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.selectedWeight, -1)} style={{ fontSize: '14px' }}>-</button>
+                        <span className="qty-val" style={{ fontSize: '14px', minWidth: '20px' }}>{item.quantity}</span>
+                        <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.selectedWeight, 1)} style={{ fontSize: '14px' }}>+</button>
+                      </div>
+
+                      <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--brand-primary)', minWidth: '70px', textAlign: 'right' }}>
+                        ₹{price * item.quantity}
+                      </span>
+                    </div>
+
+                    {/* Far Right: Delete button */}
+                    <button
+                      className="item-remove-btn"
                       onClick={() => onRemoveItem(item.id, item.selectedWeight)}
-                      style={{ padding: '8px', color: 'var(--text-light)' }}
+                      style={{ padding: '8px', color: 'var(--text-light)', flexShrink: 0 }}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -226,22 +223,77 @@ export default function CartPage({
 
             {/* Coupon Application card */}
             <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: '20px' }}>
-              <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Apply Promos</h4>
-              <div className="promo-code-container" style={{ maxWidth: '440px' }}>
-                <input 
-                  type="text" 
-                  className="promo-input" 
-                  placeholder="Enter Code (PEANUT20, FITPOWER, CHOCOLOVE)" 
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                />
-                <button className="promo-btn" onClick={handleApplyCoupon}>
-                  Apply
-                </button>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '800' }}>
+                Promos & Coupons
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Available Offers (Click to Apply):
+                </span>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                  {[
+                    { code: "PEANUT30", desc: "30% OFF" }
+                  ].map(offer => (
+                    <button
+                      key={offer.code}
+                      onClick={() => {
+                        setDiscount(0.30);
+                        setAppliedCode("PEANUT30 (30% OFF)");
+                      }}
+                      style={{
+                        background: 'rgba(226, 149, 67, 0.05)',
+                        border: '1.5px dashed var(--brand-accent)',
+                        color: 'var(--brand-primary)',
+                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--brand-accent)';
+                        e.currentTarget.style.color = 'var(--brand-dark-text)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(226, 149, 67, 0.05)';
+                        e.currentTarget.style.color = 'var(--brand-primary)';
+                      }}
+                    >
+                      <span style={{ fontWeight: '900' }}>{offer.code}</span>
+                      <span style={{ fontSize: '10px', opacity: 0.8 }}>({offer.desc})</span>
+                    </button>
+                  ))}
+                </div>
               </div>
+              
               {appliedCode && (
-                <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: '700', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  ✓ Promo coupon applied: {appliedCode}
+                <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: '700', marginTop: '14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span>✓ Promo coupon applied: {appliedCode}</span>
+                  <button
+                    onClick={() => {
+                      setDiscount(0);
+                      setAppliedCode("");
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--brand-primary)',
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      padding: '0',
+                      fontWeight: '800',
+                      marginLeft: '6px'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--brand-accent)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--brand-primary)'}
+                  >
+                    (Remove)
+                  </button>
                 </div>
               )}
             </div>
@@ -276,27 +328,27 @@ export default function CartPage({
                 )}
               </div>
 
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                fontWeight: '800', 
-                fontSize: '16px', 
-                color: 'var(--brand-primary)', 
-                margin: '16px 0 20px 0', 
-                borderTop: '1px dashed var(--border-color)', 
-                paddingTop: '16px' 
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontWeight: '800',
+                fontSize: '16px',
+                color: 'var(--brand-primary)',
+                margin: '16px 0 20px 0',
+                borderTop: '1px dashed var(--border-color)',
+                paddingTop: '16px'
               }}>
                 <span>Total Amount</span>
                 <span>₹{total}</span>
               </div>
 
-              <button 
-                className="checkout-btn" 
+              <button
+                className="checkout-btn"
                 onClick={handleCheckout}
                 disabled={isPendingLoading}
-                style={{ 
-                  width: '100%', 
-                  padding: '12px', 
+                style={{
+                  width: '100%',
+                  padding: '12px',
                   fontSize: '14px',
                   background: !user ? 'var(--brand-secondary)' : 'var(--brand-primary)',
                   opacity: isPendingLoading ? 0.7 : 1,

@@ -13,9 +13,11 @@ export default function Footer({ onPolicyClick, onTrackClick, onAboutClick }) {
           <div>
             <div className="brand-logo" style={{ cursor: 'default' }}>
               <div style={{ background: 'white', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                <img src={`${logoImg}?v=10`} alt="Nuvera Naturals Logo" className="footer-logo-img" style={{ mixBlendMode: 'normal', display: 'block' }} />
+                <img src={`${logoImg}?v=10`} alt="nuvera natural Logo" className="footer-logo-img" style={{ mixBlendMode: 'normal', display: 'block' }} />
               </div>
-              <img src={logoTextImg} alt="Nuvera Naturals" className="footer-logo-text-img" style={{ filter: 'brightness(0) invert(1)' }} />
+              <div style={{ background: 'white', borderRadius: '6px', padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '36px', boxSizing: 'border-box' }}>
+                <img src={logoTextImg} alt="nuvera natural" className="footer-logo-text-img" style={{ height: '22px' }} />
+              </div>
             </div>
             <p className="footer-brand-desc">
               Dedicated to crafting the world's finest organic peanut butter variants. Stone-ground, slow dry-roasted, and filled with protein goodness. No palm oils, no preservatives.
@@ -28,7 +30,7 @@ export default function Footer({ onPolicyClick, onTrackClick, onAboutClick }) {
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
                   </svg>
                 </a>
-                <a href="https://instagram.com" className="footer-social-btn footer-social-ig" aria-label="Instagram">
+                <a href="https://www.instagram.com/nuveranatural.in?igsh=ODl6bzg1aTZnbGFs" target="_blank" rel="noopener noreferrer" className="footer-social-btn footer-social-ig" aria-label="Instagram">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -78,7 +80,7 @@ export default function Footer({ onPolicyClick, onTrackClick, onAboutClick }) {
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                   </span>
-                  <span>Dark Chocolate Dream</span>
+                  <span>Chocolate Smoothy</span>
                 </a>
               </li>
               <li>
@@ -150,13 +152,13 @@ export default function Footer({ onPolicyClick, onTrackClick, onAboutClick }) {
           <div>
             <h4 className="footer-col-title">Contact Info</h4>
             <div className="footer-contact-item">
-              <span className="policy-icon-container policy-icon-info" style={{ marginTop: '2px', cursor: 'default' }}>
+              <span className="policy-icon-container policy-icon-info" style={{ marginTop: '2px', cursor: 'pointer' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="policy-icon">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
               </span>
-              <span style={{ fontSize: '13.5px', lineHeight: '1.4' }}>Whitefield, Bangalore, Karnataka, India</span>
+              <a href="https://www.google.com/maps?q=28.332778,77.342417" target="_blank" rel="noopener noreferrer" style={{ fontSize: '13.5px', lineHeight: '1.4', color: 'inherit', textDecoration: 'none' }} className="footer-mail-link">Ballabgarh, Faridabad, Haryana 121004, India</a>
             </div>
             <div className="footer-contact-item">
               <span className="policy-icon-container policy-icon-mail" style={{ marginTop: '2px', cursor: 'default' }}>
@@ -165,15 +167,15 @@ export default function Footer({ onPolicyClick, onTrackClick, onAboutClick }) {
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
               </span>
-              <span style={{ fontSize: '13.5px', lineHeight: '1.4' }}>support@nuveranaturals.com</span>
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=nuveranatural@gmail.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: '13.5px', lineHeight: '1.4', color: 'inherit', textDecoration: 'none' }} className="footer-mail-link">nuveranatural@gmail.com</a>
             </div>
             <div className="footer-contact-item">
-              <span className="policy-icon-container policy-icon-phone" style={{ marginTop: '2px', cursor: 'default' }}>
+              <span className="policy-icon-container policy-icon-phone" style={{ marginTop: '2px', cursor: 'pointer' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="policy-icon">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
               </span>
-              <span style={{ fontSize: '13.5px', lineHeight: '1.4' }}>+91 98765 43210</span>
+              <a href="tel:+919582913315" style={{ fontSize: '13.5px', lineHeight: '1.4', color: 'inherit', textDecoration: 'none' }} className="footer-mail-link">+91 9582913315</a>
             </div>
           </div>
 
@@ -181,10 +183,9 @@ export default function Footer({ onPolicyClick, onTrackClick, onAboutClick }) {
 
         {/* Footer Bottom bar */}
         <div className="footer-bottom">
-          <span>&copy; {new Date().getFullYear()} Nuvera Naturals Labs Pvt Ltd. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()}{' '}nuvera natural. All rights reserved.</span>
           <div style={{ display: 'flex', gap: '20px' }}>
             <span>Crafted with 100% Organic Love 🥜</span>
-            <span>Made in Whitefield, Bangalore</span>
           </div>
         </div>
 

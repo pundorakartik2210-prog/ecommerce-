@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 const ADMIN_CREDENTIALS = { email: 'nuvera@gmail.com', password: '123456' };
 const MOCK_ORDERS = [
   { id: 'NUV-12495', date: '2026-05-12', customer: 'Rahul Sharma', email: 'rahul@example.com', total: 948, status: 'Delivered', items: [{ name: 'Classic Creamy Peanut Butter 1kg', qty: 2, price: 599 }] },
-  { id: 'NUV-58920', date: '2026-05-15', customer: 'Priya Mehta', email: 'priya@example.com', total: 749, status: 'Shipped', items: [{ name: 'Dark Chocolate Dream Butter 1kg', qty: 1, price: 749 }] },
+  { id: 'NUV-58920', date: '2026-05-15', customer: 'Priya Mehta', email: 'priya@example.com', total: 749, status: 'Shipped', items: [{ name: 'Chocolate Smoothy 1kg', qty: 1, price: 749 }] },
   { id: 'NUV-90184', date: '2026-05-16', customer: 'Aarav Singh', email: 'aarav@example.com', total: 4699, status: 'Packed', items: [{ name: 'High-Protein Power Butter 2.5kg', qty: 1, price: 2300 }, { name: 'All-Natural Extra Crunchy 5kg', qty: 1, price: 2399 }] },
   { id: 'NUV-34512', date: '2026-05-17', customer: 'Sneha Gupta', email: 'sneha@example.com', total: 1199, status: 'Ordered', items: [{ name: 'High-Protein Power Butter 1kg', qty: 1, price: 1199 }] },
   { id: 'NUV-67831', date: '2026-05-18', customer: 'Vikram Agarwal', email: 'vikram@example.com', total: 1798, status: 'Ordered', items: [{ name: 'Honey Almond Peanut Blend 1kg', qty: 2, price: 899 }] },
@@ -12,7 +12,7 @@ const MOCK_ORDERS = [
 
 const STATUS_COLORS = {
   Ordered: { bg: '#eff6ff', text: '#2563eb', dot: '#3b82f6' },
-  Packed:  { bg: '#fef9c3', text: '#a16207', dot: '#eab308' },
+  Packed: { bg: '#fef9c3', text: '#a16207', dot: '#eab308' },
   Shipped: { bg: '#fff7ed', text: '#c2410c', dot: '#f97316' },
   'Out for Delivery': { bg: '#f0fdf4', text: '#16a34a', dot: '#22c55e' },
   Delivered: { bg: '#f0fdf4', text: '#166534', dot: '#16a34a' },
@@ -20,8 +20,8 @@ const STATUS_COLORS = {
 
 const BLANK_PRODUCT = {
   id: '', name: '', tag: '', type: 'creamy', tagline: '', description: '',
-  rating: 4.5, reviewsCount: 0, baseWeight: '1kg',
-  prices: { '1kg': 0, '2.5kg': 0, '5kg': 0 },
+  rating: 4.5, reviewsCount: 0, baseWeight: '250g',
+  prices: { '250g': 0, '500g': 0, '1kg': 0 },
   nutrition: { servingSize: '2 tbsp (32g)', calories: '', protein: '', totalFat: '', saturatedFat: '', carbs: '', dietaryFiber: '', sugars: '', sodium: '' },
   ingredients: [],
   reviews: [],
@@ -231,7 +231,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
             <h1 style={{ color: '#f8fafc', fontSize: '22px', fontWeight: '800', margin: 0 }}>
               {navItems.find(n => n.id === activeSection)?.icon} {navItems.find(n => n.id === activeSection)?.label}
             </h1>
-            <p style={{ color: '#64748b', fontSize: '13px', margin: '2px 0 0' }}>Nuvera Naturals Admin — {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p style={{ color: '#64748b', fontSize: '13px', margin: '2px 0 0' }}>nuvera natural Admin — {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '800', fontSize: '14px' }}>N</div>
@@ -287,7 +287,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                       <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: prod.bgGradient || '#334155', flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
-                        <div style={{ color: '#64748b', fontSize: '11px' }}>From ₹{prod.prices['1kg']}</div>
+                        <div style={{ color: '#64748b', fontSize: '11px' }}>From ₹{prod.prices['250g'] !== undefined ? prod.prices['250g'] : Object.values(prod.prices)[0]}</div>
                       </div>
                       <span style={{ background: 'rgba(226,149,67,0.15)', color: '#e29543', fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{prod.tag}</span>
                     </div>
@@ -435,7 +435,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
                         </div>
-                        <span style={{ color: '#22c55e', fontWeight: '700', fontSize: '12px' }}>₹{prod.prices['1kg']}</span>
+                        <span style={{ color: '#22c55e', fontWeight: '700', fontSize: '12px' }}>₹{prod.prices['250g'] !== undefined ? prod.prices['250g'] : Object.values(prod.prices)[0]}</span>
                       </div>
                     );
                   })}
@@ -599,7 +599,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={labelStyle}>Prices (₹)</label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                    {['1kg', '2.5kg', '5kg'].map(w => (
+                    {['250g', '500g', '1kg'].map(w => (
                       <div key={w}>
                         <label style={{ ...labelStyle, fontSize: '10px', marginBottom: '4px' }}>{w}</label>
                         {/* Use !== undefined check so a price of 0 shows as "0" not empty string */}

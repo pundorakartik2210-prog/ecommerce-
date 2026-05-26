@@ -1,6 +1,6 @@
+
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
-import { API_BASE_URL } from '../config';
 
 // Inline JWT decoder - no extra package needed
 const decodeJWT = (token) => {
@@ -68,7 +68,7 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
     setSuccessMsg("Account created! Signing you in...");
 
     // Send welcome email via Laravel backend using EmailJS
-    fetch(`${API_BASE_URL}/api/welcome-email`, {
+    fetch('http://127.0.0.1:8000/api/welcome-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
         setSuccessMsg("Account created with Google!");
 
         // Send welcome email via Laravel backend using EmailJS
-        fetch(`${API_BASE_URL}/api/welcome-email`, {
+        fetch('http://127.0.0.1:8000/api/welcome-email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -130,14 +130,14 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div 
-        className="modal-body" 
-        onClick={e => e.stopPropagation()} 
-        style={{ 
-          maxWidth: '440px', 
+      <div
+        className="modal-body"
+        onClick={e => e.stopPropagation()}
+        style={{
+          maxWidth: '440px',
           width: '100%',
-          maxHeight: '90vh', 
-          display: 'flex', 
+          maxHeight: '90vh',
+          display: 'flex',
           flexDirection: 'column',
           borderTop: '5px solid var(--brand-accent)',
           borderRadius: 'var(--radius-lg)',
@@ -145,9 +145,9 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
           boxShadow: 'var(--shadow-lg)'
         }}
       >
-        <button 
-          className="modal-close-btn" 
-          onClick={handleClose} 
+        <button
+          className="modal-close-btn"
+          onClick={handleClose}
           aria-label="Close sign up modal"
           style={{ top: '20px', right: '20px' }}
         >
@@ -157,27 +157,27 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
           </svg>
         </button>
 
-        <div 
+        <div
           className="modal-scrollable-content"
-          style={{ 
-            padding: '40px 32px 32px', 
-            overflowY: 'auto', 
+          style={{
+            padding: '40px 32px 32px',
+            overflowY: 'auto',
             flex: 1,
             display: 'flex',
             flexDirection: 'column'
           }}
         >
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{ 
-              width: '56px', 
-              height: '56px', 
-              borderRadius: '50%', 
-              background: 'rgba(226, 149, 67, 0.12)', 
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'rgba(226, 149, 67, 0.12)',
               border: '2px solid rgba(226, 149, 67, 0.3)',
-              color: 'var(--brand-accent)', 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
+              color: 'var(--brand-accent)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               marginBottom: '16px',
               boxShadow: '0 4px 12px rgba(226, 149, 67, 0.08)'
             }}>
@@ -188,17 +188,17 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                 <line x1="22" y1="11" x2="16" y2="11"></line>
               </svg>
             </div>
-            <h3 style={{ 
-              fontFamily: 'var(--font-serif)', 
-              fontSize: '26px', 
+            <h3 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '26px',
               fontWeight: '800',
-              color: 'var(--brand-primary)', 
-              margin: '0 0 8px' 
+              color: 'var(--brand-primary)',
+              margin: '0 0 8px'
             }}>
               Create Your Account
             </h3>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-              Join Nuvera Naturals — takes less than a minute!
+              Join nuvera natural — takes less than a minute!
             </p>
           </div>
 
@@ -223,13 +223,13 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
           </div>
 
           {errorMsg && (
-            <div style={{ 
-              background: 'var(--error-light)', 
-              color: 'var(--error)', 
-              fontSize: '13px', 
-              fontWeight: '700', 
-              padding: '12px 16px', 
-              borderRadius: 'var(--radius-md)', 
+            <div style={{
+              background: 'var(--error-light)',
+              color: 'var(--error)',
+              fontSize: '13px',
+              fontWeight: '700',
+              padding: '12px 16px',
+              borderRadius: 'var(--radius-md)',
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
@@ -240,13 +240,13 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
             </div>
           )}
           {successMsg && (
-            <div style={{ 
-              background: 'var(--success-light)', 
-              color: 'var(--success)', 
-              fontSize: '13px', 
-              fontWeight: '700', 
-              padding: '12px 16px', 
-              borderRadius: 'var(--radius-md)', 
+            <div style={{
+              background: 'var(--success-light)',
+              color: 'var(--success)',
+              fontSize: '13px',
+              fontWeight: '700',
+              padding: '12px 16px',
+              borderRadius: 'var(--radius-md)',
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
@@ -267,14 +267,14 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </span>
-                <input 
-                  type="text" 
-                  className="auth-input" 
-                  style={{ paddingLeft: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }} 
-                  placeholder="e.g. Rahul Sharma" 
-                  required 
-                  value={name} 
-                  onChange={e => setName(e.target.value)} 
+                <input
+                  type="text"
+                  className="auth-input"
+                  style={{ paddingLeft: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
+                  placeholder="e.g. Rahul Sharma"
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
                 />
               </div>
             </div>
@@ -288,14 +288,14 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
                 </span>
-                <input 
-                  type="email" 
-                  className="auth-input" 
-                  style={{ paddingLeft: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }} 
-                  placeholder="e.g. rahul@example.com" 
-                  required 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
+                <input
+                  type="email"
+                  className="auth-input"
+                  style={{ paddingLeft: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
+                  placeholder="e.g. rahul@example.com"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -309,14 +309,14 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </span>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="auth-input" 
-                  style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }} 
-                  placeholder="Min. 6 characters" 
-                  required 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)} 
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="auth-input"
+                  style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
+                  placeholder="Min. 6 characters"
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -360,14 +360,14 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </span>
-                <input 
-                  type={showConfirmPassword ? "text" : "password"} 
-                  className="auth-input" 
-                  style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }} 
-                  placeholder="Re-enter password" 
-                  required 
-                  value={confirmPassword} 
-                  onChange={e => setConfirmPassword(e.target.value)} 
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  className="auth-input"
+                  style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
+                  placeholder="Re-enter password"
+                  required
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -402,14 +402,14 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
               </div>
             </div>
 
-            <button 
-              type="submit" 
-              className="checkout-btn" 
-              style={{ 
-                width: '100%', 
-                marginTop: '16px', 
-                padding: '14px', 
-                borderRadius: 'var(--radius-full)', 
+            <button
+              type="submit"
+              className="checkout-btn"
+              style={{
+                width: '100%',
+                marginTop: '16px',
+                padding: '14px',
+                borderRadius: 'var(--radius-full)',
                 fontSize: '16px',
                 fontWeight: '700',
                 boxShadow: '0 4px 14px rgba(92, 58, 33, 0.15)'
@@ -421,18 +421,18 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
 
           <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
             Already have an account?{' '}
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onSwitchToSignIn}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                color: 'var(--brand-accent)', 
-                fontWeight: '700', 
-                cursor: 'pointer', 
-                padding: 0, 
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--brand-accent)',
+                fontWeight: '700',
+                cursor: 'pointer',
+                padding: 0,
                 fontFamily: 'inherit',
-                textDecoration: 'underline' 
+                textDecoration: 'underline'
               }}
             >
               Sign In

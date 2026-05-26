@@ -15,7 +15,6 @@ import SignUpModal from './components/SignUpModal';
 import AdminPanel from './components/AdminPanel';
 import QualityBenefits from './components/QualityBenefits';
 import AboutUs from './components/AboutUs';
-import { API_BASE_URL } from './config';
 
 export default function App() {
   const [cart, setCart] = useState([]);
@@ -23,11 +22,36 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
-  // Products state — persisted to localStorage so admin edits survive page refresh
   const [products, setProducts] = useState(() => {
     try {
       const stored = localStorage.getItem('nuvera_products');
-      return stored ? JSON.parse(stored) : PRODUCTS;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Automatically sync product info from the static PRODUCTS array
+        const synced = parsed.map(storedProd => {
+          const match = PRODUCTS.find(p => p.id === storedProd.id);
+          if (match) {
+            return {
+              ...storedProd,
+              name: match.name,
+              tagline: match.tagline,
+              description: match.description,
+              image: match.image,
+              baseWeight: match.baseWeight,
+              prices: match.prices,
+              rating: match.rating,
+              reviewsCount: match.reviewsCount,
+              reviews: match.reviews
+            };
+          }
+          return storedProd;
+        });
+
+        // Add any new products from the static PRODUCTS array that are not in localStorage
+        const missing = PRODUCTS.filter(p => !parsed.some(sp => sp.id === p.id));
+        return [...synced, ...missing];
+      }
+      return PRODUCTS;
     } catch {
       return PRODUCTS;
     }
@@ -51,7 +75,7 @@ export default function App() {
   const handleDeleteProduct = (productId) => {
     setProducts(prev => prev.filter(p => p.id !== productId));
   };
-  
+
   // User Authentication State
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem("nuvera_active_user");
@@ -63,7 +87,7 @@ export default function App() {
   }); // { email, name }
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
-  
+
   // Drawer/Modal Visibility States
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState("store"); // "store" | "cart" | "wishlist" | "tracking"
@@ -100,7 +124,7 @@ export default function App() {
       setGlobalVerifySuccess('');
 
       // Step 1: Verify the email confirmation link
-      fetch(`${API_BASE_URL}/api/orders/verify`, {
+      fetch('http://127.0.0.1:8000/api/orders/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ orderId, code }),
@@ -120,22 +144,22 @@ export default function App() {
           try {
             await initiateRazorpayPayment({
               orderId: verifiedOrder.orderId,
-              amount:  verifiedOrder.total,
-              name:    verifiedOrder.name,
-              email:   verifiedOrder.email,
+              amount: verifiedOrder.total,
+              name: verifiedOrder.name,
+              email: verifiedOrder.email,
             });
 
             // Step 3: Payment successful — commit the order
             const trackingOrder = {
-              orderId:    verifiedOrder.orderId,
-              date:       verifiedOrder.date,
-              total:      verifiedOrder.total,
+              orderId: verifiedOrder.orderId,
+              date: verifiedOrder.date,
+              total: verifiedOrder.total,
               statusStep: 0,
               items: verifiedOrder.cart.map((item) => ({
-                name:           item.name,
+                name: item.name,
                 selectedWeight: item.selectedWeight,
-                quantity:       item.quantity,
-                price:          item.prices[item.selectedWeight],
+                quantity: item.quantity,
+                price: item.prices[item.selectedWeight],
               })),
             };
 
@@ -177,26 +201,27 @@ export default function App() {
     }
   }, [user]);
 
-  // Dynamic Tab Titles for SPA SEO Optimization
+  // Dynamic Tab Titles for SPA SEO Optimization & Automatic Page Scroll-to-Top
   useEffect(() => {
+    window.scrollTo(0, 0);
     switch (currentPage) {
       case "store":
-        document.title = "Nuvera Naturals | Premium Organic Slow-Roasted Peanut Butter";
+        document.title = "nuvera natural | Premium Organic Slow-Roasted Peanut Butter";
         break;
       case "cart":
-        document.title = "Shopping Cart | Nuvera Naturals Premium Spread Store";
+        document.title = "Shopping Cart | nuvera natural Premium Spread Store";
         break;
       case "wishlist":
-        document.title = "My Wishlist Favorites | Nuvera Naturals Organic Jars";
+        document.title = "My Wishlist Favorites | nuvera natural Organic Jars";
         break;
       case "tracking":
-        document.title = "Shipment Tracking & Status | Nuvera Naturals Dispatch";
+        document.title = "Shipment Tracking & Status | nuvera natural Dispatch";
         break;
       case "about":
-        document.title = "About Our Safety Standards & Sourcing | Nuvera Naturals";
+        document.title = "About Our Safety Standards & Sourcing | nuvera natural";
         break;
       default:
-        document.title = "Nuvera Naturals | Premium Organic Peanut Butter";
+        document.title = "nuvera natural | Premium Organic Peanut Butter";
     }
   }, [currentPage]);
 
@@ -223,31 +248,39 @@ export default function App() {
   };
 
   // 2. Add to Cart Handler
-  const handleAddToCart = (product, weight = "1kg") => {
+  const handleAddToCart = (product, weight = null) => {
+    const selectedWeight = (weight || product.baseWeight || "250g").replace(/\s+/g, '');
     setCart(prevCart => {
-      const existingIdx = prevCart.findIndex(item => item.id === product.id && item.selectedWeight === weight);
+      const existingIdx = prevCart.findIndex(item => item.id === product.id && item.selectedWeight.replace(/\s+/g, '') === selectedWeight);
       if (existingIdx > -1) {
-        const newCart = [...prevCart];
-        newCart[existingIdx].quantity += 1;
-        return newCart;
+        return prevCart.map((item, idx) => {
+          if (idx === existingIdx) {
+            return { ...item, quantity: item.quantity + 1 };
+          }
+          return item;
+        });
       } else {
-        return [...prevCart, { ...product, selectedWeight: weight, quantity: 1 }];
+        return [...prevCart, { ...product, selectedWeight: selectedWeight, quantity: 1 }];
       }
     });
   };
 
   // 3. Update Cart Item Quantity
   const handleUpdateCartQuantity = (id, weight, delta) => {
+    const cleanWeight = weight.replace(/\s+/g, '');
     setCart(prevCart => {
-      const existingIdx = prevCart.findIndex(item => item.id === id && item.selectedWeight === weight);
+      const existingIdx = prevCart.findIndex(item => item.id === id && item.selectedWeight.replace(/\s+/g, '') === cleanWeight);
       if (existingIdx > -1) {
-        const newCart = [...prevCart];
-        const newQty = newCart[existingIdx].quantity + delta;
+        const newQty = prevCart[existingIdx].quantity + delta;
         if (newQty <= 0) {
-          return newCart.filter((_, i) => i !== existingIdx);
+          return prevCart.filter((_, i) => i !== existingIdx);
         } else {
-          newCart[existingIdx].quantity = newQty;
-          return newCart;
+          return prevCart.map((item, idx) => {
+            if (idx === existingIdx) {
+              return { ...item, quantity: newQty };
+            }
+            return item;
+          });
         }
       }
       return prevCart;
@@ -312,18 +345,18 @@ export default function App() {
 
   // 9. Filter the database by Search Query
   const filteredProductsBySearch = products.filter(prod => {
-    const matchesSearch = searchQuery.trim() === "" || 
-      prod.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      prod.tagline.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch = searchQuery.trim() === "" ||
+      prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prod.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prod.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
   return (
     <div className="app-container">
-      
+
       {/* 1. Header/Navbar */}
-      <Navbar 
+      <Navbar
         cartCount={cartCount}
         wishlistCount={wishlistCount}
         onStoreClick={() => { setActivePolicy(null); setCurrentPage("store"); }}
@@ -343,10 +376,10 @@ export default function App() {
 
       <div className="main-content">
         <div className="app-body-container container">
-          
+
           {/* Right Main Dynamic Content Area */}
           <div className="main-content-wrapper">
-            
+
             {currentPage === 'store' && (
               <>
 
@@ -360,7 +393,7 @@ export default function App() {
                 <QualityBenefits />
 
                 {/* Main Product Catalog */}
-                <ProductGrid 
+                <ProductGrid
                   products={filteredProductsBySearch}
                   wishlist={wishlist}
                   onWishlistToggle={handleWishlistToggle}
@@ -375,7 +408,7 @@ export default function App() {
             )}
 
             {currentPage === 'cart' && (
-              <CartPage 
+              <CartPage
                 cart={cart}
                 onUpdateQuantity={handleUpdateCartQuantity}
                 onRemoveItem={handleRemoveCartItem}
@@ -387,7 +420,7 @@ export default function App() {
             )}
 
             {currentPage === 'wishlist' && (
-              <WishlistPage 
+              <WishlistPage
                 wishlist={wishlist}
                 onRemoveItem={handleWishlistToggle}
                 onMoveToCart={handleMoveWishlistToCart}
@@ -397,7 +430,7 @@ export default function App() {
             )}
 
             {currentPage === 'tracking' && (
-              <OrderTracking 
+              <OrderTracking
                 sessionOrders={sessionOrders}
               />
             )}
@@ -412,17 +445,17 @@ export default function App() {
       </div>
 
       {/* 4. Footer links */}
-      <Footer 
+      <Footer
         onPolicyClick={(policyType) => setActivePolicy(policyType)}
         onTrackClick={() => setCurrentPage("tracking")}
         onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
       />
 
       {/* --- MODALS OVERLAYS --- */}
-      
+
       {/* Product Nutritional Details Modal */}
       {selectedProduct && (
-        <ProductDetailsModal 
+        <ProductDetailsModal
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onAddToCart={handleAddToCart}
@@ -430,12 +463,16 @@ export default function App() {
           isWishlisted={wishlist.some(item => item.id === selectedProduct.id)}
           cart={cart}
           onUpdateCartQuantity={handleUpdateCartQuantity}
+          onViewCart={() => {
+            setSelectedProduct(null);
+            setCurrentPage("cart");
+          }}
         />
       )}
 
       {/* Policy and About Modals Overlay */}
       {activePolicy && (
-        <PolicyModals 
+        <PolicyModals
           activePolicy={activePolicy}
           onClose={() => setActivePolicy(null)}
         />
@@ -525,16 +562,16 @@ export default function App() {
           }}>
             {globalVerifyError ? (
               <>
-                <div style={{ 
-                  width: '56px', 
-                  height: '56px', 
-                  borderRadius: '50%', 
-                  background: 'rgba(234, 67, 53, 0.1)', 
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: 'rgba(234, 67, 53, 0.1)',
                   border: '2px solid rgba(234, 67, 53, 0.3)',
-                  color: 'var(--error)', 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
+                  color: 'var(--error)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   margin: '0 auto 16px'
                 }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -544,7 +581,7 @@ export default function App() {
                 </div>
                 <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--error)', fontSize: '20px', margin: '0 0 8px 0' }}>Verification Failed</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 20px 0', lineHeight: '1.4' }}>{globalVerifyError}</p>
-                <button 
+                <button
                   onClick={() => setGlobalVerifying(false)}
                   style={{
                     padding: '10px 24px',
@@ -561,16 +598,16 @@ export default function App() {
               </>
             ) : globalVerifySuccess ? (
               <>
-                <div style={{ 
-                  width: '56px', 
-                  height: '56px', 
-                  borderRadius: '50%', 
-                  background: 'rgba(40, 167, 69, 0.1)', 
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: 'rgba(40, 167, 69, 0.1)',
                   border: '2px solid rgba(40, 167, 69, 0.3)',
-                  color: 'var(--success)', 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
+                  color: 'var(--success)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   margin: '0 auto 16px'
                 }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -595,21 +632,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Floating Admin Toggle Button (Premium style matching the brand) */}
-      {(!user || user.email === 'nuvera@gmail.com') && (
-        <button
-          onClick={handleAdminPortalClick}
-          className="floating-admin-toggle"
-          title="Admin Control Center"
-          aria-label="Admin Control Center"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <span>Admin Portal</span>
-        </button>
-      )}
+
 
       {/* Admin Panel Command Center overlay */}
       {showAdmin && (

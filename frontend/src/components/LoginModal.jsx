@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
 
 export default function LoginModal({ isOpen, initialMode = "signin", onClose, onLoginSuccess }) {
   const [authMode, setAuthMode] = useState("signin"); // "signin" | "signup"
@@ -102,7 +101,7 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
       setSuccessMsg("Account created successfully!");
 
       // Send welcome email via Laravel backend using EmailJS
-      fetch(`${API_BASE_URL}/api/welcome-email`, {
+      fetch('http://127.0.0.1:8000/api/welcome-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +112,7 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
           email: newUser.email
         })
       }).catch(err => console.error("Failed to send welcome email:", err));
-      
+
       // Auto sign-in
       setTimeout(() => {
         onLoginSuccess({
@@ -154,7 +153,7 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-body" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-        
+
         {/* Close Button */}
         <button className="modal-close-btn" onClick={onClose} aria-label="Close auth modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -164,10 +163,10 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
         </button>
 
         <div style={{ padding: '8px' }}>
-          
+
           {/* Header tabs for signin/signup */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '24px' }}>
-            <button 
+            <button
               type="button"
               style={{
                 flex: 1,
@@ -185,7 +184,7 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
             >
               Sign In
             </button>
-            <button 
+            <button
               type="button"
               style={{
                 flex: 1,
@@ -207,10 +206,10 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
 
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', color: 'var(--brand-primary)', margin: '0 0 6px 0' }}>
-              {authMode === 'signin' ? "Welcome Back!" : "Join Nuvera Naturals"}
+              {authMode === 'signin' ? "Welcome Back!" : "Join nuvera natural"}
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-              {authMode === 'signin' 
+              {authMode === 'signin'
                 ? "Sign in to complete secure checkouts and track organic shipments."
                 : "Create an account to save wishlist items and speed up ordering."
               }
@@ -218,28 +217,28 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
           </div>
 
           {errorMsg && (
-            <div style={{ 
-              background: 'var(--error-light)', 
-              color: 'var(--error)', 
-              fontSize: '12px', 
+            <div style={{
+              background: 'var(--error-light)',
+              color: 'var(--error)',
+              fontSize: '12px',
               fontWeight: '700',
-              padding: '10px 14px', 
-              borderRadius: 'var(--radius-sm)', 
-              marginBottom: '16px' 
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-sm)',
+              marginBottom: '16px'
             }}>
               ⚠️ {errorMsg}
             </div>
           )}
 
           {successMsg && (
-            <div style={{ 
-              background: '#e6f4ea', 
-              color: '#137333', 
-              fontSize: '12px', 
+            <div style={{
+              background: '#e6f4ea',
+              color: '#137333',
+              fontSize: '12px',
               fontWeight: '700',
-              padding: '10px 14px', 
-              borderRadius: 'var(--radius-sm)', 
-              marginBottom: '16px' 
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-sm)',
+              marginBottom: '16px'
             }}>
               ✓ {successMsg} Logging in...
             </div>
@@ -247,14 +246,14 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="auth-form">
-            
+
             {authMode === 'signup' && (
               <div className="auth-form-group">
                 <label>Full Name</label>
-                <input 
-                  type="text" 
-                  className="auth-input" 
-                  placeholder="e.g. Rahul Sharma" 
+                <input
+                  type="text"
+                  className="auth-input"
+                  placeholder="e.g. Rahul Sharma"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -264,10 +263,10 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
 
             <div className="auth-form-group">
               <label>Email Address</label>
-              <input 
-                type="email" 
-                className="auth-input" 
-                placeholder="e.g. customer@nuvera.com" 
+              <input
+                type="email"
+                className="auth-input"
+                placeholder="e.g. customer@nuvera.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -277,11 +276,11 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
             <div className="auth-form-group">
               <label>Password</label>
               <div style={{ position: 'relative' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="auth-input" 
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="auth-input"
                   style={{ paddingRight: '44px' }}
-                  placeholder="••••••••" 
+                  placeholder="••••••••"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -323,11 +322,11 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
               <div className="auth-form-group">
                 <label>Confirm Password</label>
                 <div style={{ position: 'relative' }}>
-                  <input 
-                    type={showConfirmPassword ? "text" : "password"} 
-                    className="auth-input" 
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    className="auth-input"
                     style={{ paddingRight: '44px' }}
-                    placeholder="••••••••" 
+                    placeholder="••••••••"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -375,8 +374,8 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
           <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: 'var(--text-secondary)' }}>
             {authMode === 'signin' ? (
               <span>
-                New to Nuvera Naturals?{' '}
-                <button 
+                New to nuvera natural?{' '}
+                <button
                   type="button"
                   style={{
                     background: 'none',
@@ -395,7 +394,7 @@ export default function LoginModal({ isOpen, initialMode = "signin", onClose, on
             ) : (
               <span>
                 Already have an account?{' '}
-                <button 
+                <button
                   type="button"
                   style={{
                     background: 'none',

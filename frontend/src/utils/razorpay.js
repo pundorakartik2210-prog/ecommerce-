@@ -3,9 +3,7 @@
  * Helpers to load the Razorpay SDK and drive the payment modal.
  */
 
-import { API_BASE_URL } from '../config';
-
-const BACKEND = API_BASE_URL;
+const BACKEND = 'http://127.0.0.1:8000';
 
 /**
  * Dynamically injects the Razorpay checkout script.
@@ -19,7 +17,7 @@ export function loadRazorpayScript() {
     }
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload  = () => resolve(true);
+    script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
     document.body.appendChild(script);
   });
@@ -60,16 +58,16 @@ export async function initiateRazorpayPayment({ orderId, amount, name, email }) 
   // 3. Open Razorpay modal — returns a Promise
   return new Promise((resolve, reject) => {
     const options = {
-      key:         createData.razorpay_key_id,
-      amount:      createData.amount,       // already in paise
-      currency:    createData.currency,
-      name:        'Nuvera Naturals',
+      key: createData.razorpay_key_id,
+      amount: createData.amount,       // already in paise
+      currency: createData.currency,
+      name: 'nuvera natural',
       description: `Order ${orderId}`,
-      image:       '',                      // brand logo URL if you have one
-      order_id:    createData.rzp_order_id,
-      prefill:     { name, email, contact: '' },
-      notes:       { order_ref: orderId },
-      theme:       { color: '#458500' },    // Nuvera brand green
+      image: '',                      // brand logo URL if you have one
+      order_id: createData.rzp_order_id,
+      prefill: { name, email, contact: '' },
+      notes: { order_ref: orderId },
+      theme: { color: '#458500' },    // Nuvera brand green
 
       handler: async function (response) {
         // 4. Verify signature on backend
@@ -78,9 +76,9 @@ export async function initiateRazorpayPayment({ orderId, amount, name, email }) 
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             body: JSON.stringify({
-              razorpay_order_id:   response.razorpay_order_id,
+              razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature:  response.razorpay_signature,
+              razorpay_signature: response.razorpay_signature,
               orderId,
             }),
           });
@@ -109,7 +107,7 @@ export async function initiateRazorpayPayment({ orderId, amount, name, email }) 
       reject(
         new Error(
           response.error?.description ||
-            'Payment failed. Please try a different payment method.'
+          'Payment failed. Please try a different payment method.'
         )
       );
     });

@@ -6,7 +6,7 @@ export default function QualityBenefits() {
       <div className="section-header">
         <span className="section-subtitle">Pure Quality Standards</span>
         <h2 className="section-main-title">Crafted for Wellness, Certified for Safety</h2>
-        <p className="section-desc">At Nuvera Naturals, we combine gourmet flavor with pristine safety certifications to deliver the finest peanut butter your family deserves.</p>
+        <p className="section-desc">At nuvera natural, we combine gourmet flavor with pristine safety certifications to deliver the finest peanut butter your family deserves.</p>
       </div>
 
       <div className="benefits-grid">

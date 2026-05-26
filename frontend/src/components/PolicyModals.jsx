@@ -8,13 +8,13 @@ export default function PolicyModals({ activePolicy, onClose }) {
       case 'about':
         return (
           <>
-            <h2 className="policy-title">About Nuvera Naturals</h2>
+            <h2 className="policy-title">About nuvera natural</h2>
             <div className="policy-content">
-              <p>Welcome to <strong>Nuvera Naturals</strong>, where healthy eating meets decadent flavor. Founded in 2024, our mission has been simple: to create the world’s most nutritious, pure, and delicious nut butters without compromising on natural purity or ingredient quality.</p>
-              
+              <p>Welcome to <strong>nuvera natural</strong>, where healthy eating meets decadent flavor. Founded in 2024, our mission has been simple: to create the world’s most nutritious, pure, and delicious nut butters without compromising on natural purity or ingredient quality.</p>
+
               <h3>Our Philosophy</h3>
-              <p>We believe that nature provides the best fuel for the human body. That’s why we refuse to use cheap palm oils, hydrogenated fats, high fructose corn syrups, or chemical preservatives. Every single jar of Nuvera Naturals is slow-roasted and stone-ground in micro-batches to preserve vital micronutrients and maintain clean premium flavor.</p>
-              
+              <p>We believe that nature provides the best fuel for the human body. That’s why we refuse to use cheap palm oils, hydrogenated fats, high fructose corn syrups, or chemical preservatives. Every single jar of nuvera natural is slow-roasted and stone-ground in micro-batches to preserve vital micronutrients and maintain clean premium flavor.</p>
+
               <h3>Why Choose Nuvera?</h3>
               <ul>
                 <li><strong>100% Organic Sourcing</strong>: We source only A-grade, USDA-certified organic peanuts and almonds from sustainable farming cooperatives.</li>
@@ -33,8 +33,8 @@ export default function PolicyModals({ activePolicy, onClose }) {
           <>
             <h2 className="policy-title">Privacy Protection Policy</h2>
             <div className="policy-content">
-              <p>At <strong>Nuvera Naturals</strong>, we value your trust above all else. This Privacy Policy details how we collect, store, secure, and handle your sensitive personal information when you utilize our e-commerce platform.</p>
-              
+              <p>At <strong>nuvera natural</strong>, we value your trust above all else. This Privacy Policy details how we collect, store, secure, and handle your sensitive personal information when you utilize our e-commerce platform.</p>
+
               <h3>1. Data We Collect</h3>
               <p>When you checkout or browse our site, we collect necessary transactions data to fulfill your order:</p>
               <ul>
@@ -58,17 +58,17 @@ export default function PolicyModals({ activePolicy, onClose }) {
             <h2 className="policy-title">Return & Refund Guarantee</h2>
             <div className="policy-content">
               <p>Because peanut butter is an organic food item, we are fully committed to absolute freshness and hygiene. We provide a customer-first policy so you can order with total confidence!</p>
-              
+
               <h3>100% Satisfaction Guarantee</h3>
               <p>If your peanut butter jar arrives damaged during shipping transit, has a broken vacuum seal, or does not meet your quality standards, we will immediately issue a <strong>full refund or ship a replacement tub absolutely free!</strong></p>
-              
+
               <h3>Policy Conditions</h3>
               <ul>
-                <li><strong>Claims Timeline</strong>: Issues must be reported to our customer service email (hello@nuveranaturals.com) within <strong>7 days</strong> of delivery.</li>
-                <li><strong>No Return of Opened Jars Required</strong>: For food safety reasons, we do not require you to ship open or leaking jars back to our manufacturing whitefield facility. Simply snap a quick photograph and send it to our team!</li>
+                <li><strong>Claims Timeline</strong>: Issues must be reported to our customer service email (<a href="https://mail.google.com/mail/?view=cm&fs=1&to=nuveranatural@gmail.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>nuveranatural@gmail.com</a>) within <strong>7 days</strong> of delivery.</li>
+                <li><strong>No Return of Opened Jars Required</strong>: For food safety reasons, we do not require you to ship open or leaking jars back to our manufacturing Haryana facility. Simply snap a quick photograph and send it to our team!</li>
                 <li><strong>Refund Processing Time</strong>: Approved refunds are processed directly back to your source account within <strong>3-5 business days</strong>.</li>
               </ul>
-              
+
               <h3>Corporate Order Cancellations</h3>
               <p>Corporate custom or bulk wholesale orders can be cancelled or altered up to 24 hours prior to scheduled dry-roasting and packing cycles.</p>
             </div>
@@ -83,7 +83,7 @@ export default function PolicyModals({ activePolicy, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-body" onClick={(e) => e.stopPropagation()} style={{ width: '720px' }}>
-        
+
         {/* Close button */}
         <button className="modal-close-btn" onClick={onClose} aria-label="Close policy modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

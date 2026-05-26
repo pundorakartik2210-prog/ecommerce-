@@ -12,18 +12,18 @@ export default function AboutUs() {
         <span className="section-subtitle font-sans">Our Heritage & Standards</span>
         <h1 className="section-main-title font-serif">Purity in Every Spread</h1>
         <p className="section-desc">
-          Nuvera Naturals is built upon a simple foundation: raw organic ingredients, uncompromising standards, and a legacy of pristine food safety.
+          nuvera natural is built upon a simple foundation: raw organic ingredients, uncompromising standards, and a legacy of pristine food safety.
         </p>
       </div>
 
       <div className="about-us-container">
-        
+
         {/* Left Column: Safety Certificate Frame */}
         <div className="about-left-certificate">
           <div className="about-certificate-frame">
             {/* Elegant Golden Stamp Border */}
             <div className="certificate-border-accent"></div>
-            
+
             {/* Certificate Header */}
             <div className="certificate-header">
               <div className="gold-crest-badge">
@@ -42,7 +42,7 @@ export default function AboutUs() {
               <p className="cert-statement">
                 This is to officially certify that the peanut butter processing facilities, raw materials sourcing grids, and packaging ecosystems of
               </p>
-              <h3 className="cert-recipient-name">Nuvera Naturals Labs Pvt Ltd.</h3>
+              <h3 className="cert-recipient-name">nuvera natural</h3>
               <p className="cert-statement-details">
                 have been rigorously inspected, tested, and audited under global food hygiene protocols, yielding fully compliant, clean-label fitness spreads.
               </p>
@@ -83,12 +83,12 @@ export default function AboutUs() {
 
         {/* Right Column: Company Sourcing & Quality Protocols */}
         <div className="about-right-info">
-          
+
           {/* Company Story */}
           <div className="about-info-block">
             <h2 className="info-block-title font-serif">Our Sourcing Heritage</h2>
             <p className="info-block-text">
-              Nuvera Naturals was born in Whitefield, Bangalore, out of a shared dream to build a transparent, premium pantry brand. We believe that what you put into your body directly determines your life's output. That is why we refuse to take shortcuts. Every single batch starts with Grade-A, USDA-certified organic peanuts and raw almonds harvested from sustainable, regenerative farmer cooperatives in South India.
+              nuvera natural was born in Haryana, India, out of a shared dream to build a transparent, premium pantry brand. We believe that what you put into your body directly determines your life's output. That is why we refuse to take shortcuts. Every single batch starts with Grade-A, USDA-certified organic peanuts and raw almonds harvested from sustainable, regenerative farmer cooperatives in South India.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export default function AboutUs() {
           <div className="about-info-block">
             <h2 className="info-block-title font-serif">How It’s Crafted</h2>
             <div className="craft-process-steps">
-              
+
               <div className="process-step">
                 <div className="step-num font-serif">1</div>
                 <div className="step-content">
@@ -134,11 +134,11 @@ export default function AboutUs() {
           <div className="about-info-block testing-block">
             <h2 className="info-block-title font-serif">Purity Testing Protocols</h2>
             <p className="info-block-text">
-              We operate under strict FSSAI directives and IFSI food safety initiative codes. To ensure that every single spoonful of Nuvera Naturals is clean and therapeutic, we execute rigorous quality control steps on every batch:
+              We operate under strict FSSAI directives and IFSI food safety initiative codes. To ensure that every single spoonful of nuvera natural is clean and therapeutic, we execute rigorous quality control steps on every batch:
             </p>
-            
+
             <div className="testing-grid">
-              
+
               <div className="testing-card">
                 <div className="testing-card-icon">🧪</div>
                 <h4 className="testing-card-title">Aflatoxin Screening</h4>

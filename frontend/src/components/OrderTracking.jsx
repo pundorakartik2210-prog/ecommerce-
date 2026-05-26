@@ -17,7 +17,7 @@ const MOCK_DB_ORDERS = {
     total: 749,
     statusStep: 2,
     items: [
-      { name: "Dark Chocolate Dream Butter", selectedWeight: "1kg", quantity: 1, price: 749 }
+      { name: "Chocolate Smoothy", selectedWeight: "1kg", quantity: 1, price: 749 }
     ]
   },
   "NUV-90184": {
@@ -77,7 +77,7 @@ export default function OrderTracking({ sessionOrders }) {
   const sessionOrderIds = Object.keys(sessionOrders);
 
   return (
-    <div style={{ padding: '0 10px' }}>
+    <div style={{ padding: '0 10px', maxWidth: '1200px', margin: '0 auto' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', color: 'var(--brand-primary)', margin: '0 0 10px 0' }}>Track Order Status</h2>
       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: 0, marginBottom: '24px', lineHeight: '1.5' }}>
         Follow your slow-roasted organic protein treats straight to your doorstep.

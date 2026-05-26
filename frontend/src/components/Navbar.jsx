@@ -78,8 +78,8 @@ export default function Navbar({
 
         {/* Brand Logo & Name */}
         <div className="brand-logo" onClick={onLogoClick}>
-          <img src={`${logoImg}?v=10`} alt="Nuvera Naturals Logo" className="navbar-logo-img" style={{ mixBlendMode: 'normal' }} />
-          <img src={logoTextImg} alt="Nuvera Naturals" className="navbar-logo-text-img" />
+          <img src={`${logoImg}?v=10`} alt="nuvera natural Logo" className="navbar-logo-img" style={{ mixBlendMode: 'normal' }} />
+          <img src={logoTextImg} alt="nuvera natural" className="navbar-logo-text-img" />
         </div>
 
         {/* Search Bar (Flipkart Style) */}
@@ -255,7 +255,7 @@ export default function Navbar({
 
                 {/* 6. Admin Portal */}
                 {(!user || user.email === 'nuvera@gmail.com') && (
-                  <button 
+                  <button
                     className="dropdown-nav-btn"
                     onClick={() => {
                       onAdminClick?.();

@@ -95,14 +95,14 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
-      <div 
-        className="modal-body" 
-        onClick={e => e.stopPropagation()} 
-        style={{ 
-          maxWidth: '440px', 
+      <div
+        className="modal-body"
+        onClick={e => e.stopPropagation()}
+        style={{
+          maxWidth: '440px',
           width: '100%',
-          maxHeight: '90vh', 
-          display: 'flex', 
+          maxHeight: '90vh',
+          display: 'flex',
           flexDirection: 'column',
           borderTop: '5px solid var(--brand-accent)',
           borderRadius: 'var(--radius-lg)',
@@ -110,9 +110,9 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
           boxShadow: 'var(--shadow-lg)'
         }}
       >
-        <button 
-          className="modal-close-btn" 
-          onClick={handleClose} 
+        <button
+          className="modal-close-btn"
+          onClick={handleClose}
           aria-label="Close sign in modal"
           style={{ top: '20px', right: '20px' }}
         >
@@ -122,27 +122,27 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
           </svg>
         </button>
 
-        <div 
+        <div
           className="modal-scrollable-content"
-          style={{ 
-            padding: '40px 32px 32px', 
-            overflowY: 'auto', 
+          style={{
+            padding: '40px 32px 32px',
+            overflowY: 'auto',
             flex: 1,
             display: 'flex',
             flexDirection: 'column'
           }}
         >
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{ 
-              width: '56px', 
-              height: '56px', 
-              borderRadius: '50%', 
-              background: 'rgba(226, 149, 67, 0.12)', 
+            <div style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'rgba(226, 149, 67, 0.12)',
               border: '2px solid rgba(226, 149, 67, 0.3)',
-              color: 'var(--brand-accent)', 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
+              color: 'var(--brand-accent)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               marginBottom: '16px',
               boxShadow: '0 4px 12px rgba(226, 149, 67, 0.08)'
             }}>
@@ -151,17 +151,17 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
             </div>
-            <h3 style={{ 
-              fontFamily: 'var(--font-serif)', 
-              fontSize: '26px', 
+            <h3 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '26px',
               fontWeight: '800',
-              color: 'var(--brand-primary)', 
-              margin: '0 0 8px' 
+              color: 'var(--brand-primary)',
+              margin: '0 0 8px'
             }}>
               Welcome Back!
             </h3>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-              Sign in to your Nuvera Naturals account.
+              Sign in to your nuvera natural account.
             </p>
           </div>
 
@@ -186,13 +186,13 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
           </div>
 
           {errorMsg && (
-            <div style={{ 
-              background: 'var(--error-light)', 
-              color: 'var(--error)', 
-              fontSize: '13px', 
-              fontWeight: '700', 
-              padding: '12px 16px', 
-              borderRadius: 'var(--radius-md)', 
+            <div style={{
+              background: 'var(--error-light)',
+              color: 'var(--error)',
+              fontSize: '13px',
+              fontWeight: '700',
+              padding: '12px 16px',
+              borderRadius: 'var(--radius-md)',
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
@@ -276,14 +276,14 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
               </div>
             </div>
 
-            <button 
-              type="submit" 
-              className="checkout-btn" 
-              style={{ 
-                width: '100%', 
-                marginTop: '16px', 
-                padding: '14px', 
-                borderRadius: 'var(--radius-full)', 
+            <button
+              type="submit"
+              className="checkout-btn"
+              style={{
+                width: '100%',
+                marginTop: '16px',
+                padding: '14px',
+                borderRadius: 'var(--radius-full)',
                 fontSize: '16px',
                 fontWeight: '700',
                 boxShadow: '0 4px 14px rgba(92, 58, 33, 0.15)'
@@ -296,18 +296,18 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
 
           <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
             Don't have an account?{' '}
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onSwitchToSignUp}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                color: 'var(--brand-accent)', 
-                fontWeight: '700', 
-                cursor: 'pointer', 
-                padding: 0, 
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--brand-accent)',
+                fontWeight: '700',
+                cursor: 'pointer',
+                padding: 0,
                 fontFamily: 'inherit',
-                textDecoration: 'underline' 
+                textDecoration: 'underline'
               }}
             >
               Sign Up

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initiateRazorpayPayment } from '../utils/razorpay';
-import { API_BASE_URL } from '../config';
 
 export default function OrderVerificationModal({
   isOpen,
@@ -11,10 +10,10 @@ export default function OrderVerificationModal({
   onClose,
   onVerificationSuccess,
 }) {
-  const [timeLeft, setTimeLeft]         = useState(300); // 5 minutes
-  const [errorMsg, setErrorMsg]         = useState('');
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [errorMsg, setErrorMsg] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus]   = useState(''); // '' | 'processing' | 'success' | 'failed'
+  const [paymentStatus, setPaymentStatus] = useState(''); // '' | 'processing' | 'success' | 'failed'
   const paymentTriggered = useRef(false);   // prevent double-trigger
 
   // Reset state whenever the modal opens
@@ -47,9 +46,9 @@ export default function OrderVerificationModal({
     try {
       await initiateRazorpayPayment({
         orderId: verifiedOrder.orderId,
-        amount:  verifiedOrder.total,
-        name:    verifiedOrder.name || name,
-        email:   verifiedOrder.email || email,
+        amount: verifiedOrder.total,
+        name: verifiedOrder.name || name,
+        email: verifiedOrder.email || email,
       });
 
       // Payment succeeded
@@ -72,7 +71,7 @@ export default function OrderVerificationModal({
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/orders/status/${orderId}`
+          `http://127.0.0.1:8000/api/orders/status/${orderId}`
         );
         if (!response.ok) return;
         const data = await response.json();
@@ -92,7 +91,7 @@ export default function OrderVerificationModal({
     }, 2000);
 
     return () => clearInterval(pollInterval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, orderId, timeLeft, paymentStatus]);
 
   if (!isOpen) return null;
@@ -104,7 +103,7 @@ export default function OrderVerificationModal({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const isExpired   = timeLeft <= 0;
+  const isExpired = timeLeft <= 0;
   const showSpamHint = timeLeft <= 240; // 1 minute passed
 
   return (
@@ -147,7 +146,7 @@ export default function OrderVerificationModal({
               animation: 'spin 2s linear infinite', marginBottom: '20px'
             }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--brand-accent)" strokeWidth="2.2">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
               </svg>
             </div>
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: 'var(--brand-primary)', margin: '0 0 8px 0' }}>
@@ -233,7 +232,7 @@ export default function OrderVerificationModal({
                 border: '1px solid var(--border-color)', display: 'inline-block', maxWidth: '360px',
               }}>
                 ✉️ Open your inbox and click <strong>"Confirm &amp; Place Order"</strong> in the email.
-                <br/>After confirming, Razorpay payment will open automatically.
+                <br />After confirming, Razorpay payment will open automatically.
               </div>
             </div>
 

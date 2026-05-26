@@ -17,7 +17,7 @@ export default function WishlistPage({
       });
 
   return (
-    <div style={{ padding: '0 10px' }}>
+    <div style={{ padding: '0 10px', maxWidth: '1200px', margin: '0 auto' }}>
       
       {/* Dynamic SEO Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>

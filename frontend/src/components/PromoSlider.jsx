@@ -30,15 +30,15 @@ const SLIDES = [
   {
     id: 3,
     badge: "Indulgent Fusion",
-    title: "Decadent <span>Dark Chocolate</span> Dream",
+    title: "Decadent <span>Chocolate Smoothy</span>",
     desc: "Single-origin premium dark cacao swirled with roasted peanut butter. 70% less sugar than conventional spreads. Clean eating never tasted so good!",
     couponCode: "CHOCOLOVE",
     color: "#543310",
     gradient: "linear-gradient(135deg, #6b431c 0%, #2f1d07 100%)",
     jarColor: "#ae8660",
     lidColor: "#462507",
-    labelTitle: "Chocolate Dream",
-    image: "/src/assets/chocolate_dream.png"
+    labelTitle: "Chocolate Smoothy",
+    image: "/src/assets/chocolate-smoothy.png"
   }
 ];
 

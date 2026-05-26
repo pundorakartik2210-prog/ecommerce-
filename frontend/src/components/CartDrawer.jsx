@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
-export default function CartDrawer({ 
-  isOpen, 
-  onClose, 
-  cart, 
-  onUpdateQuantity, 
+export default function CartDrawer({
+  isOpen,
+  onClose,
+  cart,
+  onUpdateQuantity,
   onRemoveItem,
   onCheckoutComplete,
   user,
@@ -20,7 +20,7 @@ export default function CartDrawer({
 
   // Compute Subtotal
   const subtotal = cart.reduce((sum, item) => sum + (item.prices[item.selectedWeight] * item.quantity), 0);
-  
+
   // Coupon Codes
   const handleApplyCoupon = () => {
     if (couponCode.toUpperCase() === "PEANUT20") {
@@ -52,10 +52,10 @@ export default function CartDrawer({
     // Generate simulated order ID: NUV-XXXXX
     const orderNum = Math.floor(10000 + Math.random() * 90000);
     const orderId = `NUV-${orderNum}`;
-    
+
     setGeneratedOrderId(orderId);
     setCheckoutSuccess(true);
-    
+
     // Add mock order tracking details back to App state
     onCheckoutComplete(orderId, cart, total);
   };
@@ -72,7 +72,7 @@ export default function CartDrawer({
     <>
       <div className="drawer-overlay" onClick={onClose}></div>
       <div className="drawer-body">
-        
+
         {/* Header */}
         <div className="drawer-header">
           <h3 className="drawer-title">
@@ -102,14 +102,14 @@ export default function CartDrawer({
               </div>
               <h3 className="empty-state-title" style={{ fontSize: '24px' }}>Order Placed!</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '8px 0 24px 0' }}>
-                Thank you for shopping with Nuvera Naturals! Your delicious organic peanut butter order is being processed.
+                Thank you for shopping with nuvera natural! Your delicious organic peanut butter order is being processed.
               </p>
-              
+
               <span style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-light)' }}>
                 Your Trackable Order ID:
               </span>
               <div className="order-number-box">{generatedOrderId}</div>
-              
+
               <p style={{ color: 'var(--brand-accent)', fontSize: '13px', fontWeight: '800', margin: '8px 0 32px 0' }}>
                 💡 Tip: Copy this Order ID to track shipment in real-time in the "Track Order" panel!
               </p>
@@ -133,34 +133,34 @@ export default function CartDrawer({
                           <div style={{ position: 'absolute', top: '-4px', left: '50%', transform: 'translateX(-50%)', width: '20px', height: '4px', background: 'var(--brand-accent)' }}></div>
                         </div>
                       </div>
-                      
+
                       <div className="drawer-item-info">
                         <h4 className="drawer-item-name">{item.name}</h4>
                         <div className="drawer-item-meta">Size: {item.selectedWeight}</div>
-                        
+
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
                           <div className="qty-adjuster">
-                            <button 
-                              className="qty-btn" 
+                            <button
+                              className="qty-btn"
                               onClick={() => onUpdateQuantity(item.id, item.selectedWeight, -1)}
                             >
                               -
                             </button>
                             <span className="qty-val">{item.quantity}</span>
-                            <button 
-                              className="qty-btn" 
+                            <button
+                              className="qty-btn"
                               onClick={() => onUpdateQuantity(item.id, item.selectedWeight, 1)}
                             >
                               +
                             </button>
                           </div>
-                          
+
                           <span className="drawer-item-price">{price * item.quantity}</span>
                         </div>
                       </div>
 
-                      <button 
-                        className="item-remove-btn" 
+                      <button
+                        className="item-remove-btn"
                         onClick={() => onRemoveItem(item.id, item.selectedWeight)}
                         aria-label="Remove item"
                       >
@@ -193,13 +193,13 @@ export default function CartDrawer({
             {/* Cart Summary & Action Footer */}
             {cart.length > 0 && (
               <div className="drawer-footer">
-                
+
                 {/* Apply Coupon Codes */}
                 <div className="promo-code-container">
-                  <input 
-                    type="text" 
-                    className="promo-input" 
-                    placeholder="Enter Coupon (PEANUT20, FITPOWER)" 
+                  <input
+                    type="text"
+                    className="promo-input"
+                    placeholder="Enter Coupon (PEANUT20, FITPOWER)"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                   />

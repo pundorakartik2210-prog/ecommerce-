@@ -1,10 +1,10 @@
 import React from 'react';
 
-export default function ProductCard({ 
-  product, 
-  isWishlisted, 
-  onWishlistToggle, 
-  onAddToCart, 
+export default function ProductCard({
+  product,
+  isWishlisted,
+  onWishlistToggle,
+  onAddToCart,
   onProductClick,
   cart,
   onUpdateCartQuantity
@@ -25,7 +25,7 @@ export default function ProductCard({
       )}
 
       {/* Wishlist Heart Button */}
-      <button 
+      <button
         className={`wishlist-heart-btn ${isWishlisted ? 'active' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
@@ -39,14 +39,14 @@ export default function ProductCard({
       </button>
 
       {/* Graphic Media Section */}
-      <div 
-        className="card-media" 
+      <div
+        className="card-media"
         onClick={() => onProductClick(product)}
       >
         {image ? (
-          <img 
-            src={image} 
-            alt={name} 
+          <img
+            src={image}
+            alt={name}
             className="product-card-img"
           />
         ) : (
@@ -85,13 +85,13 @@ export default function ProductCard({
         {/* Rating Section */}
         <div className="rating-stars">
           {[...Array(5)].map((_, idx) => (
-            <svg 
-              key={idx} 
-              width="14" 
-              height="14" 
-              viewBox="0 0 24 24" 
-              fill={idx < Math.floor(rating) ? "currentColor" : "none"} 
-              stroke="currentColor" 
+            <svg
+              key={idx}
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill={idx < Math.floor(rating) ? "currentColor" : "none"}
+              stroke="currentColor"
               strokeWidth="2"
             >
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -107,10 +107,10 @@ export default function ProductCard({
             <span className="card-price-weight">Weight: {baseWeight}</span>
             <span className="card-price">{basePrice}</span>
           </div>
-          
+
           {quantityInCart > 0 ? (
             <div className="card-qty-selector" onClick={(e) => e.stopPropagation()}>
-              <button 
+              <button
                 className="qty-btn minus"
                 onClick={() => onUpdateCartQuantity(id, baseWeight, -1)}
                 aria-label="Decrease quantity"
@@ -120,7 +120,7 @@ export default function ProductCard({
               <span className="qty-val">
                 {quantityInCart}
               </span>
-              <button 
+              <button
                 className="qty-btn plus"
                 onClick={() => onUpdateCartQuantity(id, baseWeight, 1)}
                 aria-label="Increase quantity"
@@ -129,7 +129,7 @@ export default function ProductCard({
               </button>
             </div>
           ) : (
-            <button 
+            <button
               className="card-add-btn"
               onClick={(e) => {
                 e.stopPropagation();
