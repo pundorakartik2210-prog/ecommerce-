@@ -60,34 +60,6 @@ export default function App() {
     }
   });
 
-  // Load products from backend and merge/fallback to local/static state
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/products`);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            // Respect frontend soft-delete state
-            const activeProducts = data.filter(p => !deletedProductIds.includes(p.id));
-            setProducts(activeProducts);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch products from backend:", err);
-      }
-    };
-    fetchProducts();
-  }, [deletedProductIds]);
-
-  // Admin panel visibility
-  const [showAdmin, setShowAdmin] = useState(false);
-
-  // Persist products whenever they change
-  useEffect(() => {
-    localStorage.setItem('nuvera_products', JSON.stringify(products));
-  }, [products]);
-
   // Recycle Bin state for soft-deleted products
   const [deletedProducts, setDeletedProducts] = useState(() => {
     try {
@@ -116,6 +88,34 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('nuvera_deleted_product_ids', JSON.stringify(deletedProductIds));
   }, [deletedProductIds]);
+
+  // Load products from backend and merge/fallback to local/static state
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/products`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            // Respect frontend soft-delete state
+            const activeProducts = data.filter(p => !deletedProductIds.includes(p.id));
+            setProducts(activeProducts);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch products from backend:", err);
+      }
+    };
+    fetchProducts();
+  }, [deletedProductIds]);
+
+  // Admin panel visibility
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  // Persist products whenever they change
+  useEffect(() => {
+    localStorage.setItem('nuvera_products', JSON.stringify(products));
+  }, [products]);
 
   // Product CRUD handlers (used by AdminPanel)
   const handleAddProduct = async (newProduct) => {
