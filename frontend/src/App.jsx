@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { initiateRazorpayPayment } from './utils/razorpay';
+import { API_URL } from './config.js';
 import { PRODUCTS } from './data/products';
 import Navbar from './components/Navbar';
 import PromoSlider from './components/PromoSlider';
@@ -25,6 +26,8 @@ export default function App() {
   const [products, setProducts] = useState(() => {
     try {
       const stored = localStorage.getItem('nuvera_products');
+      const storedDeletedIds = localStorage.getItem('nuvera_deleted_product_ids');
+      const deletedIds = storedDeletedIds ? JSON.parse(storedDeletedIds) : [];
       if (stored) {
         const parsed = JSON.parse(stored);
         // Automatically sync product info from the static PRODUCTS array
@@ -47,15 +50,64 @@ export default function App() {
           return storedProd;
         });
 
-        // Add any new products from the static PRODUCTS array that are not in localStorage
-        const missing = PRODUCTS.filter(p => !parsed.some(sp => sp.id === p.id));
+        // Add any new products from the static PRODUCTS array that are not in localStorage AND not deleted
+        const missing = PRODUCTS.filter(p => !parsed.some(sp => sp.id === p.id) && !deletedIds.includes(p.id));
         return [...synced, ...missing];
       }
-      return PRODUCTS;
+      return PRODUCTS.filter(p => !deletedIds.includes(p.id));
     } catch {
       return PRODUCTS;
     }
   });
+
+  // Recycle Bin state for soft-deleted products
+  const [deletedProducts, setDeletedProducts] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nuvera_deleted_products');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('nuvera_deleted_products', JSON.stringify(deletedProducts));
+  }, [deletedProducts]);
+
+  // Track all deleted product IDs (both soft and permanently deleted)
+  // to prevent them from being restored from static PRODUCTS array on page refresh
+  const [deletedProductIds, setDeletedProductIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nuvera_deleted_product_ids');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('nuvera_deleted_product_ids', JSON.stringify(deletedProductIds));
+  }, [deletedProductIds]);
+
+  // Load products from backend and merge/fallback to local/static state
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/products`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            // Respect frontend soft-delete state
+            const activeProducts = data.filter(p => !deletedProductIds.includes(p.id));
+            setProducts(activeProducts);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch products from backend:", err);
+      }
+    };
+    fetchProducts();
+  }, [deletedProductIds]);
 
   // Admin panel visibility
   const [showAdmin, setShowAdmin] = useState(false);
@@ -66,14 +118,106 @@ export default function App() {
   }, [products]);
 
   // Product CRUD handlers (used by AdminPanel)
-  const handleAddProduct = (newProduct) => {
-    setProducts(prev => [...prev, newProduct]);
+  const handleAddProduct = async (newProduct) => {
+    try {
+      const res = await fetch(`${API_URL}/api/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(newProduct)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setProducts(prev => [...prev, data.product]);
+        }
+      } else {
+        // Fallback to local state if backend API is not responding/fails
+        setProducts(prev => [...prev, newProduct]);
+      }
+    } catch (err) {
+      console.error("Error adding product:", err);
+      setProducts(prev => [...prev, newProduct]);
+    }
   };
-  const handleUpdateProduct = (updatedProduct) => {
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  const handleUpdateProduct = async (updatedProduct) => {
+    try {
+      const res = await fetch(`${API_URL}/api/products/${updatedProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(updatedProduct)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setProducts(prev => prev.map(p => p.id === data.product.id ? data.product : p));
+        }
+      } else {
+        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+      }
+    } catch (err) {
+      console.error("Error updating product:", err);
+      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    }
   };
-  const handleDeleteProduct = (productId) => {
-    setProducts(prev => prev.filter(p => p.id !== productId));
+  const handleDeleteProduct = async (productId) => {
+    const productToDelete = products.find(p => p.id === productId);
+    if (productToDelete) {
+      setProducts(prev => prev.filter(p => p.id !== productId));
+      setDeletedProducts(prev => {
+        if (prev.some(p => p.id === productId)) return prev;
+        return [...prev, productToDelete];
+      });
+      setDeletedProductIds(prev => {
+        if (prev.includes(productId)) return prev;
+        return [...prev, productId];
+      });
+
+      try {
+        await fetch(`${API_URL}/api/products/${productId}`, {
+          method: 'DELETE',
+          headers: { 'Accept': 'application/json' }
+        });
+      } catch (err) {
+        console.error("Error soft-deleting product from backend:", err);
+      }
+    }
+  };
+  const handleRestoreProduct = async (productId) => {
+    const productToRestore = deletedProducts.find(p => p.id === productId);
+    if (productToRestore) {
+      setDeletedProducts(prev => prev.filter(p => p.id !== productId));
+      setDeletedProductIds(prev => prev.filter(id => id !== productId));
+      setProducts(prev => {
+        if (prev.some(p => p.id === productId)) return prev;
+        return [...prev, productToRestore];
+      });
+
+      try {
+        await fetch(`${API_URL}/api/products`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(productToRestore)
+        });
+      } catch (err) {
+        console.error("Error restoring product to backend:", err);
+      }
+    }
+  };
+  const handlePermanentlyDeleteProduct = async (productId) => {
+    setDeletedProducts(prev => prev.filter(p => p.id !== productId));
+    setDeletedProductIds(prev => {
+      if (prev.includes(productId)) return prev;
+      return [...prev, productId];
+    });
+
+    try {
+      await fetch(`${API_URL}/api/products/${productId}`, {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' }
+      });
+    } catch (err) {
+      console.error("Error permanently deleting product from backend:", err);
+    }
   };
 
   // User Authentication State
@@ -105,11 +249,61 @@ export default function App() {
   const [globalVerifying, setGlobalVerifying] = useState(false);
   const [globalVerifyError, setGlobalVerifyError] = useState("");
   const [globalVerifySuccess, setGlobalVerifySuccess] = useState("");
+  const [autoTrackOrderId, setAutoTrackOrderId] = useState(null);
 
   // Persist session orders whenever they change
   useEffect(() => {
     localStorage.setItem('nuvera_session_orders', JSON.stringify(sessionOrders));
   }, [sessionOrders]);
+
+  // Fetch logged-in user's past orders from database to ensure tracking sync
+  useEffect(() => {
+    if (user && user.email) {
+      const fetchUserOrders = async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/orders/user/${encodeURIComponent(user.email)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              setSessionOrders(prev => {
+                const updated = { ...prev };
+                data.forEach(order => {
+                  updated[order.id] = {
+                    orderId: order.id,
+                    customer: order.name,
+                    email: order.email,
+                    date: order.created_at ? order.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+                    total: parseFloat(order.total),
+                    statusStep: order.statusStep || 0,
+                    items: Array.isArray(order.cart) ? order.cart.map(item => ({
+                      name: item.name,
+                      selectedWeight: item.selectedWeight || '1kg',
+                      quantity: item.quantity || 1,
+                      price: item.prices
+                        ? (item.prices[item.selectedWeight] || item.prices[item.selectedWeight.replace(/\s+/g, '')] || Object.values(item.prices)[0])
+                        : (item.price || 0)
+                    })) : []
+                  };
+                });
+                return updated;
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching user orders from backend:", err);
+        }
+      };
+      fetchUserOrders();
+    }
+  }, [user]);
+
+  const handleDeleteSessionOrder = (orderId) => {
+    setSessionOrders(prev => {
+      const updated = { ...prev };
+      delete updated[orderId];
+      return updated;
+    });
+  };
 
   // Listen for order verification links in URL params
   useEffect(() => {
@@ -124,7 +318,7 @@ export default function App() {
       setGlobalVerifySuccess('');
 
       // Step 1: Verify the email confirmation link
-      fetch('http://127.0.0.1:8000/api/orders/verify', {
+      fetch(`${API_URL}/api/orders/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ orderId, code }),
@@ -152,6 +346,8 @@ export default function App() {
             // Step 3: Payment successful — commit the order
             const trackingOrder = {
               orderId: verifiedOrder.orderId,
+              customer: verifiedOrder.name,
+              email: verifiedOrder.email,
               date: verifiedOrder.date,
               total: verifiedOrder.total,
               statusStep: 0,
@@ -159,7 +355,9 @@ export default function App() {
                 name: item.name,
                 selectedWeight: item.selectedWeight,
                 quantity: item.quantity,
-                price: item.prices[item.selectedWeight],
+                price: item.prices
+                   ? (item.prices[item.selectedWeight] || item.prices[item.selectedWeight.replace(/\s+/g, '')] || Object.values(item.prices)[0])
+                   : (item.price || 0),
               })),
             };
 
@@ -169,6 +367,7 @@ export default function App() {
             setGlobalVerifySuccess(`Payment successful! Order ${orderId} placed. Redirecting...`);
             setTimeout(() => {
               setCart([]);
+              setAutoTrackOrderId(orderId);
               setCurrentPage('tracking');
               setGlobalVerifying(false);
               setGlobalVerifySuccess('');
@@ -316,6 +515,8 @@ export default function App() {
   const handleCheckoutComplete = (orderId, checkoutItems, total) => {
     const trackingOrder = {
       orderId: orderId,
+      customer: user ? user.name : "Online Customer",
+      email: user ? user.email : "customer@nuvera.com",
       date: new Date().toISOString().split('T')[0],
       total: total,
       statusStep: 0, // Starts at 'Ordered'
@@ -362,7 +563,7 @@ export default function App() {
         onStoreClick={() => { setActivePolicy(null); setCurrentPage("store"); }}
         onCartClick={() => { setActivePolicy(null); setCurrentPage("cart"); }}
         onWishlistClick={() => { setActivePolicy(null); setCurrentPage("wishlist"); }}
-        onTrackingClick={() => { setActivePolicy(null); setCurrentPage("tracking"); }}
+        onTrackingClick={() => { setActivePolicy(null); setAutoTrackOrderId(null); setCurrentPage("tracking"); }}
         onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
         onAdminClick={handleAdminPortalClick}
         activeTab={currentPage}
@@ -384,10 +585,13 @@ export default function App() {
               <>
 
                 {/* Carousel Banner Promos */}
-                <PromoSlider onShopNow={() => {
-                  const el = document.getElementById("products-catalog");
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }} />
+                <PromoSlider 
+                  products={products}
+                  onShopNow={() => {
+                    const el = document.getElementById("products-catalog");
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }} 
+                />
 
                 {/* Quality Standards and Benefits Section */}
                 <QualityBenefits />
@@ -416,14 +620,22 @@ export default function App() {
                 user={user}
                 onLoginPrompt={() => setIsSignInOpen(true)}
                 onContinueShopping={() => setCurrentPage('store')}
+                onTrackOrder={(orderId) => {
+                  setAutoTrackOrderId(orderId);
+                  setCurrentPage('tracking');
+                }}
               />
             )}
 
             {currentPage === 'wishlist' && (
               <WishlistPage
+                products={products}
                 wishlist={wishlist}
+                cart={cart}
                 onRemoveItem={handleWishlistToggle}
                 onMoveToCart={handleMoveWishlistToCart}
+                onAddToCart={handleAddToCart}
+                onUpdateCartQuantity={handleUpdateCartQuantity}
                 onContinueShopping={() => setCurrentPage('store')}
                 onProductClick={(prod) => setSelectedProduct(prod)}
               />
@@ -432,6 +644,8 @@ export default function App() {
             {currentPage === 'tracking' && (
               <OrderTracking
                 sessionOrders={sessionOrders}
+                autoTrackOrderId={autoTrackOrderId}
+                onClearAutoTrack={() => setAutoTrackOrderId(null)}
               />
             )}
 
@@ -446,8 +660,9 @@ export default function App() {
 
       {/* 4. Footer links */}
       <Footer
+        products={products}
         onPolicyClick={(policyType) => setActivePolicy(policyType)}
-        onTrackClick={() => setCurrentPage("tracking")}
+        onTrackClick={() => { setAutoTrackOrderId(null); setCurrentPage("tracking"); }}
         onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
       />
 
@@ -638,9 +853,13 @@ export default function App() {
       {showAdmin && (
         <AdminPanel
           products={products}
+          deletedProducts={deletedProducts}
           onAddProduct={handleAddProduct}
           onUpdateProduct={handleUpdateProduct}
           onDeleteProduct={handleDeleteProduct}
+          onRestoreProduct={handleRestoreProduct}
+          onPermanentlyDeleteProduct={handlePermanentlyDeleteProduct}
+          onDeleteSessionOrder={handleDeleteSessionOrder}
           onClose={() => setShowAdmin(false)}
           sessionOrders={sessionOrders}
           onLogout={() => setUser(null)}

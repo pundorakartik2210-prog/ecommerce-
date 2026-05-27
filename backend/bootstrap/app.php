@@ -12,12 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
-            'api/contact/send',
-            'api/welcome-email',
-            'api/orders/pending',
-            'api/orders/verify',
-            'api/payment/create-order',
-            'api/payment/verify-signature',
+            'api/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

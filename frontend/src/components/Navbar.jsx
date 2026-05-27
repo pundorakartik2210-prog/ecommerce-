@@ -253,8 +253,8 @@ export default function Navbar({
                   </div>
                 </button>
 
-                {/* 6. Admin Portal */}
-                {(!user || user.email === 'nuvera@gmail.com') && (
+                {/* 6. Admin Portal — only visible when signed in as admin */}
+                {user?.email === 'nuvera@gmail.com' && (
                   <button
                     className="dropdown-nav-btn"
                     onClick={() => {

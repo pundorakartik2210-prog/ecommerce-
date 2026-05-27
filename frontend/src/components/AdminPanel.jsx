@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import logoImg from '../assets/logo_final_white.png';
+import { API_URL } from '../config.js';
+
 
 const ADMIN_CREDENTIALS = { email: 'nuvera@gmail.com', password: '123456' };
-const MOCK_ORDERS = [
-  { id: 'NUV-12495', date: '2026-05-12', customer: 'Rahul Sharma', email: 'rahul@example.com', total: 948, status: 'Delivered', items: [{ name: 'Classic Creamy Peanut Butter 1kg', qty: 2, price: 599 }] },
-  { id: 'NUV-58920', date: '2026-05-15', customer: 'Priya Mehta', email: 'priya@example.com', total: 749, status: 'Shipped', items: [{ name: 'Chocolate Smoothy 1kg', qty: 1, price: 749 }] },
-  { id: 'NUV-90184', date: '2026-05-16', customer: 'Aarav Singh', email: 'aarav@example.com', total: 4699, status: 'Packed', items: [{ name: 'High-Protein Power Butter 2.5kg', qty: 1, price: 2300 }, { name: 'All-Natural Extra Crunchy 5kg', qty: 1, price: 2399 }] },
-  { id: 'NUV-34512', date: '2026-05-17', customer: 'Sneha Gupta', email: 'sneha@example.com', total: 1199, status: 'Ordered', items: [{ name: 'High-Protein Power Butter 1kg', qty: 1, price: 1199 }] },
-  { id: 'NUV-67831', date: '2026-05-18', customer: 'Vikram Agarwal', email: 'vikram@example.com', total: 1798, status: 'Ordered', items: [{ name: 'Honey Almond Peanut Blend 1kg', qty: 2, price: 899 }] },
-  { id: 'NUV-23409', date: '2026-05-19', customer: 'Meera Reddy', email: 'meera@example.com', total: 569, status: 'Shipped', items: [{ name: 'Organic Pure Sugar-Free 1kg', qty: 1, price: 569 }] },
-];
 
 const STATUS_COLORS = {
   Ordered: { bg: '#eff6ff', text: '#2563eb', dot: '#3b82f6' },
@@ -29,12 +24,25 @@ const BLANK_PRODUCT = {
   bgGradient: 'linear-gradient(135deg, #F8E2C4 0%, #D4A36A 100%)'
 };
 
-export default function AdminPanel({ products, onAddProduct, onUpdateProduct, onDeleteProduct, onClose, sessionOrders, onLogout }) {
+const STATUS_STEPS_MAP = {
+  'Ordered': 0,
+  'Packed': 1,
+  'Shipped': 2,
+  'Out for Delivery': 3,
+  'Delivered': 4
+};
+
+const STEPS_STATUS_MAP = {
+  0: 'Ordered',
+  1: 'Packed',
+  2: 'Shipped',
+  3: 'Out for Delivery',
+  4: 'Delivered'
+};
+
+export default function AdminPanel({ products, deletedProducts = [], onAddProduct, onUpdateProduct, onDeleteProduct, onRestoreProduct, onPermanentlyDeleteProduct, onDeleteSessionOrder, onClose, sessionOrders, onLogout }) {
   const [activeSection, setActiveSection] = useState('dashboard');
-  const [orders, setOrders] = useState(() => {
-    const stored = localStorage.getItem('nuvera_admin_orders');
-    return stored ? JSON.parse(stored) : MOCK_ORDERS;
-  });
+  const [orders, setOrders] = useState([]);
   // Track status overrides for session (checkout-flow) orders separately
   const [sessionOrderStatuses, setSessionOrderStatuses] = useState(() => {
     const stored = localStorage.getItem('nuvera_session_order_statuses');
@@ -47,6 +55,37 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
   const [notification, setNotification] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
 
+  // Fetch orders on load
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/orders`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            const mappedOrders = data.map(o => ({
+              id: o.id,
+              date: o.created_at ? o.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+              customer: o.name,
+              email: o.email,
+              total: parseFloat(o.total),
+              status: STEPS_STATUS_MAP[o.statusStep] || 'Ordered',
+              items: Array.isArray(o.cart) ? o.cart.map(item => ({
+                name: item.name + (item.selectedWeight ? ` (${item.selectedWeight})` : ''),
+                qty: item.quantity || 1,
+                price: item.prices ? (item.prices[item.selectedWeight] || Object.values(item.prices)[0]) : item.price || 0
+              })) : []
+            }));
+            setOrders(mappedOrders);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      }
+    };
+    fetchOrders();
+  }, []);
+
   // Merge session orders into admin orders list, applying any admin-set status overrides
   const allOrders = [...orders];
   Object.values(sessionOrders || {}).forEach(so => {
@@ -55,11 +94,19 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
       allOrders.unshift({
         id: so.orderId,
         date: so.date,
-        customer: 'Online Customer',
-        email: 'customer@nuvera.com',
+        customer: so.customer || 'Online Customer',
+        email: so.email || 'customer@nuvera.com',
         total: so.total,
         status: overrideStatus,
-        items: so.items?.map(i => ({ name: `${i.name} (${i.selectedWeight})`, qty: i.quantity, price: i.price })) || []
+        items: so.items?.map(i => {
+          const suffix = i.selectedWeight ? ` (${i.selectedWeight})` : '';
+          const name = i.name.includes('(') ? i.name : `${i.name}${suffix}`;
+          return {
+            name: name,
+            qty: i.quantity || i.qty || 1,
+            price: i.price || 0
+          };
+        }) || []
       });
     }
   });
@@ -81,16 +128,34 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
     onLogout?.();
   };
 
-  const handleOrderStatusChange = (orderId, newStatus) => {
+  const handleOrderStatusChange = async (orderId, newStatus) => {
+    const step = STATUS_STEPS_MAP[newStatus] ?? 0;
     const isPersistedOrder = orders.find(o => o.id === orderId);
     if (isPersistedOrder) {
       // Update in the main persisted orders list
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      try {
+        await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ statusStep: step })
+        });
+      } catch (err) {
+        console.error("Failed to update order status on backend:", err);
+      }
     } else {
       // Session/checkout order — store status override separately
       setSessionOrderStatuses(prev => ({ ...prev, [orderId]: newStatus }));
     }
     showNotif(`Order ${orderId} status updated to ${newStatus}`);
+  };
+
+  const handleDeleteOrder = (orderId) => {
+    if (window.confirm(`Are you sure you want to permanently delete order "${orderId}"?`)) {
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+      onDeleteSessionOrder?.(orderId);
+      showNotif(`Order "${orderId}" deleted successfully.`, 'error');
+    }
   };
 
   const openAddProduct = () => {
@@ -164,7 +229,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
 
   const confirmDelete = () => {
     onDeleteProduct(deleteConfirm.id);
-    showNotif(`"${deleteConfirm.name}" has been removed.`, 'error');
+    showNotif(`"${deleteConfirm.name}" moved to Recycle Bin. 🗑️`, 'error');
     setDeleteConfirm(null);
   };
 
@@ -179,6 +244,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
     { id: 'dashboard', icon: '📊', label: 'Dashboard' },
     { id: 'orders', icon: '📦', label: 'Orders', badge: pendingOrders > 0 ? pendingOrders : null },
     { id: 'products', icon: '🏪', label: 'Products' },
+    { id: 'recyclebin', icon: '🗑️', label: 'Recycle Bin', badge: deletedProducts.length > 0 ? deletedProducts.length : null },
     { id: 'analytics', icon: '📈', label: 'Analytics' },
   ];
 
@@ -195,7 +261,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
       <div style={{ width: '240px', flexShrink: 0, background: '#1e293b', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', padding: '0' }}>
         <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🥜</div>
+            <img src={logoImg} alt="Nuvera Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
             <div>
               <div style={{ color: '#f8fafc', fontWeight: '800', fontSize: '15px' }}>Nuvera Admin</div>
               <div style={{ color: '#64748b', fontSize: '11px' }}>Command Center</div>
@@ -234,7 +300,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
             <p style={{ color: '#64748b', fontSize: '13px', margin: '2px 0 0' }}>nuvera natural Admin — {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: '800', fontSize: '14px' }}>N</div>
+            <img src={logoImg} alt="Nuvera Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
           </div>
         </div>
 
@@ -284,7 +350,13 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                   <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '16px', fontWeight: '700' }}>🥜 Product Catalog</h3>
                   {products.map((prod, i) => (
                     <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: prod.bgGradient || '#334155', flexShrink: 0 }} />
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: prod.bgGradient || '#334155', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        {prod.image ? (
+                          <img src={prod.image} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        ) : (
+                          <span style={{ fontSize: '14px' }}>🥜</span>
+                        )}
+                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
                         <div style={{ color: '#64748b', fontSize: '11px' }}>From ₹{prod.prices['250g'] !== undefined ? prod.prices['250g'] : Object.values(prod.prices)[0]}</div>
@@ -334,10 +406,19 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                             </span>
                           </td>
                           <td style={{ padding: '14px 16px' }}>
-                            <select value={order.status} onChange={e => handleOrderStatusChange(order.id, e.target.value)}
-                              style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', outline: 'none' }}>
-                              {['Ordered', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <select value={order.status} onChange={e => handleOrderStatusChange(order.id, e.target.value)}
+                                style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', outline: 'none' }}>
+                                {['Ordered', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map(s => <option key={s} value={s}>{s}</option>)}
+                              </select>
+                              <button onClick={() => handleDeleteOrder(order.id)}
+                                style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '8px', padding: '6px 8px', color: '#f87171', cursor: 'pointer', fontSize: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', outline: 'none' }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.22)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)'}
+                                title="Delete Order">
+                                🗑️
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -396,6 +477,77 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
             </div>
           )}
 
+          {/* ====== RECYCLE BIN ====== */}
+          {activeSection === 'recyclebin' && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '700' }}>Recycle Bin ({deletedProducts.length})</h2>
+                {deletedProducts.length > 0 && (
+                  <button onClick={() => {
+                    if (window.confirm("Are you sure you want to empty the Recycle Bin permanently?")) {
+                      deletedProducts.forEach(prod => onPermanentlyDeleteProduct(prod.id));
+                      showNotif("Recycle Bin emptied successfully.", "error");
+                    }
+                  }} style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '10px', color: '#f87171', padding: '10px 20px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    🗑️ Empty Recycle Bin
+                  </button>
+                )}
+              </div>
+
+              {deletedProducts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 24px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗑️</div>
+                  <h3 style={{ color: '#f8fafc', margin: '0 0 8px', fontSize: '18px', fontWeight: '700' }}>Recycle Bin is Empty</h3>
+                  <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Deleted products will appear here. You can restore or permanently delete them.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                  {deletedProducts.map(prod => (
+                    <div key={prod.id} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', opacity: 0.85 }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                      onMouseLeave={e => e.currentTarget.style.opacity = 0.85}>
+                      <div style={{ height: '100px', background: prod.bgGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                        {prod.image ? (
+                          <img
+                            src={prod.image}
+                            alt={prod.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                        ) : (
+                          <div style={{ width: '60px', height: '80px', background: '#fff', border: `3px solid ${prod.color}`, borderRadius: '10px 10px 14px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '20px' }}>🥜</span>
+                          </div>
+                        )}
+                        <span style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px' }}>{prod.tag}</span>
+                      </div>
+                      <div style={{ padding: '16px' }}>
+                        <h3 style={{ color: '#f8fafc', fontSize: '15px', fontWeight: '700', margin: '0 0 4px' }}>{prod.name}</h3>
+                        <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.4' }}>{prod.tagline}</p>
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                          {Object.entries(prod.prices || {}).map(([w, p]) => (
+                            <span key={w} style={{ background: 'rgba(255,255,255,0.06)', color: '#94a3b8', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>{w}: ₹{p}</span>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => {
+                            onRestoreProduct(prod.id);
+                            showNotif(`"${prod.name}" restored successfully! 🔄`);
+                          }} style={{ flex: 1, padding: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', color: '#4ade80', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>🔄 Restore</button>
+                          <button onClick={() => {
+                            if (window.confirm(`Are you sure you want to permanently delete "${prod.name}"? This cannot be undone.`)) {
+                              onPermanentlyDeleteProduct(prod.id);
+                              showNotif(`"${prod.name}" permanently deleted.`, 'error');
+                            }
+                          }} style={{ flex: 1, padding: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#f87171', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>🗑️ Permanent</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ====== ANALYTICS ====== */}
           {activeSection === 'analytics' && (
             <div>
@@ -431,7 +583,13 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                     return (
                       <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                         <span style={{ color: '#e29543', fontWeight: '800', fontSize: '14px', width: '20px' }}>#{i + 1}</span>
-                        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: prod.bgGradient, flexShrink: 0 }} />
+                        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: prod.bgGradient || '#334155', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          {prod.image ? (
+                            <img src={prod.image} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          ) : (
+                            <span style={{ fontSize: '12px' }}>🥜</span>
+                          )}
+                        </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
                         </div>
@@ -535,18 +693,6 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                         <span style={{ color: '#475569', fontSize: '11px', marginLeft: '10px' }}>Max 2 MB · JPG, PNG, WEBP</span>
                       </div>
 
-                      {/* URL fallback */}
-                      <div>
-                        <label style={{ ...labelStyle, fontSize: '10px', marginBottom: '5px' }}>Or paste an image URL</label>
-                        <input
-                          type="url"
-                          value={productForm.image && !productForm.image.startsWith('data:') ? productForm.image : ''}
-                          onChange={e => handleFormChange('image', e.target.value)}
-                          style={{ ...inputStyle, fontSize: '12px' }}
-                          placeholder="https://example.com/image.jpg"
-                        />
-                      </div>
-
                       {/* Clear image */}
                       {productForm.image && (
                         <button
@@ -581,8 +727,8 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                 {/* Type */}
                 <div>
                   <label style={labelStyle}>Product Type</label>
-                  <select value={productForm.type} onChange={e => handleFormChange('type', e.target.value)} style={inputStyle}>
-                    {['creamy', 'crunchy', 'chocolate', 'high-protein', 'sugar-free'].map(t => <option key={t} value={t}>{t}</option>)}
+                  <select value={productForm.type} onChange={e => handleFormChange('type', e.target.value)} style={{ ...inputStyle, colorScheme: 'dark', backgroundColor: '#1e293b' }}>
+                    {['creamy', 'crunchy', 'chocolate', 'smoothy', 'high-protein', 'sugar-free'].map(t => <option key={t} value={t} style={{ background: '#1e293b', color: '#f8fafc' }}>{t}</option>)}
                   </select>
                 </div>
                 {/* Tagline */}
@@ -608,14 +754,7 @@ export default function AdminPanel({ products, onAddProduct, onUpdateProduct, on
                     ))}
                   </div>
                 </div>
-                {/* Color */}
-                <div>
-                  <label style={labelStyle}>Jar Color (hex)</label>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <input type="color" value={productForm.color} onChange={e => handleFormChange('color', e.target.value)} style={{ width: '44px', height: '40px', border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'none' }} />
-                    <input value={productForm.color} onChange={e => handleFormChange('color', e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="#E29543" />
-                  </div>
-                </div>
+
                 {/* Rating */}
                 <div>
                   <label style={labelStyle}>Rating (0-5)</label>

@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+import { API_URL } from '../config.js';
 
 // Inline JWT decoder - no extra package needed
 const decodeJWT = (token) => {
@@ -19,6 +19,7 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -28,26 +29,15 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
     onClose();
   };
 
-  const getRegisteredUsers = () => {
-    const defaultUser = { name: "Rahul", email: "customer@nuvera.com", password: "password123" };
-    const stored = localStorage.getItem("nuvera_registered_users");
-    if (!stored) {
-      localStorage.setItem("nuvera_registered_users", JSON.stringify([defaultUser]));
-      return [defaultUser];
-    }
-    try {
-      const parsed = JSON.parse(stored);
-      if (!parsed.some(u => u.email.toLowerCase() === defaultUser.email)) {
-        parsed.push(defaultUser);
-        localStorage.setItem("nuvera_registered_users", JSON.stringify(parsed));
-      }
-      return parsed;
-    } catch {
-      return [defaultUser];
-    }
+  const sendWelcomeEmail = (userName, userEmail) => {
+    fetch(`${API_URL}/api/welcome-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ name: userName, email: userEmail })
+    }).catch(err => console.error("Failed to send welcome email:", err));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg(""); setSuccessMsg("");
     if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
@@ -57,68 +47,56 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
     if (password !== confirmPassword) { setErrorMsg("Passwords do not match."); return; }
     if (password.length < 6) { setErrorMsg("Password must be at least 6 characters."); return; }
 
-    const users = getRegisteredUsers();
-    const emailLower = email.trim().toLowerCase();
-    if (users.some(u => u.email.toLowerCase() === emailLower)) {
-      setErrorMsg("This email is already registered. Please Sign In instead.");
-      return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase(), password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccessMsg("Account created! Signing you in...");
+        sendWelcomeEmail(data.user.name, data.user.email);
+        setTimeout(() => {
+          onLoginSuccess({ email: data.user.email, name: data.user.name });
+          setName(""); setEmail(""); setPassword(""); setConfirmPassword("");
+          setSuccessMsg(""); setErrorMsg("");
+        }, 1000);
+      } else {
+        setErrorMsg(data.message || "Registration failed. Please try again.");
+      }
+    } catch {
+      setErrorMsg("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    const newUser = { name: name.trim(), email: emailLower, password };
-    localStorage.setItem("nuvera_registered_users", JSON.stringify([...users, newUser]));
-    setSuccessMsg("Account created! Signing you in...");
-
-    // Send welcome email via Laravel backend using EmailJS
-    fetch('http://127.0.0.1:8000/api/welcome-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        name: newUser.name,
-        email: newUser.email
-      })
-    }).catch(err => console.error("Failed to send welcome email:", err));
-
-    setTimeout(() => {
-      onLoginSuccess({ email: newUser.email, name: newUser.name });
-      setName(""); setEmail(""); setPassword(""); setConfirmPassword("");
-      setSuccessMsg(""); setErrorMsg("");
-    }, 1000);
   };
 
-  const handleGoogleSuccess = (credentialResponse) => {
+  const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = decodeJWT(credentialResponse.credential);
       if (!decoded) throw new Error('decode failed');
       const { name: googleName, email: googleEmail } = decoded;
-      const users = getRegisteredUsers();
       const emailLower = googleEmail.toLowerCase();
-      // Register if first time
-      if (!users.some(u => u.email.toLowerCase() === emailLower)) {
-        const googleUser = { name: googleName, email: googleEmail };
-        localStorage.setItem("nuvera_registered_users", JSON.stringify([...users, { name: googleName, email: emailLower, password: "__google__" }]));
-        setSuccessMsg("Account created with Google!");
 
-        // Send welcome email via Laravel backend using EmailJS
-        fetch('http://127.0.0.1:8000/api/welcome-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            name: googleName,
-            email: emailLower
-          })
-        }).catch(err => console.error("Failed to send welcome email:", err));
+      const res = await fetch(`${API_URL}/api/auth/google-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ name: googleName, email: emailLower })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Only send welcome email if newly created (check via message or a flag)
+        sendWelcomeEmail(data.user.name, data.user.email);
+        setSuccessMsg("Account created with Google!");
+        setTimeout(() => {
+          onLoginSuccess({ email: data.user.email, name: data.user.name });
+          setSuccessMsg("");
+        }, 800);
       } else {
-        setSuccessMsg("Welcome back! Signing you in...");
+        setErrorMsg("Google sign-up failed. Please try again.");
       }
-      setTimeout(() => {
-        onLoginSuccess({ email: emailLower, name: googleName });
-        setSuccessMsg("");
-      }, 800);
     } catch {
       setErrorMsg("Google sign-up failed. Please try again.");
     }
@@ -405,6 +383,7 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
             <button
               type="submit"
               className="checkout-btn"
+              disabled={loading}
               style={{
                 width: '100%',
                 marginTop: '16px',
@@ -412,10 +391,12 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                 borderRadius: 'var(--radius-full)',
                 fontSize: '16px',
                 fontWeight: '700',
-                boxShadow: '0 4px 14px rgba(92, 58, 33, 0.15)'
+                boxShadow: '0 4px 14px rgba(92, 58, 33, 0.15)',
+                opacity: loading ? 0.7 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 

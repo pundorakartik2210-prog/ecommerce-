@@ -74,7 +74,7 @@ class ContactController extends Controller
             'from_name' => 'Nuvera Naturals',
         ];
 
-        $success = $this->emailService->send($templateParams);
+        $success = $this->emailService->send($templateParams, config('emailjs.welcome_template_id'));
 
         if ($success) {
             return response()->json([
@@ -134,7 +134,7 @@ class ContactController extends Controller
                 'name' => $item['name'] . ' (' . $selectedWeight . ')',
                 'units' => (int)($item['quantity'] ?? 1),
                 'price' => number_format($price, 2),
-                'image_url' => isset($item['image']) ? 'http://localhost:5173' . $item['image'] : ''
+                'image_url' => isset($item['image']) ? config('app.frontend_url') . $item['image'] : ''
             ];
         }
 
@@ -146,7 +146,7 @@ class ContactController extends Controller
             'email' => $email,
             'order_id' => $orderId,
             'verification_code' => (string) $code,
-            'verification_link' => "http://localhost:5173/?confirm_order=1&order_id={$orderId}&code={$code}",
+            'verification_link' => config('app.frontend_url') . "/?confirm_order=1&order_id={$orderId}&code={$code}",
             'total' => '₹' . $total,
             'orders' => $orders,
             'cost' => [
@@ -229,6 +229,19 @@ class ContactController extends Controller
             'statusStep' => 0
         ];
 
+        // Save order to the database
+        \App\Models\Order::updateOrCreate(
+            ['id' => $orderId],
+            [
+                'name' => $cached['name'],
+                'email' => $cached['email'],
+                'cart' => $cached['cart'],
+                'total' => $cached['total'],
+                'statusStep' => 0,
+                'payment_method' => 'cod',
+            ]
+        );
+
         // Cache the verified order details for 5 minutes so original tabs can poll and verify
         Cache::put("verified_order:{$orderId}", $verifiedOrder, 300);
 
@@ -256,6 +269,24 @@ class ContactController extends Controller
                 'success' => true,
                 'status' => 'verified',
                 'order' => $verified
+            ], 200);
+        }
+
+        // Check if order exists in the MySQL database
+        $dbOrder = \App\Models\Order::find($orderId);
+        if ($dbOrder) {
+            return response()->json([
+                'success' => true,
+                'status' => 'verified',
+                'order' => [
+                    'orderId' => $dbOrder->id,
+                    'email' => $dbOrder->email,
+                    'name' => $dbOrder->name,
+                    'cart' => $dbOrder->cart,
+                    'total' => $dbOrder->total,
+                    'date' => date('Y-m-d', strtotime($dbOrder->created_at)),
+                    'statusStep' => $dbOrder->statusStep
+                ]
             ], 200);
         }
 
@@ -353,11 +384,68 @@ class ContactController extends Controller
             ], 400);
         }
 
-        // Signature is valid — payment is genuine
+        // Signature is valid — payment is genuine. Update database order.
+        $order = \App\Models\Order::find($validated['orderId']);
+        if ($order) {
+            $order->update([
+                'payment_method' => 'razorpay',
+                'payment_id' => $validated['razorpay_payment_id']
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Payment verified successfully!',
             'orderId' => $validated['orderId'],
         ], 200);
+    }
+
+    /**
+     * Get all verified/placed orders for Admin Panel.
+     */
+    public function getAllOrders(): JsonResponse
+    {
+        $orders = \App\Models\Order::orderBy('created_at', 'desc')->get();
+        return response()->json($orders, 200);
+    }
+
+    /**
+     * Update the status step of an order for Admin Panel.
+     */
+    public function updateOrderStatus(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'statusStep' => 'required|integer|min:0|max:4'
+        ]);
+
+        $order = \App\Models\Order::find($id);
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.'
+            ], 404);
+        }
+
+        $order->update([
+            'statusStep' => $validated['statusStep']
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order status updated successfully!',
+            'order' => $order
+        ], 200);
+    }
+
+    /**
+     * Get all verified/placed orders for a specific user by email.
+     */
+    public function getUserOrders(string $email): JsonResponse
+    {
+        $orders = \App\Models\Order::where('email', $email)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json($orders, 200);
     }
 }

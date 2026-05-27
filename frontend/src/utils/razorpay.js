@@ -1,9 +1,7 @@
-/**
- * razorpay.js
- * Helpers to load the Razorpay SDK and drive the payment modal.
- */
+import { API_URL } from '../config.js';
 
-const BACKEND = 'http://127.0.0.1:8000';
+const BACKEND = API_URL;
+
 
 /**
  * Dynamically injects the Razorpay checkout script.

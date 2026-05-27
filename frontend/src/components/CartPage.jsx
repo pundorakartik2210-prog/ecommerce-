@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import OrderVerificationModal from './OrderVerificationModal';
+import { API_URL } from '../config.js';
 
 export default function CartPage({
   cart,
@@ -8,7 +9,8 @@ export default function CartPage({
   onCheckoutComplete,
   user,
   onLoginPrompt,
-  onContinueShopping
+  onContinueShopping,
+  onTrackOrder
 }) {
   const [discount, setDiscount] = useState(0);
   const [appliedCode, setAppliedCode] = useState("");
@@ -31,7 +33,7 @@ export default function CartPage({
 
     setIsPendingLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/orders/pending', {
+      const response = await fetch(`${API_URL}/api/orders/pending`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -100,13 +102,22 @@ export default function CartPage({
           💡 Copy this Order ID to track your BlueDart shipment in the "Track Order" page!
         </p>
 
-        <button
-          className="empty-state-btn"
-          onClick={onContinueShopping}
-          style={{ width: '100%', maxWidth: '280px', margin: '0 auto' }}
-        >
-          Continue Shopping
-        </button>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '24px', flexWrap: 'wrap' }}>
+          <button
+            className="checkout-btn"
+            onClick={() => onTrackOrder && onTrackOrder(generatedOrderId)}
+            style={{ width: '100%', maxWidth: '220px', margin: '0', padding: '12px 24px', fontSize: '14px' }}
+          >
+            🚚 Track Order Status
+          </button>
+          <button
+            className="empty-state-btn"
+            onClick={onContinueShopping}
+            style={{ width: '100%', maxWidth: '220px', margin: '0', padding: '12px 24px', fontSize: '14px', border: '1.5px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)' }}
+          >
+            Continue Shopping
+          </button>
+        </div>
       </div>
     );
   }
@@ -115,7 +126,7 @@ export default function CartPage({
   const isFreeShipping = subtotal >= 500;
 
   return (
-    <div style={{ padding: '0 10px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '0 10px', width: '100%', margin: '0 auto' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', color: 'var(--brand-primary)', margin: '0 0 20px 0' }}>Shopping Cart</h2>
 
       {cart.length > 0 && (

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+import { API_URL } from '../config.js';
 
 // Inline JWT decoder - no extra package needed
 const decodeJWT = (token) => {
@@ -14,6 +15,7 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -24,27 +26,7 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
     onClose();
   };
 
-  const getRegisteredUsers = () => {
-    const defaultUser = { name: "Rahul", email: "customer@nuvera.com", password: "password123" };
-    const stored = localStorage.getItem("nuvera_registered_users");
-    if (!stored) {
-      localStorage.setItem("nuvera_registered_users", JSON.stringify([defaultUser]));
-      return [defaultUser];
-    }
-    try {
-      const parsed = JSON.parse(stored);
-      if (!parsed.some(u => u.email.toLowerCase() === defaultUser.email)) {
-        parsed.push(defaultUser);
-        localStorage.setItem("nuvera_registered_users", JSON.stringify(parsed));
-      }
-      return parsed;
-    } catch {
-      return [defaultUser];
-    }
-  };
-
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     if (!email.trim() || !password.trim()) {
@@ -52,38 +34,53 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
       return;
     }
     const trimmedEmail = email.trim().toLowerCase();
+
+    // Admin shortcut login (local only)
     if (trimmedEmail === "nuvera@gmail.com" && password === "123456") {
       onLoginSuccess({ email: "nuvera@gmail.com", name: "Admin" });
-      setEmail("");
-      setPassword("");
-      setErrorMsg("");
+      setEmail(""); setPassword(""); setErrorMsg("");
       return;
     }
-    const users = getRegisteredUsers();
-    const match = users.find(u => u.email.toLowerCase() === trimmedEmail && u.password === password);
-    if (!match) {
-      setErrorMsg("Invalid email or password.");
-      return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        onLoginSuccess({ email: data.user.email, name: data.user.name });
+        setEmail(""); setPassword(""); setErrorMsg("");
+      } else {
+        setErrorMsg(data.message || "Invalid email or password.");
+      }
+    } catch {
+      setErrorMsg("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    onLoginSuccess({ email: match.email, name: match.name });
-    setEmail("");
-    setPassword("");
-    setErrorMsg("");
   };
 
-  const handleGoogleSuccess = (credentialResponse) => {
+  const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = decodeJWT(credentialResponse.credential);
       if (!decoded) throw new Error('decode failed');
       const { name, email } = decoded;
-      // Auto-register Google user if not already registered
-      const users = getRegisteredUsers();
       const emailLower = email.toLowerCase();
-      if (!users.some(u => u.email.toLowerCase() === emailLower)) {
-        const googleUser = { name, email: emailLower, password: "__google__" };
-        localStorage.setItem("nuvera_registered_users", JSON.stringify([...users, googleUser]));
+
+      const res = await fetch(`${API_URL}/api/auth/google-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ name, email: emailLower })
+      });
+      const data = await res.json();
+      if (data.success) {
+        onLoginSuccess({ email: data.user.email, name: data.user.name });
+      } else {
+        setErrorMsg("Google sign-in failed. Please try again.");
       }
-      onLoginSuccess({ email: emailLower, name });
     } catch {
       setErrorMsg("Google sign-in failed. Please try again.");
     }
@@ -279,6 +276,7 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
             <button
               type="submit"
               className="checkout-btn"
+              disabled={loading}
               style={{
                 width: '100%',
                 marginTop: '16px',
@@ -286,10 +284,12 @@ export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchT
                 borderRadius: 'var(--radius-full)',
                 fontSize: '16px',
                 fontWeight: '700',
-                boxShadow: '0 4px 14px rgba(92, 58, 33, 0.15)'
+                boxShadow: '0 4px 14px rgba(92, 58, 33, 0.15)',
+                opacity: loading ? 0.7 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
