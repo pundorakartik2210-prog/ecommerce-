@@ -109,45 +109,6 @@ export default function App() {
     fetchProducts();
   }, [deletedProductIds]);
 
-  // Fetch logged-in user's past orders from database to ensure tracking sync
-  useEffect(() => {
-    if (user && user.email) {
-      const fetchUserOrders = async () => {
-        try {
-          const res = await fetch(`${API_URL}/api/orders/user/${encodeURIComponent(user.email)}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) {
-              setSessionOrders(prev => {
-                const updated = { ...prev };
-                data.forEach(order => {
-                  updated[order.id] = {
-                    orderId: order.id,
-                    customer: order.name,
-                    email: order.email,
-                    date: order.created_at ? order.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-                    total: parseFloat(order.total),
-                    statusStep: order.statusStep || 0,
-                    items: Array.isArray(order.cart) ? order.cart.map(item => ({
-                      name: item.name,
-                      selectedWeight: item.selectedWeight || '1kg',
-                      quantity: item.quantity || 1,
-                      price: item.price || 0
-                    })) : []
-                  };
-                });
-                return updated;
-              });
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching user orders from backend:", err);
-        }
-      };
-      fetchUserOrders();
-    }
-  }, [user]);
-
   // Admin panel visibility
   const [showAdmin, setShowAdmin] = useState(false);
 
@@ -294,6 +255,45 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('nuvera_session_orders', JSON.stringify(sessionOrders));
   }, [sessionOrders]);
+
+  // Fetch logged-in user's past orders from database to ensure tracking sync
+  useEffect(() => {
+    if (user && user.email) {
+      const fetchUserOrders = async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/orders/user/${encodeURIComponent(user.email)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              setSessionOrders(prev => {
+                const updated = { ...prev };
+                data.forEach(order => {
+                  updated[order.id] = {
+                    orderId: order.id,
+                    customer: order.name,
+                    email: order.email,
+                    date: order.created_at ? order.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+                    total: parseFloat(order.total),
+                    statusStep: order.statusStep || 0,
+                    items: Array.isArray(order.cart) ? order.cart.map(item => ({
+                      name: item.name,
+                      selectedWeight: item.selectedWeight || '1kg',
+                      quantity: item.quantity || 1,
+                      price: item.price || 0
+                    })) : []
+                  };
+                });
+                return updated;
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching user orders from backend:", err);
+        }
+      };
+      fetchUserOrders();
+    }
+  }, [user]);
 
   const handleDeleteSessionOrder = (orderId) => {
     setSessionOrders(prev => {
