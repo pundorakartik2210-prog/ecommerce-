@@ -60,6 +60,26 @@ export default function App() {
     }
   });
 
+  // Load products from backend and merge/fallback to local/static state
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/products`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            // Respect frontend soft-delete state
+            const activeProducts = data.filter(p => !deletedProductIds.includes(p.id));
+            setProducts(activeProducts);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch products from backend:", err);
+      }
+    };
+    fetchProducts();
+  }, [deletedProductIds]);
+
   // Admin panel visibility
   const [showAdmin, setShowAdmin] = useState(false);
 
@@ -98,11 +118,46 @@ export default function App() {
   }, [deletedProductIds]);
 
   // Product CRUD handlers (used by AdminPanel)
-  const handleAddProduct = (newProduct) => {
-    setProducts(prev => [...prev, newProduct]);
+  const handleAddProduct = async (newProduct) => {
+    try {
+      const res = await fetch(`${API_URL}/api/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(newProduct)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setProducts(prev => [...prev, data.product]);
+        }
+      } else {
+        // Fallback to local state if backend API is not responding/fails
+        setProducts(prev => [...prev, newProduct]);
+      }
+    } catch (err) {
+      console.error("Error adding product:", err);
+      setProducts(prev => [...prev, newProduct]);
+    }
   };
-  const handleUpdateProduct = (updatedProduct) => {
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+  const handleUpdateProduct = async (updatedProduct) => {
+    try {
+      const res = await fetch(`${API_URL}/api/products/${updatedProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(updatedProduct)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setProducts(prev => prev.map(p => p.id === data.product.id ? data.product : p));
+        }
+      } else {
+        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+      }
+    } catch (err) {
+      console.error("Error updating product:", err);
+      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    }
   };
   const handleDeleteProduct = (productId) => {
     const productToDelete = products.find(p => p.id === productId);
@@ -129,12 +184,21 @@ export default function App() {
       setDeletedProductIds(prev => prev.filter(id => id !== productId));
     }
   };
-  const handlePermanentlyDeleteProduct = (productId) => {
+  const handlePermanentlyDeleteProduct = async (productId) => {
     setDeletedProducts(prev => prev.filter(p => p.id !== productId));
     setDeletedProductIds(prev => {
       if (prev.includes(productId)) return prev;
       return [...prev, productId];
     });
+
+    try {
+      await fetch(`${API_URL}/api/products/${productId}`, {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' }
+      });
+    } catch (err) {
+      console.error("Error permanently deleting product from backend:", err);
+    }
   };
 
   // User Authentication State

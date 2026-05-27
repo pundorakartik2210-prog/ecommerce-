@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,3 +16,19 @@ Route::post('/api/orders/verify', [ContactController::class, 'verifyOrder']);
 Route::get('/api/orders/status/{orderId}', [ContactController::class, 'getOrderStatus']);
 Route::post('/api/payment/create-order', [ContactController::class, 'createRazorpayOrder']);
 Route::post('/api/payment/verify-signature', [ContactController::class, 'verifyRazorpayPayment']);
+
+// Auth Endpoints
+Route::post('/api/auth/register', [AuthController::class, 'register']);
+Route::post('/api/auth/login', [AuthController::class, 'login']);
+Route::post('/api/auth/google-login', [AuthController::class, 'googleLogin']);
+
+// Product Endpoints
+Route::get('/api/products', [ProductController::class, 'index']);
+Route::post('/api/products', [ProductController::class, 'store']);
+Route::put('/api/products/{id}', [ProductController::class, 'update']);
+Route::delete('/api/products/{id}', [ProductController::class, 'destroy']);
+
+// Admin Order Endpoints
+Route::get('/api/orders', [ContactController::class, 'getAllOrders']);
+Route::put('/api/orders/{id}/status', [ContactController::class, 'updateOrderStatus']);
+

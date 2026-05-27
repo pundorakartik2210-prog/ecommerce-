@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config.js';
 
 const MOCK_DB_ORDERS = {
   "NUV-12495": {
@@ -44,34 +45,57 @@ export default function OrderTracking({ sessionOrders }) {
   const [searchOrderId, setSearchOrderId] = useState("");
   const [trackedOrder, setTrackedOrder] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleTrackSubmit = (e) => {
-    e.preventDefault();
-    const query = searchOrderId.trim().toUpperCase();
+  const handleTrackSubmit = async (e, orderIdOverride = null) => {
+    if (e) e.preventDefault();
+    const query = (orderIdOverride || searchOrderId).trim().toUpperCase();
+    if (!query) return;
     setHasSearched(true);
+    setLoading(true);
 
     if (sessionOrders[query]) {
       setTrackedOrder(sessionOrders[query]);
+      setLoading(false);
       return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/orders/status/${query}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.status === 'verified' && data.order) {
+          setTrackedOrder({
+            orderId: data.order.orderId,
+            date: data.order.date,
+            total: data.order.total,
+            statusStep: data.order.statusStep,
+            items: data.order.cart.map(item => ({
+              name: item.name,
+              selectedWeight: item.selectedWeight || '1kg',
+              quantity: item.quantity || 1,
+              price: item.prices ? (item.prices[item.selectedWeight] || Object.values(item.prices)[0]) : item.price || 0
+            }))
+          });
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Error tracking order from backend:", err);
     }
 
     if (MOCK_DB_ORDERS[query]) {
       setTrackedOrder(MOCK_DB_ORDERS[query]);
-      return;
+    } else {
+      setTrackedOrder(null);
     }
-
-    // Order not found in either source — show "not found" UI
-    setTrackedOrder(null);
+    setLoading(false);
   };
 
   const handleQuickSelect = (orderId) => {
     setSearchOrderId(orderId);
-    setHasSearched(true);
-    if (sessionOrders[orderId]) {
-      setTrackedOrder(sessionOrders[orderId]);
-    } else {
-      setTrackedOrder(MOCK_DB_ORDERS[orderId]);
-    }
+    handleTrackSubmit(null, orderId);
   };
 
   const sessionOrderIds = Object.keys(sessionOrders);

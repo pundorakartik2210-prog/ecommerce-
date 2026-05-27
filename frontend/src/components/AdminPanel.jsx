@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import logoImg from '../assets/logo_final_white.png';
+import { API_URL } from '../config.js';
 
 
 const ADMIN_CREDENTIALS = { email: 'nuvera@gmail.com', password: '123456' };
@@ -31,12 +32,25 @@ const BLANK_PRODUCT = {
   bgGradient: 'linear-gradient(135deg, #F8E2C4 0%, #D4A36A 100%)'
 };
 
+const STATUS_STEPS_MAP = {
+  'Ordered': 0,
+  'Packed': 1,
+  'Shipped': 2,
+  'Out for Delivery': 3,
+  'Delivered': 4
+};
+
+const STEPS_STATUS_MAP = {
+  0: 'Ordered',
+  1: 'Packed',
+  2: 'Shipped',
+  3: 'Out for Delivery',
+  4: 'Delivered'
+};
+
 export default function AdminPanel({ products, deletedProducts = [], onAddProduct, onUpdateProduct, onDeleteProduct, onRestoreProduct, onPermanentlyDeleteProduct, onDeleteSessionOrder, onClose, sessionOrders, onLogout }) {
   const [activeSection, setActiveSection] = useState('dashboard');
-  const [orders, setOrders] = useState(() => {
-    const stored = localStorage.getItem('nuvera_admin_orders');
-    return stored ? JSON.parse(stored) : MOCK_ORDERS;
-  });
+  const [orders, setOrders] = useState([]);
   // Track status overrides for session (checkout-flow) orders separately
   const [sessionOrderStatuses, setSessionOrderStatuses] = useState(() => {
     const stored = localStorage.getItem('nuvera_session_order_statuses');
@@ -48,6 +62,37 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
   const [ingredientsInput, setIngredientsInput] = useState('');
   const [notification, setNotification] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
+
+  // Fetch orders on load
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/orders`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            const mappedOrders = data.map(o => ({
+              id: o.id,
+              date: o.created_at ? o.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+              customer: o.name,
+              email: o.email,
+              total: parseFloat(o.total),
+              status: STEPS_STATUS_MAP[o.statusStep] || 'Ordered',
+              items: Array.isArray(o.cart) ? o.cart.map(item => ({
+                name: item.name + (item.selectedWeight ? ` (${item.selectedWeight})` : ''),
+                qty: item.quantity || 1,
+                price: item.prices ? (item.prices[item.selectedWeight] || Object.values(item.prices)[0]) : item.price || 0
+              })) : []
+            }));
+            setOrders(mappedOrders);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   // Merge session orders into admin orders list, applying any admin-set status overrides
   const allOrders = [...orders];
@@ -91,11 +136,21 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
     onLogout?.();
   };
 
-  const handleOrderStatusChange = (orderId, newStatus) => {
+  const handleOrderStatusChange = async (orderId, newStatus) => {
+    const step = STATUS_STEPS_MAP[newStatus] ?? 0;
     const isPersistedOrder = orders.find(o => o.id === orderId);
     if (isPersistedOrder) {
       // Update in the main persisted orders list
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      try {
+        await fetch(`${API_URL}/api/orders/${orderId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ statusStep: step })
+        });
+      } catch (err) {
+        console.error("Failed to update order status on backend:", err);
+      }
     } else {
       // Session/checkout order — store status override separately
       setSessionOrderStatuses(prev => ({ ...prev, [orderId]: newStatus }));
