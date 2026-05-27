@@ -25,6 +25,8 @@ export default function App() {
   const [products, setProducts] = useState(() => {
     try {
       const stored = localStorage.getItem('nuvera_products');
+      const storedDeletedIds = localStorage.getItem('nuvera_deleted_product_ids');
+      const deletedIds = storedDeletedIds ? JSON.parse(storedDeletedIds) : [];
       if (stored) {
         const parsed = JSON.parse(stored);
         // Automatically sync product info from the static PRODUCTS array
@@ -47,11 +49,11 @@ export default function App() {
           return storedProd;
         });
 
-        // Add any new products from the static PRODUCTS array that are not in localStorage
-        const missing = PRODUCTS.filter(p => !parsed.some(sp => sp.id === p.id));
+        // Add any new products from the static PRODUCTS array that are not in localStorage AND not deleted
+        const missing = PRODUCTS.filter(p => !parsed.some(sp => sp.id === p.id) && !deletedIds.includes(p.id));
         return [...synced, ...missing];
       }
-      return PRODUCTS;
+      return PRODUCTS.filter(p => !deletedIds.includes(p.id));
     } catch {
       return PRODUCTS;
     }
@@ -65,6 +67,35 @@ export default function App() {
     localStorage.setItem('nuvera_products', JSON.stringify(products));
   }, [products]);
 
+  // Recycle Bin state for soft-deleted products
+  const [deletedProducts, setDeletedProducts] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nuvera_deleted_products');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('nuvera_deleted_products', JSON.stringify(deletedProducts));
+  }, [deletedProducts]);
+
+  // Track all deleted product IDs (both soft and permanently deleted)
+  // to prevent them from being restored from static PRODUCTS array on page refresh
+  const [deletedProductIds, setDeletedProductIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nuvera_deleted_product_ids');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('nuvera_deleted_product_ids', JSON.stringify(deletedProductIds));
+  }, [deletedProductIds]);
+
   // Product CRUD handlers (used by AdminPanel)
   const handleAddProduct = (newProduct) => {
     setProducts(prev => [...prev, newProduct]);
@@ -73,7 +104,36 @@ export default function App() {
     setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
   };
   const handleDeleteProduct = (productId) => {
-    setProducts(prev => prev.filter(p => p.id !== productId));
+    const productToDelete = products.find(p => p.id === productId);
+    if (productToDelete) {
+      setProducts(prev => prev.filter(p => p.id !== productId));
+      setDeletedProducts(prev => {
+        if (prev.some(p => p.id === productId)) return prev;
+        return [...prev, productToDelete];
+      });
+      setDeletedProductIds(prev => {
+        if (prev.includes(productId)) return prev;
+        return [...prev, productId];
+      });
+    }
+  };
+  const handleRestoreProduct = (productId) => {
+    const productToRestore = deletedProducts.find(p => p.id === productId);
+    if (productToRestore) {
+      setDeletedProducts(prev => prev.filter(p => p.id !== productId));
+      setProducts(prev => {
+        if (prev.some(p => p.id === productId)) return prev;
+        return [...prev, productToRestore];
+      });
+      setDeletedProductIds(prev => prev.filter(id => id !== productId));
+    }
+  };
+  const handlePermanentlyDeleteProduct = (productId) => {
+    setDeletedProducts(prev => prev.filter(p => p.id !== productId));
+    setDeletedProductIds(prev => {
+      if (prev.includes(productId)) return prev;
+      return [...prev, productId];
+    });
   };
 
   // User Authentication State
@@ -110,6 +170,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('nuvera_session_orders', JSON.stringify(sessionOrders));
   }, [sessionOrders]);
+
+  const handleDeleteSessionOrder = (orderId) => {
+    setSessionOrders(prev => {
+      const updated = { ...prev };
+      delete updated[orderId];
+      return updated;
+    });
+  };
 
   // Listen for order verification links in URL params
   useEffect(() => {
@@ -152,6 +220,8 @@ export default function App() {
             // Step 3: Payment successful — commit the order
             const trackingOrder = {
               orderId: verifiedOrder.orderId,
+              customer: verifiedOrder.name,
+              email: verifiedOrder.email,
               date: verifiedOrder.date,
               total: verifiedOrder.total,
               statusStep: 0,
@@ -316,6 +386,8 @@ export default function App() {
   const handleCheckoutComplete = (orderId, checkoutItems, total) => {
     const trackingOrder = {
       orderId: orderId,
+      customer: user ? user.name : "Online Customer",
+      email: user ? user.email : "customer@nuvera.com",
       date: new Date().toISOString().split('T')[0],
       total: total,
       statusStep: 0, // Starts at 'Ordered'
@@ -384,10 +456,13 @@ export default function App() {
               <>
 
                 {/* Carousel Banner Promos */}
-                <PromoSlider onShopNow={() => {
-                  const el = document.getElementById("products-catalog");
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }} />
+                <PromoSlider 
+                  products={products}
+                  onShopNow={() => {
+                    const el = document.getElementById("products-catalog");
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }} 
+                />
 
                 {/* Quality Standards and Benefits Section */}
                 <QualityBenefits />
@@ -446,6 +521,7 @@ export default function App() {
 
       {/* 4. Footer links */}
       <Footer
+        products={products}
         onPolicyClick={(policyType) => setActivePolicy(policyType)}
         onTrackClick={() => setCurrentPage("tracking")}
         onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
@@ -638,9 +714,13 @@ export default function App() {
       {showAdmin && (
         <AdminPanel
           products={products}
+          deletedProducts={deletedProducts}
           onAddProduct={handleAddProduct}
           onUpdateProduct={handleUpdateProduct}
           onDeleteProduct={handleDeleteProduct}
+          onRestoreProduct={handleRestoreProduct}
+          onPermanentlyDeleteProduct={handlePermanentlyDeleteProduct}
+          onDeleteSessionOrder={handleDeleteSessionOrder}
           onClose={() => setShowAdmin(false)}
           sessionOrders={sessionOrders}
           onLogout={() => setUser(null)}

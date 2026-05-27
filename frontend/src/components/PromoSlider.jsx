@@ -1,57 +1,121 @@
 import React, { useState, useEffect } from 'react';
 
-const SLIDES = [
-  {
-    id: 1,
+const CUSTOM_PROMO_TEMPLATES = {
+  "pb-classic-creamy": {
     badge: "Limited Time Offer",
     title: "100% Organic <span>Peanut Butter</span>",
     desc: "Experience pure, unadulterated nut butter handcrafted with love. Slow-roasted to perfection with zero hydrogenated oils. Save 20% today!",
     couponCode: "PEANUT20",
-    color: "#5c3a21",
-    gradient: "linear-gradient(135deg, #7c4f30 0%, #3e2614 100%)",
-    jarColor: "#e29543",
-    lidColor: "#8c6239",
-    labelTitle: "Classic Creamy",
-    image: "/src/assets/classic_creamy.png"
+    gradient: "linear-gradient(135deg, #7c4f30 0%, #3e2614 100%)"
   },
-  {
-    id: 2,
-    badge: "Fitness Premium Pack",
-    title: "Supercharged <span>High Protein</span> Power",
-    desc: "Engineered with grass-fed whey isolate and organic MCT oil. A whopping 12g of clean protein per serving. Buy 2 tubs and get free delivery!",
-    couponCode: "FITPOWER",
-    color: "#1e3e62",
-    gradient: "linear-gradient(135deg, #254b75 0%, #11243b 100%)",
-    jarColor: "#7c98b3",
-    lidColor: "#153250",
-    labelTitle: "Power Butter",
-    image: "/src/assets/fitness_power.png"
+  "pb-classic-crunchy": {
+    badge: "New Launch",
+    title: "Classic Crunchy <span>Peanut Butter</span>",
+    desc: "Enjoy the perfect blend of rich, slow-roasted creamy peanut butter loaded with dry-roasted peanut chunks. 100% natural!",
+    couponCode: "CRUNCH20",
+    gradient: "linear-gradient(135deg, #D97706 0%, #78350F 100%)"
   },
-  {
-    id: 3,
+  "pb-extra-crunchy": {
+    badge: "Customer Favorite",
+    title: "All-Natural <span>Extra Crunchy</span>",
+    desc: "For those who believe texture is everything! Loaded with generously sized chunks of perfectly dry-roasted peanuts.",
+    couponCode: "EXTRA20",
+    gradient: "linear-gradient(135deg, #C67A32 0%, #7C2D12 100%)"
+  },
+  "pb-dark-chocolate": {
     badge: "Indulgent Fusion",
     title: "Decadent <span>Chocolate Smoothy</span>",
     desc: "Single-origin premium dark cacao swirled with roasted peanut butter. 70% less sugar than conventional spreads. Clean eating never tasted so good!",
     couponCode: "CHOCOLOVE",
-    color: "#543310",
-    gradient: "linear-gradient(135deg, #6b431c 0%, #2f1d07 100%)",
-    jarColor: "#ae8660",
-    lidColor: "#462507",
-    labelTitle: "Chocolate Smoothy",
-    image: "/src/assets/chocolate-smoothy.png"
+    gradient: "linear-gradient(135deg, #6b431c 0%, #2f1d07 100%)"
+  },
+  "pb-high-protein": {
+    badge: "Fitness Premium Pack",
+    title: "Supercharged <span>High Protein</span> Power",
+    desc: "Engineered with grass-fed whey isolate and organic MCT oil. A whopping 12g of clean protein per serving. Buy 2 tubs and get free delivery!",
+    couponCode: "FITPOWER",
+    gradient: "linear-gradient(135deg, #254b75 0%, #11243b 100%)"
+  },
+  "pb-sugar-free": {
+    badge: "Keto Friendly",
+    title: "Organic Pure <span>Sugar-Free</span>",
+    desc: "100% single ingredient: certified organic dry-roasted peanuts. Zero added sugars, zero oils. Pure peanut goodness.",
+    couponCode: "KETOPURE",
+    gradient: "linear-gradient(135deg, #606C38 0%, #283618 100%)"
+  },
+  "pb-honey-almond": {
+    badge: "New Launch",
+    title: "Honey Almond <span>Peanut Blend</span>",
+    desc: "Premium California almonds and high-grade peanuts ground with a slow drizzle of organic wildflower honey.",
+    couponCode: "HONEYALMOND",
+    gradient: "linear-gradient(135deg, #B5823F 0%, #78350F 100%)"
   }
-];
+};
 
-export default function PromoSlider({ onShopNow }) {
+export default function PromoSlider({ products = [], onShopNow }) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [copied, setCopied] = useState(false);
 
+  // Map products list to slides list dynamically
+  const slides = products.map((product) => {
+    const template = CUSTOM_PROMO_TEMPLATES[product.id];
+    if (template) {
+      return {
+        id: product.id,
+        badge: template.badge,
+        title: template.title,
+        desc: template.desc,
+        couponCode: template.couponCode,
+        gradient: template.gradient,
+        color: product.color || "#e29543",
+        jarColor: product.color || "#e29543",
+        lidColor: product.color || "#8c6239",
+        labelTitle: product.name,
+        image: product.image
+      };
+    }
+
+    // Fallback template for any newly added product
+    const cleanName = product.name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 6);
+    const couponCode = `${cleanName}20`;
+
+    // Highlight the last word of product name in the slider title
+    const words = product.name.split(' ');
+    let formattedTitle = product.name;
+    if (words.length > 1) {
+      const lastWord = words.pop();
+      formattedTitle = `${words.join(' ')} <span>${lastWord}</span>`;
+    }
+
+    return {
+      id: product.id,
+      badge: product.tag || "New Launch",
+      title: formattedTitle,
+      desc: product.tagline || product.description || "Experience premium, unadulterated nut butter handcrafted with love.",
+      couponCode: couponCode,
+      gradient: product.bgGradient || "linear-gradient(135deg, #7c4f30 0%, #3e2614 100%)",
+      color: product.color || "#e29543",
+      jarColor: product.color || "#e29543",
+      lidColor: product.color || "#8c6239",
+      labelTitle: product.name,
+      image: product.image
+    };
+  });
+
+  // Clamp activeSlide if it exceeds current slides size (e.g. after deletion)
   useEffect(() => {
+    if (slides.length > 0 && activeSlide >= slides.length) {
+      setActiveSlide(0);
+    }
+  }, [slides.length, activeSlide]);
+
+  useEffect(() => {
+    if (slides.length === 0) return;
     const timer = setInterval(() => {
-      setActiveSlide(prev => (prev + 1) % SLIDES.length);
+      setActiveSlide(prev => (prev + 1) % slides.length);
     }, 6000); // Auto scroll every 6 seconds
     return () => clearInterval(timer);
-  }, [activeSlide]);
+  }, [activeSlide, slides.length]);
 
   // Reset copied state on slide change
   useEffect(() => {
@@ -59,11 +123,13 @@ export default function PromoSlider({ onShopNow }) {
   }, [activeSlide]);
 
   const nextSlide = () => {
-    setActiveSlide(prev => (prev + 1) % SLIDES.length);
+    if (slides.length === 0) return;
+    setActiveSlide(prev => (prev + 1) % slides.length);
   };
 
   const prevSlide = () => {
-    setActiveSlide(prev => (prev - 1 + SLIDES.length) % SLIDES.length);
+    if (slides.length === 0) return;
+    setActiveSlide(prev => (prev - 1 + slides.length) % slides.length);
   };
 
   const handleCopyCode = (code) => {
@@ -72,7 +138,11 @@ export default function PromoSlider({ onShopNow }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const current = SLIDES[activeSlide];
+  if (slides.length === 0) {
+    return null; // Don't render slider if all products are deleted
+  }
+
+  const current = slides[activeSlide] || slides[0];
 
   return (
     <div className="promo-slider-container">
@@ -158,7 +228,7 @@ export default function PromoSlider({ onShopNow }) {
 
       {/* Bottom Indicator Dots */}
       <div className="slider-dots">
-        {SLIDES.map((_, idx) => (
+        {slides.map((_, idx) => (
           <div
             key={idx}
             className={`slider-dot ${idx === activeSlide ? 'active' : ''}`}
