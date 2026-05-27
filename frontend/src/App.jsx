@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { initiateRazorpayPayment } from './utils/razorpay';
 import { API_URL } from './config.js';
 import { PRODUCTS } from './data/products';
 import Navbar from './components/Navbar';
@@ -96,7 +95,7 @@ export default function App() {
         const res = await fetch(`${API_URL}/api/products`);
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             // Respect frontend soft-delete state
             const activeProducts = data.filter(p => !deletedProductIds.includes(p.id));
             setProducts(activeProducts);
@@ -246,9 +245,6 @@ export default function App() {
       return {};
     }
   });
-  const [globalVerifying, setGlobalVerifying] = useState(false);
-  const [globalVerifyError, setGlobalVerifyError] = useState("");
-  const [globalVerifySuccess, setGlobalVerifySuccess] = useState("");
   const [autoTrackOrderId, setAutoTrackOrderId] = useState(null);
 
   // Persist session orders whenever they change
@@ -305,87 +301,6 @@ export default function App() {
     });
   };
 
-  // Listen for order verification links in URL params
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const confirmOrder = params.get('confirm_order');
-    const orderId = params.get('order_id');
-    const code = params.get('code');
-
-    if (confirmOrder === '1' && orderId && code) {
-      setGlobalVerifying(true);
-      setGlobalVerifyError('');
-      setGlobalVerifySuccess('');
-
-      // Step 1: Verify the email confirmation link
-      fetch(`${API_URL}/api/orders/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ orderId, code }),
-      })
-        .then((res) => res.json())
-        .then(async (data) => {
-          if (!data.success) {
-            setGlobalVerifyError(data.message || 'Failed to verify order.');
-            window.history.replaceState({}, document.title, window.location.pathname);
-            return;
-          }
-
-          // Step 2: Order verified — now collect payment via Razorpay
-          const verifiedOrder = data.order;
-          setGlobalVerifySuccess('Order confirmed! Launching secure payment...');
-
-          try {
-            await initiateRazorpayPayment({
-              orderId: verifiedOrder.orderId,
-              amount: verifiedOrder.total,
-              name: verifiedOrder.name,
-              email: verifiedOrder.email,
-            });
-
-            // Step 3: Payment successful — commit the order
-            const trackingOrder = {
-              orderId: verifiedOrder.orderId,
-              customer: verifiedOrder.name,
-              email: verifiedOrder.email,
-              date: verifiedOrder.date,
-              total: verifiedOrder.total,
-              statusStep: 0,
-              items: verifiedOrder.cart.map((item) => ({
-                name: item.name,
-                selectedWeight: item.selectedWeight,
-                quantity: item.quantity,
-                price: item.prices
-                   ? (item.prices[item.selectedWeight] || item.prices[item.selectedWeight.replace(/\s+/g, '')] || Object.values(item.prices)[0])
-                   : (item.price || 0),
-              })),
-            };
-
-            setSessionOrders((prev) => ({ ...prev, [orderId]: trackingOrder }));
-            window.history.replaceState({}, document.title, window.location.pathname);
-
-            setGlobalVerifySuccess(`Payment successful! Order ${orderId} placed. Redirecting...`);
-            setTimeout(() => {
-              setCart([]);
-              setAutoTrackOrderId(orderId);
-              setCurrentPage('tracking');
-              setGlobalVerifying(false);
-              setGlobalVerifySuccess('');
-            }, 2000);
-          } catch (payErr) {
-            // Payment was cancelled or failed — do NOT place the order
-            setGlobalVerifyError(
-              payErr.message || 'Payment failed. Your order has NOT been placed.'
-            );
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        })
-        .catch(() => {
-          setGlobalVerifyError('Connection error. Could not verify your order link.');
-          window.history.replaceState({}, document.title, window.location.pathname);
-        });
-    }
-  }, []);
 
   // Sync user state changes to localStorage and redirect admin
   useEffect(() => {
@@ -558,6 +473,7 @@ export default function App() {
 
       {/* 1. Header/Navbar */}
       <Navbar
+        products={products}
         cartCount={cartCount}
         wishlistCount={wishlistCount}
         onStoreClick={() => { setActivePolicy(null); setCurrentPage("store"); }}
@@ -749,104 +665,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {globalVerifying && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(92, 58, 33, 0.4)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          color: 'var(--brand-primary)'
-        }}>
-          <div style={{
-            background: 'var(--bg-white)',
-            padding: '40px 32px',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-lg)',
-            textAlign: 'center',
-            maxWidth: '440px',
-            width: '90%',
-            borderTop: '5px solid var(--brand-accent)'
-          }}>
-            {globalVerifyError ? (
-              <>
-                <div style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  background: 'rgba(234, 67, 53, 0.1)',
-                  border: '2px solid rgba(234, 67, 53, 0.3)',
-                  color: 'var(--error)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px'
-                }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--error)', fontSize: '20px', margin: '0 0 8px 0' }}>Verification Failed</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 20px 0', lineHeight: '1.4' }}>{globalVerifyError}</p>
-                <button
-                  onClick={() => setGlobalVerifying(false)}
-                  style={{
-                    padding: '10px 24px',
-                    borderRadius: 'var(--radius-full)',
-                    background: 'var(--brand-primary)',
-                    color: 'var(--bg-white)',
-                    border: 'none',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Return to Store
-                </button>
-              </>
-            ) : globalVerifySuccess ? (
-              <>
-                <div style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '50%',
-                  background: 'rgba(40, 167, 69, 0.1)',
-                  border: '2px solid rgba(40, 167, 69, 0.3)',
-                  color: 'var(--success)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px'
-                }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--brand-primary)', fontSize: '20px', margin: '0 0 8px 0' }}>Order Confirmed!</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>{globalVerifySuccess}</p>
-              </>
-            ) : (
-              <>
-                <div className="success-icon-badge" style={{ margin: '0 auto 20px', width: '56px', height: '56px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="spin" style={{ color: 'var(--brand-accent)' }}>
-                    <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12"></circle>
-                  </svg>
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-serif)', color: 'var(--brand-primary)', fontSize: '20px', margin: '0 0 8px 0' }}>Verifying Confirmation Link</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Please hold on while we secure and place your order...</p>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
 
 
       {/* Admin Panel Command Center overlay */}

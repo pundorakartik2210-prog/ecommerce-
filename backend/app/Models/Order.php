@@ -13,6 +13,7 @@ class Order extends Model
         'id',
         'name',
         'email',
+        'phone',
         'cart',
         'total',
         'statusStep',

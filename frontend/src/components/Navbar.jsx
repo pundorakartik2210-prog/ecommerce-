@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { PRODUCTS } from '../data/products';
 import logoImg from '../assets/logo_final_white.png';
 import logoTextImg from '../assets/logo-text-clean.png';
 
 export default function Navbar({
+  products = [],
   cartCount,
   wishlistCount,
   onStoreClick,
@@ -48,7 +48,7 @@ export default function Navbar({
     onSearch(val); // Real-time filtering
 
     if (val.trim().length > 1) {
-      const filtered = PRODUCTS.filter(p =>
+      const filtered = products.filter(p =>
         p.name.toLowerCase().includes(val.toLowerCase()) ||
         p.tagline.toLowerCase().includes(val.toLowerCase())
       ).slice(0, 5);

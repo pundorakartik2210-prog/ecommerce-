@@ -4,10 +4,13 @@ namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class OrderVerificationTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,10 +23,6 @@ class OrderVerificationTest extends TestCase
      */
     public function test_can_initiate_pending_order(): void
     {
-        Http::fake([
-            'https://api.emailjs.com/*' => Http::response('OK', 200),
-        ]);
-
         $cartData = [
             [
                 'id' => 1,
@@ -35,6 +34,7 @@ class OrderVerificationTest extends TestCase
         ];
 
         $response = $this->postJson('/api/orders/pending', [
+            'phone' => '1234567890',
             'email' => 'shivam.sh2349@gmail.com',
             'name' => 'Shivam Test',
             'cart' => $cartData,
@@ -61,16 +61,7 @@ class OrderVerificationTest extends TestCase
         $this->assertEquals('Shivam Test', $cached['name']);
         $this->assertEquals($cartData, $cached['cart']);
         $this->assertEquals(499, $cached['total']);
-        $this->assertNotEmpty($cached['code']);
-
-        // Assert EmailJS call was made with expected template params
-        Http::assertSent(function ($request) use ($orderId, $cached) {
-            return $request->url() === 'https://api.emailjs.com/api/v1.0/email/send' &&
-                   $request['template_id'] === 'template_4z4jxzn' &&
-                   $request['template_params']['order_id'] === $orderId &&
-                   $request['template_params']['verification_code'] === (string)$cached['code'] &&
-                   $request['template_params']['to_email'] === 'shivam.sh2349@gmail.com';
-        });
+        $this->assertNotEmpty($cached['otp']);
     }
 
     /**
@@ -78,10 +69,6 @@ class OrderVerificationTest extends TestCase
      */
     public function test_can_verify_pending_order_with_valid_otp(): void
     {
-        Http::fake([
-            'https://api.emailjs.com/*' => Http::response('OK', 200),
-        ]);
-
         $cartData = [
             [
                 'id' => 1,
@@ -94,6 +81,7 @@ class OrderVerificationTest extends TestCase
 
         // Initiate
         $initResponse = $this->postJson('/api/orders/pending', [
+            'phone' => '1234567890',
             'email' => 'shivam.sh2349@gmail.com',
             'name' => 'Shivam Test',
             'cart' => $cartData,
@@ -102,18 +90,18 @@ class OrderVerificationTest extends TestCase
 
         $orderId = $initResponse->json('orderId');
         $cached = Cache::get("pending_order:{$orderId}");
-        $code = $cached['code'];
+        $otp = $cached['otp'];
 
-        // Verify with correct code
+        // Verify with correct otp
         $verifyResponse = $this->postJson('/api/orders/verify', [
             'orderId' => $orderId,
-            'code' => (string)$code
+            'otp' => (string)$otp
         ]);
 
         $verifyResponse->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Order verified and placed successfully!',
+                'message' => 'OTP verified successfully!',
                 'order' => [
                     'orderId' => $orderId,
                     'email' => 'shivam.sh2349@gmail.com',
@@ -133,10 +121,6 @@ class OrderVerificationTest extends TestCase
      */
     public function test_cannot_verify_with_invalid_otp(): void
     {
-        Http::fake([
-            'https://api.emailjs.com/*' => Http::response('OK', 200),
-        ]);
-
         $cartData = [
             [
                 'id' => 1,
@@ -149,6 +133,7 @@ class OrderVerificationTest extends TestCase
 
         // Initiate
         $initResponse = $this->postJson('/api/orders/pending', [
+            'phone' => '1234567890',
             'email' => 'shivam.sh2349@gmail.com',
             'name' => 'Shivam Test',
             'cart' => $cartData,
@@ -157,16 +142,16 @@ class OrderVerificationTest extends TestCase
 
         $orderId = $initResponse->json('orderId');
         
-        // Verify with incorrect code
+        // Verify with incorrect otp
         $verifyResponse = $this->postJson('/api/orders/verify', [
             'orderId' => $orderId,
-            'code' => '999999' // wrong code
+            'otp' => '999999' // wrong otp
         ]);
 
         $verifyResponse->assertStatus(400)
             ->assertJson([
                 'success' => false,
-                'message' => 'Invalid verification code. Please check your email and try again.'
+                'message' => 'Invalid OTP. Please check and try again.'
             ]);
 
         // Assert Cache is still present
@@ -180,13 +165,13 @@ class OrderVerificationTest extends TestCase
     {
         $verifyResponse = $this->postJson('/api/orders/verify', [
             'orderId' => 'NUV-NONEXIST',
-            'code' => '123456'
+            'otp' => '123456'
         ]);
 
         $verifyResponse->assertStatus(400)
             ->assertJson([
                 'success' => false,
-                'message' => 'Order verification session expired or not found. Please re-place your order.'
+                'message' => 'Order session expired or not found. Please place your order again.'
             ]);
     }
 
@@ -195,10 +180,6 @@ class OrderVerificationTest extends TestCase
      */
     public function test_can_get_order_status_states(): void
     {
-        Http::fake([
-            'https://api.emailjs.com/*' => Http::response('OK', 200),
-        ]);
-
         $cartData = [
             [
                 'id' => 1,
@@ -219,6 +200,7 @@ class OrderVerificationTest extends TestCase
 
         // 2. Initiate pending order
         $initResponse = $this->postJson('/api/orders/pending', [
+            'phone' => '1234567890',
             'email' => 'shivam.sh2349@gmail.com',
             'name' => 'Shivam Test',
             'cart' => $cartData,
@@ -226,7 +208,7 @@ class OrderVerificationTest extends TestCase
         ]);
         $orderId = $initResponse->json('orderId');
         $cached = Cache::get("pending_order:{$orderId}");
-        $code = $cached['code'];
+        $otp = $cached['otp'];
 
         // Get status for pending order
         $response = $this->getJson("/api/orders/status/{$orderId}");
@@ -239,7 +221,7 @@ class OrderVerificationTest extends TestCase
         // 3. Verify order
         $verifyResponse = $this->postJson('/api/orders/verify', [
             'orderId' => $orderId,
-            'code' => (string)$code
+            'otp' => (string)$otp
         ]);
         $verifyResponse->assertStatus(200);
 
@@ -333,4 +315,57 @@ class OrderVerificationTest extends TestCase
                 'message' => 'Payment verification failed: invalid signature. Your card has NOT been charged.'
             ]);
     }
+
+    /**
+     * Test verifying and storing order via Firebase backend verification route.
+     */
+    public function test_can_verify_firebase_order(): void
+    {
+        $cartData = [
+            [
+                'id' => 1,
+                'name' => 'Classic Peanut Butter',
+                'selectedWeight' => '1kg',
+                'quantity' => 1,
+                'prices' => ['1kg' => 499]
+            ]
+        ];
+
+        $response = $this->postJson('/api/orders/verify-firebase', [
+            'phone' => '+919999999999',
+            'email' => 'shivam.sh2349@gmail.com',
+            'name' => 'Shivam Test',
+            'cart' => $cartData,
+            'total' => 499
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'order' => [
+                    'orderId',
+                    'email',
+                    'name',
+                    'phone',
+                    'cart',
+                    'total',
+                    'date',
+                    'statusStep'
+                ]
+            ])
+            ->assertJson([
+                'success' => true,
+                'message' => 'Order stored successfully!',
+                'order' => [
+                    'email' => 'shivam.sh2349@gmail.com',
+                    'name' => 'Shivam Test',
+                    'phone' => '+919999999999',
+                    'cart' => $cartData,
+                    'total' => 499,
+                    'statusStep' => 0
+                ]
+            ]);
+    }
 }
+
