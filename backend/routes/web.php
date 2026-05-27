@@ -60,4 +60,5 @@ Route::delete('/api/products/{id}', [ProductController::class, 'destroy']);
 // Admin Order Endpoints
 Route::get('/api/orders', [ContactController::class, 'getAllOrders']);
 Route::put('/api/orders/{id}/status', [ContactController::class, 'updateOrderStatus']);
+Route::get('/api/orders/user/{email}', [ContactController::class, 'getUserOrders']);
 

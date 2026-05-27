@@ -437,4 +437,15 @@ class ContactController extends Controller
             'order' => $order
         ], 200);
     }
+
+    /**
+     * Get all verified/placed orders for a specific user by email.
+     */
+    public function getUserOrders(string $email): JsonResponse
+    {
+        $orders = \App\Models\Order::where('email', $email)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return response()->json($orders, 200);
+    }
 }

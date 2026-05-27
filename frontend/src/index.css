@@ -4681,3 +4681,68 @@ a {
   min-height: 85vh;
   box-sizing: border-box;
 }
+
+/* Horizontal Tracking Stepper Styles */
+.horizontal-stepper-container {
+  position: relative;
+  margin: 40px 0 35px 0;
+}
+
+.horizontal-stepper-line {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 12px;
+  height: 4px;
+  background: var(--border-color);
+  z-index: 1;
+}
+
+.horizontal-stepper-fill {
+  height: 100%;
+  background: var(--success);
+  transition: width 0.8s ease-in-out;
+}
+
+.horizontal-stepper-row {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.horizontal-stepper-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 18%;
+  text-align: center;
+}
+
+/* On Mobile, stack them vertically */
+@media (max-width: 600px) {
+  .horizontal-stepper-container {
+    margin: 20px 0;
+  }
+
+  .horizontal-stepper-line {
+    display: none;
+  }
+  
+  .horizontal-stepper-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding-left: 20px;
+    border-left: 3px solid var(--border-color);
+    margin-left: 10px;
+  }
+  
+  .horizontal-stepper-item {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    gap: 16px;
+  }
+}

@@ -114,10 +114,10 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
         Follow your slow-roasted organic protein treats straight to your doorstep.
       </p>
 
-      <div className="cart-page-layout">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', width: '100%' }}>
 
-        {/* Left column: Tracker form & chips */}
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Top section: Tracker form & chips */}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
           {/* Tracker Form */}
           <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: '24px' }}>
@@ -270,7 +270,8 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
         </div>
 
         {/* Right column: Timeline and details */}
-        <div className="cart-summary-desktop-card" style={{ flexShrink: 0, position: 'relative', top: 'auto' }}>
+        {/* Full-width Timeline and Details section below */}
+        <div style={{ width: '100%' }}>
           {hasSearched ? (
             trackedOrder ? (
               <div style={{
@@ -278,26 +279,37 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-lg)',
                 boxShadow: 'var(--shadow-md)',
-                padding: '24px'
+                padding: '30px',
+                width: '100%',
+                boxSizing: 'border-box'
               }}>
+                {/* Header info */}
                 <div style={{
                   borderBottom: '1px solid var(--border-color)',
-                  paddingBottom: '14px',
-                  marginBottom: '20px'
+                  paddingBottom: '16px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '16px'
                 }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-light)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Tracking Status for
-                  </span>
-                  <h3 style={{ margin: '4px 0 0 0', fontSize: '20px', color: 'var(--brand-primary)', fontWeight: '800' }}>
-                    {trackedOrder.orderId}
-                  </h3>
-                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '6px' }}>
-                    Order Date: {trackedOrder.date} | Total paid: ₹{trackedOrder.total}
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Tracking Status for
+                    </span>
+                    <h3 style={{ margin: '4px 0 0 0', fontSize: '22px', color: 'var(--brand-primary)', fontWeight: '800' }}>
+                      {trackedOrder.orderId}
+                    </h3>
+                  </div>
+                  <div style={{ display: 'flex', gap: '24px', alignItems: 'center', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    <span>Order Date: <strong>{trackedOrder.date}</strong></span>
+                    <span>Total Paid: <strong style={{ color: 'var(--success)', fontSize: '16px' }}>₹{trackedOrder.total}</strong></span>
                   </div>
                 </div>
 
-                {/* Premium Delivery Truck Progress Animation */}
-                <div className="shipment-route-animation-card" style={{ marginBottom: '28px' }}>
+                {/* Premium Delivery Truck Progress Animation (Wide display) */}
+                <div className="shipment-route-animation-card" style={{ marginBottom: '32px' }}>
                   <div className="route-endpoints">
                     <span className="endpoint-hub">🏭 Warehouse</span>
                     <span className="endpoint-door">🏠 Doorstep</span>
@@ -317,111 +329,94 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
                   </div>
                 </div>
 
-                {/* Shipping Timeline */}
-                <div style={{ position: 'relative', paddingLeft: '32px', margin: '20px 0' }}>
-                  {/* Vertical Progress Connector Line */}
-                  <div style={{
-                    position: 'absolute',
-                    left: '9px',
-                    top: '6px',
-                    bottom: '10px',
-                    width: '3px',
-                    background: 'var(--border-color)',
-                    zIndex: 1
-                  }}>
-                    {/* Active completed sub-bar */}
-                    <div style={{
-                      width: '100%',
-                      height: `${(trackedOrder.statusStep / (TIMELINE_STEPS.length - 1)) * 100}%`,
-                      background: 'var(--success)',
-                      transition: 'height 0.8s ease-in-out'
-                    }}></div>
+                {/* Horizontal / Responsive Stepper */}
+                <div className="horizontal-stepper-container">
+                  <div className="horizontal-stepper-line">
+                    <div className="horizontal-stepper-fill" style={{ width: `${(trackedOrder.statusStep / (TIMELINE_STEPS.length - 1)) * 100}%` }}></div>
                   </div>
-
-                  {TIMELINE_STEPS.map((step, idx) => {
-                    const isCompleted = idx < trackedOrder.statusStep;
-                    const isActive = idx === trackedOrder.statusStep;
-
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          display: 'flex',
-                          gap: '16px',
-                          marginBottom: '24px',
-                          position: 'relative',
-                          zIndex: 2
-                        }}
-                      >
-                        {/* Circle Indicator */}
-                        <div style={{
-                          position: 'absolute',
-                          left: '-32px',
-                          top: '2px',
-                          width: '21px',
-                          height: '21px',
-                          borderRadius: '50%',
-                          background: isCompleted ? 'var(--success)' : isActive ? 'var(--bg-white)' : 'var(--bg-cream)',
-                          border: `3px solid ${isCompleted ? 'var(--success)' : isActive ? 'var(--brand-accent)' : 'var(--border-color)'}`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: isCompleted ? 'var(--bg-white)' : 'var(--brand-accent)',
-                          boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
-                          transition: 'all 0.3s ease'
-                        }}>
-                          {isCompleted && (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
-                              <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                          )}
-                        </div>
-
-                        {/* Text labels */}
-                        <div>
-                          <span style={{
-                            display: 'block',
-                            fontSize: '13px',
-                            fontWeight: isActive ? '800' : '700',
-                            color: isCompleted ? 'var(--success)' : isActive ? 'var(--brand-accent)' : 'var(--text-secondary)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.3px'
+                  <div className="horizontal-stepper-row">
+                    {TIMELINE_STEPS.map((step, idx) => {
+                      const isCompleted = idx < trackedOrder.statusStep;
+                      const isActive = idx === trackedOrder.statusStep;
+                      return (
+                        <div key={idx} className="horizontal-stepper-item">
+                          <div style={{
+                            width: '26px',
+                            height: '26px',
+                            borderRadius: '50%',
+                            background: isCompleted ? 'var(--success)' : isActive ? 'var(--bg-white)' : 'var(--bg-cream)',
+                            border: `3px solid ${isCompleted ? 'var(--success)' : isActive ? 'var(--brand-accent)' : 'var(--border-color)'}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: isCompleted ? 'var(--bg-white)' : 'var(--brand-accent)',
+                            boxShadow: isActive ? 'var(--shadow-md)' : 'none',
+                            marginBottom: '10px',
+                            transition: 'all 0.3s ease',
+                            flexShrink: 0
                           }}>
-                            {step.label}
-                          </span>
-                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-light)', marginTop: '2px' }}>
-                            {step.desc}
-                          </span>
+                            {isCompleted && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <span style={{
+                              display: 'block',
+                              fontSize: '13px',
+                              fontWeight: isActive ? '800' : '700',
+                              color: isCompleted ? 'var(--success)' : isActive ? 'var(--brand-accent)' : 'var(--text-secondary)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.3px'
+                            }}>
+                              {step.label}
+                            </span>
+                            <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-light)', marginTop: '4px', lineHeight: '1.35' }}>
+                              {step.desc}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Items in this order */}
                 <div style={{
                   borderTop: '1px solid var(--border-color)',
-                  paddingTop: '16px',
-                  marginTop: '16px'
+                  paddingTop: '20px',
+                  marginTop: '30px'
                 }}>
-                  <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-light)', letterSpacing: '0.5px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-light)', letterSpacing: '0.5px' }}>
                     Shipment Items:
                   </h4>
-                  {trackedOrder.items.map((item, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontSize: '13px',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '6px'
-                      }}
-                    >
-                      <span>{item.name} ({item.selectedWeight}) <strong style={{ color: 'var(--text-light)' }}>x{item.quantity}</strong></span>
-                      <span style={{ fontWeight: '700' }}>₹{item.price * item.quantity}</span>
-                    </div>
-                  ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {trackedOrder.items.map((item, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '14px',
+                          color: 'var(--text-secondary)',
+                          background: 'var(--bg-cream)',
+                          padding: '12px 20px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(0,0,0,0.03)'
+                        }}
+                      >
+                        <span style={{ fontWeight: '600', color: 'var(--brand-primary)' }}>
+                          {item.name} <span style={{ color: 'var(--text-light)', fontWeight: '400' }}>({item.selectedWeight})</span>
+                        </span>
+                        <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+                          <span>Qty: <strong>{item.quantity}</strong></span>
+                          <span style={{ fontWeight: '800', color: 'var(--brand-primary)', minWidth: '80px', textAlign: 'right' }}>₹{item.price * item.quantity}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
               </div>
@@ -431,9 +426,11 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-lg)',
                 boxShadow: 'var(--shadow-sm)',
-                padding: '32px 24px',
+                padding: '40px 24px',
                 textAlign: 'center',
-                color: 'var(--error)'
+                color: 'var(--error)',
+                width: '100%',
+                boxSizing: 'border-box'
               }}>
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginBottom: '12px' }}>
                   <circle cx="12" cy="12" r="10"></circle>
@@ -452,9 +449,11 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
               border: '1px solid var(--border-color)',
               borderRadius: 'var(--radius-lg)',
               boxShadow: 'var(--shadow-sm)',
-              padding: '48px 24px',
+              padding: '60px 24px',
               textAlign: 'center',
-              color: 'var(--text-light)'
+              color: 'var(--text-light)',
+              width: '100%',
+              boxSizing: 'border-box'
             }}>
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{ marginBottom: '12px' }}>
                 <circle cx="12" cy="12" r="10"></circle>
