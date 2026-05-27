@@ -126,7 +126,7 @@ export default function CartPage({
   const isFreeShipping = subtotal >= 500;
 
   return (
-    <div style={{ padding: '0 10px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '0 10px', width: '100%', margin: '0 auto' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', color: 'var(--brand-primary)', margin: '0 0 20px 0' }}>Shopping Cart</h2>
 
       {cart.length > 0 && (
