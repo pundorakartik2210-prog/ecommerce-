@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'dist'), {
 }));
 
 // Route all other requests to index.html (SPA routing)
-app.get('*', (req, res) => {
+app.get('*splat', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'), {
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
