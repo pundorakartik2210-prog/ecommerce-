@@ -159,7 +159,7 @@ export default function App() {
       setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
     }
   };
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     const productToDelete = products.find(p => p.id === productId);
     if (productToDelete) {
       setProducts(prev => prev.filter(p => p.id !== productId));
@@ -171,17 +171,36 @@ export default function App() {
         if (prev.includes(productId)) return prev;
         return [...prev, productId];
       });
+
+      try {
+        await fetch(`${API_URL}/api/products/${productId}`, {
+          method: 'DELETE',
+          headers: { 'Accept': 'application/json' }
+        });
+      } catch (err) {
+        console.error("Error soft-deleting product from backend:", err);
+      }
     }
   };
-  const handleRestoreProduct = (productId) => {
+  const handleRestoreProduct = async (productId) => {
     const productToRestore = deletedProducts.find(p => p.id === productId);
     if (productToRestore) {
       setDeletedProducts(prev => prev.filter(p => p.id !== productId));
+      setDeletedProductIds(prev => prev.filter(id => id !== productId));
       setProducts(prev => {
         if (prev.some(p => p.id === productId)) return prev;
         return [...prev, productToRestore];
       });
-      setDeletedProductIds(prev => prev.filter(id => id !== productId));
+
+      try {
+        await fetch(`${API_URL}/api/products`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(productToRestore)
+        });
+      } catch (err) {
+        console.error("Error restoring product to backend:", err);
+      }
     }
   };
   const handlePermanentlyDeleteProduct = async (productId) => {
