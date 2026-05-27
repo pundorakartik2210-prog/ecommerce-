@@ -73,7 +73,7 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
   const sessionOrderIds = Object.keys(sessionOrders);
 
   return (
-    <div className="order-tracking-page-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="order-tracking-page-container" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', color: 'var(--brand-primary)', margin: '0 0 10px 0' }}>Track Order Status</h2>
       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: 0, marginBottom: '24px', lineHeight: '1.5' }}>
         Follow your slow-roasted organic protein treats straight to your doorstep.
