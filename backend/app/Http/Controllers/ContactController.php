@@ -74,7 +74,7 @@ class ContactController extends Controller
             'from_name' => 'Nuvera Naturals',
         ];
 
-        $success = $this->emailService->send($templateParams);
+        $success = $this->emailService->send($templateParams, config('emailjs.welcome_template_id'));
 
         if ($success) {
             return response()->json([
