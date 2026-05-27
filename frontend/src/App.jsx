@@ -230,6 +230,7 @@ export default function App() {
   const [globalVerifying, setGlobalVerifying] = useState(false);
   const [globalVerifyError, setGlobalVerifyError] = useState("");
   const [globalVerifySuccess, setGlobalVerifySuccess] = useState("");
+  const [autoTrackOrderId, setAutoTrackOrderId] = useState(null);
 
   // Persist session orders whenever they change
   useEffect(() => {
@@ -304,6 +305,7 @@ export default function App() {
             setGlobalVerifySuccess(`Payment successful! Order ${orderId} placed. Redirecting...`);
             setTimeout(() => {
               setCart([]);
+              setAutoTrackOrderId(orderId);
               setCurrentPage('tracking');
               setGlobalVerifying(false);
               setGlobalVerifySuccess('');
@@ -499,7 +501,7 @@ export default function App() {
         onStoreClick={() => { setActivePolicy(null); setCurrentPage("store"); }}
         onCartClick={() => { setActivePolicy(null); setCurrentPage("cart"); }}
         onWishlistClick={() => { setActivePolicy(null); setCurrentPage("wishlist"); }}
-        onTrackingClick={() => { setActivePolicy(null); setCurrentPage("tracking"); }}
+        onTrackingClick={() => { setActivePolicy(null); setAutoTrackOrderId(null); setCurrentPage("tracking"); }}
         onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
         onAdminClick={handleAdminPortalClick}
         activeTab={currentPage}
@@ -556,6 +558,10 @@ export default function App() {
                 user={user}
                 onLoginPrompt={() => setIsSignInOpen(true)}
                 onContinueShopping={() => setCurrentPage('store')}
+                onTrackOrder={(orderId) => {
+                  setAutoTrackOrderId(orderId);
+                  setCurrentPage('tracking');
+                }}
               />
             )}
 
@@ -572,6 +578,8 @@ export default function App() {
             {currentPage === 'tracking' && (
               <OrderTracking
                 sessionOrders={sessionOrders}
+                autoTrackOrderId={autoTrackOrderId}
+                onClearAutoTrack={() => setAutoTrackOrderId(null)}
               />
             )}
 
@@ -588,7 +596,7 @@ export default function App() {
       <Footer
         products={products}
         onPolicyClick={(policyType) => setActivePolicy(policyType)}
-        onTrackClick={() => setCurrentPage("tracking")}
+        onTrackClick={() => { setAutoTrackOrderId(null); setCurrentPage("tracking"); }}
         onAboutClick={() => { setActivePolicy(null); setCurrentPage("about"); }}
       />
 

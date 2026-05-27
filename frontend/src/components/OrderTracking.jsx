@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config.js';
 
 const MOCK_DB_ORDERS = {
@@ -41,7 +41,7 @@ const TIMELINE_STEPS = [
   { label: "Delivered", desc: "Enjoy your butter!" }
 ];
 
-export default function OrderTracking({ sessionOrders }) {
+export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClearAutoTrack }) {
   const [searchOrderId, setSearchOrderId] = useState("");
   const [trackedOrder, setTrackedOrder] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
@@ -98,26 +98,65 @@ export default function OrderTracking({ sessionOrders }) {
     handleTrackSubmit(null, orderId);
   };
 
+  useEffect(() => {
+    if (autoTrackOrderId) {
+      setSearchOrderId(autoTrackOrderId);
+      handleTrackSubmit(null, autoTrackOrderId);
+    }
+  }, [autoTrackOrderId]);
+
   const sessionOrderIds = Object.keys(sessionOrders);
 
   return (
-    <div style={{ padding: '0 10px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="order-tracking-page-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', color: 'var(--brand-primary)', margin: '0 0 10px 0' }}>Track Order Status</h2>
       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: 0, marginBottom: '24px', lineHeight: '1.5' }}>
         Follow your slow-roasted organic protein treats straight to your doorstep.
       </p>
 
       <div className="cart-page-layout">
-        
+
         {/* Left column: Tracker form & chips */}
         <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
+
           {/* Tracker Form */}
           <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: '24px' }}>
+            {autoTrackOrderId && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: 'rgba(226, 149, 67, 0.06)',
+                border: '1px solid rgba(226, 149, 67, 0.2)',
+                borderRadius: '8px',
+                padding: '10px 16px',
+                marginBottom: '14px',
+                fontSize: '12.5px',
+                color: 'var(--brand-primary)',
+                fontWeight: '700'
+              }}>
+                <span>🔒 Auto-tracking active order from checkout.</span>
+                <button
+                  type="button"
+                  onClick={onClearAutoTrack}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--brand-accent)',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: '0'
+                  }}
+                >
+                  Track another order
+                </button>
+              </div>
+            )}
             <form onSubmit={handleTrackSubmit} style={{ display: 'flex', gap: '10px' }}>
-              <input 
-                type="text" 
-                placeholder="Enter Order ID (e.g. NUV-12495)" 
+              <input
+                type="text"
+                placeholder="Enter Order ID (e.g. NUV-12495)"
                 style={{
                   flexGrow: 1,
                   padding: '12px 18px',
@@ -125,24 +164,28 @@ export default function OrderTracking({ sessionOrders }) {
                   border: '1px solid var(--border-color)',
                   fontSize: '14px',
                   outline: 'none',
-                  background: 'var(--bg-cream)'
+                  background: autoTrackOrderId ? '#f1f5f9' : 'var(--bg-cream)',
+                  cursor: autoTrackOrderId ? 'not-allowed' : 'text',
+                  color: autoTrackOrderId ? 'var(--text-secondary)' : 'inherit'
                 }}
                 value={searchOrderId}
                 onChange={(e) => setSearchOrderId(e.target.value)}
+                disabled={!!autoTrackOrderId}
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 style={{
-                  background: 'var(--brand-primary)',
-                  color: 'var(--bg-white)',
+                  background: autoTrackOrderId ? '#cbd5e1' : 'var(--brand-primary)',
+                  color: autoTrackOrderId ? '#64748b' : 'var(--bg-white)',
                   border: 'none',
                   fontWeight: '700',
                   padding: '0 24px',
                   borderRadius: 'var(--radius-full)',
-                  cursor: 'pointer',
+                  cursor: autoTrackOrderId ? 'not-allowed' : 'pointer',
                   fontSize: '14px',
                   transition: 'var(--transition)'
                 }}
+                disabled={!!autoTrackOrderId}
               >
                 Track Shipment
               </button>
@@ -150,77 +193,79 @@ export default function OrderTracking({ sessionOrders }) {
           </div>
 
           {/* Quick lookup Chips */}
-          <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: '24px' }}>
-            <h4 style={{ textTransform: 'uppercase', color: 'var(--text-light)', fontSize: '11px', fontWeight: '800', margin: '0 0 12px 0', letterSpacing: '0.5px' }}>
-              Select a Demo Order to Test:
-            </h4>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {sessionOrderIds.map(oid => (
-                <button 
-                  key={oid} 
+          {!autoTrackOrderId && (
+            <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: '24px' }}>
+              <h4 style={{ textTransform: 'uppercase', color: 'var(--text-light)', fontSize: '11px', fontWeight: '800', margin: '0 0 12px 0', letterSpacing: '0.5px' }}>
+                Select a Demo Order to Test:
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {sessionOrderIds.map(oid => (
+                  <button
+                    key={oid}
+                    style={{
+                      background: 'var(--bg-cream)',
+                      border: '1.5px dashed var(--brand-accent)',
+                      borderRadius: 'var(--radius-full)',
+                      cursor: 'pointer',
+                      color: 'var(--brand-primary)',
+                      padding: '6px 14px',
+                      fontSize: '12px',
+                      fontWeight: '750',
+                      transition: 'var(--transition)'
+                    }}
+                    onClick={() => handleQuickSelect(oid)}
+                  >
+                    🛒 Active Order ({oid})
+                  </button>
+                ))}
+                <button
                   style={{
                     background: 'var(--bg-cream)',
-                    border: '1.5px dashed var(--brand-accent)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: 'var(--radius-full)',
                     cursor: 'pointer',
-                    color: 'var(--brand-primary)',
+                    color: 'var(--text-secondary)',
                     padding: '6px 14px',
                     fontSize: '12px',
-                    fontWeight: '750',
-                    transition: 'var(--transition)'
+                    fontWeight: '600'
                   }}
-                  onClick={() => handleQuickSelect(oid)}
+                  onClick={() => handleQuickSelect("NUV-90184")}
                 >
-                  🛒 Active Order ({oid})
+                  📦 Packed (NUV-90184)
                 </button>
-              ))}
-              <button 
-                style={{
-                  background: 'var(--bg-cream)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-full)',
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)',
-                  padding: '6px 14px',
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}
-                onClick={() => handleQuickSelect("NUV-90184")}
-              >
-                📦 Packed (NUV-90184)
-              </button>
-              <button 
-                style={{
-                  background: 'var(--bg-cream)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-full)',
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)',
-                  padding: '6px 14px',
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}
-                onClick={() => handleQuickSelect("NUV-58920")}
-              >
-                🚚 In Transit (NUV-58920)
-              </button>
-              <button 
-                style={{
-                  background: 'var(--bg-cream)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-full)',
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)',
-                  padding: '6px 14px',
-                  fontSize: '12px',
-                  fontWeight: '600'
-                }}
-                onClick={() => handleQuickSelect("NUV-12495")}
-              >
-                ✓ Delivered (NUV-12495)
-              </button>
+                <button
+                  style={{
+                    background: 'var(--bg-cream)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-full)',
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}
+                  onClick={() => handleQuickSelect("NUV-58920")}
+                >
+                  🚚 In Transit (NUV-58920)
+                </button>
+                <button
+                  style={{
+                    background: 'var(--bg-cream)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-full)',
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}
+                  onClick={() => handleQuickSelect("NUV-12495")}
+                >
+                  ✓ Delivered (NUV-12495)
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
@@ -298,14 +343,14 @@ export default function OrderTracking({ sessionOrders }) {
                     const isActive = idx === trackedOrder.statusStep;
 
                     return (
-                      <div 
-                        key={idx} 
-                        style={{ 
-                          display: 'flex', 
-                          gap: '16px', 
-                          marginBottom: '24px', 
-                          position: 'relative', 
-                          zIndex: 2 
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          gap: '16px',
+                          marginBottom: '24px',
+                          position: 'relative',
+                          zIndex: 2
                         }}
                       >
                         {/* Circle Indicator */}
@@ -334,10 +379,10 @@ export default function OrderTracking({ sessionOrders }) {
 
                         {/* Text labels */}
                         <div>
-                          <span style={{ 
-                            display: 'block', 
-                            fontSize: '13px', 
-                            fontWeight: isActive ? '800' : '700', 
+                          <span style={{
+                            display: 'block',
+                            fontSize: '13px',
+                            fontWeight: isActive ? '800' : '700',
                             color: isCompleted ? 'var(--success)' : isActive ? 'var(--brand-accent)' : 'var(--text-secondary)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.3px'
@@ -363,12 +408,12 @@ export default function OrderTracking({ sessionOrders }) {
                     Shipment Items:
                   </h4>
                   {trackedOrder.items.map((item, index) => (
-                    <div 
-                      key={index} 
-                      style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        fontSize: '13px', 
+                    <div
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        fontSize: '13px',
                         color: 'var(--text-secondary)',
                         marginBottom: '6px'
                       }}

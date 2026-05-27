@@ -173,6 +173,8 @@ a {
 .main-content {
   flex-grow: 1;
   padding-bottom: 60px;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
@@ -3173,10 +3175,11 @@ a {
 .app-body-container {
   display: flex;
   gap: 0 !important;
-  align-items: flex-start;
+  align-items: stretch;
   padding-top: 0;
   padding-left: 0 !important;
   padding-right: 0 !important;
+  flex-grow: 1;
   /* Remove left/right gap for flush sidebar and full-width main content wrappers */
 }
 
@@ -3184,6 +3187,8 @@ a {
   flex-grow: 1;
   min-width: 0;
   padding-top: 0;
+  display: flex;
+  flex-direction: column;
   /* Remove top padding for flush Category Bar */
 }
 
@@ -4667,4 +4672,12 @@ a {
   .testing-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Order Tracking Page Custom Spacing to prevent footer overlapping */
+.order-tracking-page-container {
+  padding-top: 40px !important;
+  padding-bottom: 450px !important;
+  min-height: 85vh;
+  box-sizing: border-box;
 }

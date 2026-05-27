@@ -9,7 +9,8 @@ export default function CartPage({
   onCheckoutComplete,
   user,
   onLoginPrompt,
-  onContinueShopping
+  onContinueShopping,
+  onTrackOrder
 }) {
   const [discount, setDiscount] = useState(0);
   const [appliedCode, setAppliedCode] = useState("");
@@ -101,13 +102,22 @@ export default function CartPage({
           💡 Copy this Order ID to track your BlueDart shipment in the "Track Order" page!
         </p>
 
-        <button
-          className="empty-state-btn"
-          onClick={onContinueShopping}
-          style={{ width: '100%', maxWidth: '280px', margin: '0 auto' }}
-        >
-          Continue Shopping
-        </button>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '24px', flexWrap: 'wrap' }}>
+          <button
+            className="checkout-btn"
+            onClick={() => onTrackOrder && onTrackOrder(generatedOrderId)}
+            style={{ width: '100%', maxWidth: '220px', margin: '0', padding: '12px 24px', fontSize: '14px' }}
+          >
+            🚚 Track Order Status
+          </button>
+          <button
+            className="empty-state-btn"
+            onClick={onContinueShopping}
+            style={{ width: '100%', maxWidth: '220px', margin: '0', padding: '12px 24px', fontSize: '14px', border: '1.5px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)' }}
+          >
+            Continue Shopping
+          </button>
+        </div>
       </div>
     );
   }
