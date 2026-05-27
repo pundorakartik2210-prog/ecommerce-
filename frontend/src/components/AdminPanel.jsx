@@ -4,14 +4,6 @@ import { API_URL } from '../config.js';
 
 
 const ADMIN_CREDENTIALS = { email: 'nuvera@gmail.com', password: '123456' };
-const MOCK_ORDERS = [
-  { id: 'NUV-12495', date: '2026-05-12', customer: 'Rahul Sharma', email: 'rahul@example.com', total: 948, status: 'Delivered', items: [{ name: 'Classic Creamy Peanut Butter 1kg', qty: 2, price: 599 }] },
-  { id: 'NUV-58920', date: '2026-05-15', customer: 'Priya Mehta', email: 'priya@example.com', total: 749, status: 'Shipped', items: [{ name: 'Chocolate Smoothy 1kg', qty: 1, price: 749 }] },
-  { id: 'NUV-90184', date: '2026-05-16', customer: 'Aarav Singh', email: 'aarav@example.com', total: 4699, status: 'Packed', items: [{ name: 'High-Protein Power Butter 2.5kg', qty: 1, price: 2300 }, { name: 'All-Natural Extra Crunchy 5kg', qty: 1, price: 2399 }] },
-  { id: 'NUV-34512', date: '2026-05-17', customer: 'Sneha Gupta', email: 'sneha@example.com', total: 1199, status: 'Ordered', items: [{ name: 'High-Protein Power Butter 1kg', qty: 1, price: 1199 }] },
-  { id: 'NUV-67831', date: '2026-05-18', customer: 'Vikram Agarwal', email: 'vikram@example.com', total: 1798, status: 'Ordered', items: [{ name: 'Honey Almond Peanut Blend 1kg', qty: 2, price: 899 }] },
-  { id: 'NUV-23409', date: '2026-05-19', customer: 'Meera Reddy', email: 'meera@example.com', total: 569, status: 'Shipped', items: [{ name: 'Organic Pure Sugar-Free 1kg', qty: 1, price: 569 }] },
-];
 
 const STATUS_COLORS = {
   Ordered: { bg: '#eff6ff', text: '#2563eb', dot: '#3b82f6' },

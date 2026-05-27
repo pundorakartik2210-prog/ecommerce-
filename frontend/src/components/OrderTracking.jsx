@@ -1,37 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config.js';
 
-const MOCK_DB_ORDERS = {
-  "NUV-12495": {
-    orderId: "NUV-12495",
-    date: "2026-05-12",
-    total: 948,
-    statusStep: 4,
-    items: [
-      { name: "Classic Creamy Peanut Butter", selectedWeight: "1kg", quantity: 2, price: 599 },
-      { name: "Organic Pure Sugar-Free", selectedWeight: "2.5kg", quantity: 1, price: 1249 }
-    ]
-  },
-  "NUV-58920": {
-    orderId: "NUV-58920",
-    date: "2026-05-15",
-    total: 749,
-    statusStep: 2,
-    items: [
-      { name: "Chocolate Smoothy", selectedWeight: "1kg", quantity: 1, price: 749 }
-    ]
-  },
-  "NUV-90184": {
-    orderId: "NUV-90184",
-    date: "2026-05-16",
-    total: 4699,
-    statusStep: 1,
-    items: [
-      { name: "High-Protein Power Butter", selectedWeight: "2.5kg", quantity: 1, price: 2300 },
-      { name: "All-Natural Extra Crunchy", selectedWeight: "5kg", quantity: 1, price: 2399 }
-    ]
-  }
-};
 
 const TIMELINE_STEPS = [
   { label: "Ordered", desc: "Order received" },
@@ -85,11 +54,7 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
       console.error("Error tracking order from backend:", err);
     }
 
-    if (MOCK_DB_ORDERS[query]) {
-      setTrackedOrder(MOCK_DB_ORDERS[query]);
-    } else {
-      setTrackedOrder(null);
-    }
+    setTrackedOrder(null);
     setLoading(false);
   };
 
@@ -193,10 +158,10 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
           </div>
 
           {/* Quick lookup Chips */}
-          {!autoTrackOrderId && (
+          {!autoTrackOrderId && sessionOrderIds.length > 0 && (
             <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: '24px' }}>
               <h4 style={{ textTransform: 'uppercase', color: 'var(--text-light)', fontSize: '11px', fontWeight: '800', margin: '0 0 12px 0', letterSpacing: '0.5px' }}>
-                Select a Demo Order to Test:
+                Your Placed Orders:
               </h4>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {sessionOrderIds.map(oid => (
@@ -215,54 +180,9 @@ export default function OrderTracking({ sessionOrders, autoTrackOrderId, onClear
                     }}
                     onClick={() => handleQuickSelect(oid)}
                   >
-                    🛒 Active Order ({oid})
+                    🛒 Order {oid}
                   </button>
                 ))}
-                <button
-                  style={{
-                    background: 'var(--bg-cream)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-full)',
-                    cursor: 'pointer',
-                    color: 'var(--text-secondary)',
-                    padding: '6px 14px',
-                    fontSize: '12px',
-                    fontWeight: '600'
-                  }}
-                  onClick={() => handleQuickSelect("NUV-90184")}
-                >
-                  📦 Packed (NUV-90184)
-                </button>
-                <button
-                  style={{
-                    background: 'var(--bg-cream)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-full)',
-                    cursor: 'pointer',
-                    color: 'var(--text-secondary)',
-                    padding: '6px 14px',
-                    fontSize: '12px',
-                    fontWeight: '600'
-                  }}
-                  onClick={() => handleQuickSelect("NUV-58920")}
-                >
-                  🚚 In Transit (NUV-58920)
-                </button>
-                <button
-                  style={{
-                    background: 'var(--bg-cream)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-full)',
-                    cursor: 'pointer',
-                    color: 'var(--text-secondary)',
-                    padding: '6px 14px',
-                    fontSize: '12px',
-                    fontWeight: '600'
-                  }}
-                  onClick={() => handleQuickSelect("NUV-12495")}
-                >
-                  ✓ Delivered (NUV-12495)
-                </button>
               </div>
             </div>
           )}
