@@ -134,7 +134,7 @@ class ContactController extends Controller
                 'name' => $item['name'] . ' (' . $selectedWeight . ')',
                 'units' => (int)($item['quantity'] ?? 1),
                 'price' => number_format($price, 2),
-                'image_url' => isset($item['image']) ? 'http://localhost:5173' . $item['image'] : ''
+                'image_url' => isset($item['image']) ? config('app.frontend_url') . $item['image'] : ''
             ];
         }
 
@@ -146,7 +146,7 @@ class ContactController extends Controller
             'email' => $email,
             'order_id' => $orderId,
             'verification_code' => (string) $code,
-            'verification_link' => "http://localhost:5173/?confirm_order=1&order_id={$orderId}&code={$code}",
+            'verification_link' => config('app.frontend_url') . "/?confirm_order=1&order_id={$orderId}&code={$code}",
             'total' => '₹' . $total,
             'orders' => $orders,
             'cost' => [

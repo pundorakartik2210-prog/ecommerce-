@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { initiateRazorpayPayment } from './utils/razorpay';
+import { API_URL } from './config.js';
 import { PRODUCTS } from './data/products';
 import Navbar from './components/Navbar';
 import PromoSlider from './components/PromoSlider';
@@ -192,7 +193,7 @@ export default function App() {
       setGlobalVerifySuccess('');
 
       // Step 1: Verify the email confirmation link
-      fetch('http://127.0.0.1:8000/api/orders/verify', {
+      fetch(`${API_URL}/api/orders/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ orderId, code }),
