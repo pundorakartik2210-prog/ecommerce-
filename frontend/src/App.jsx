@@ -279,7 +279,9 @@ export default function App() {
                       name: item.name,
                       selectedWeight: item.selectedWeight || '1kg',
                       quantity: item.quantity || 1,
-                      price: item.price || 0
+                      price: item.prices
+                        ? (item.prices[item.selectedWeight] || item.prices[item.selectedWeight.replace(/\s+/g, '')] || Object.values(item.prices)[0])
+                        : (item.price || 0)
                     })) : []
                   };
                 });
@@ -353,7 +355,9 @@ export default function App() {
                 name: item.name,
                 selectedWeight: item.selectedWeight,
                 quantity: item.quantity,
-                price: item.prices[item.selectedWeight],
+                price: item.prices
+                   ? (item.prices[item.selectedWeight] || item.prices[item.selectedWeight.replace(/\s+/g, '')] || Object.values(item.prices)[0])
+                   : (item.price || 0),
               })),
             };
 
