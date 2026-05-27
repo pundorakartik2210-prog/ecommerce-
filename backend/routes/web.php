@@ -26,6 +26,18 @@ Route::get('/api/run-migrations', function () {
     }
 });
 
+Route::get('/api/db-status', function () {
+    return response()->json([
+        'default_connection' => config('database.default'),
+        'mysql_config' => [
+            'host' => config('database.connections.mysql.host'),
+            'port' => config('database.connections.mysql.port'),
+            'database' => config('database.connections.mysql.database'),
+            'username' => config('database.connections.mysql.username'),
+        ]
+    ]);
+});
+
 Route::post('/api/contact/send', [ContactController::class, 'sendContactEmail']);
 Route::post('/api/welcome-email', [ContactController::class, 'sendWelcomeEmail']);
 Route::post('/api/orders/pending', [ContactController::class, 'createPendingOrder']);
