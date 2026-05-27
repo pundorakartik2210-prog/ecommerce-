@@ -9,6 +9,23 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/api/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'ProductSeeder', '--force' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Migrations and seeders run successfully!',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
+
 Route::post('/api/contact/send', [ContactController::class, 'sendContactEmail']);
 Route::post('/api/welcome-email', [ContactController::class, 'sendWelcomeEmail']);
 Route::post('/api/orders/pending', [ContactController::class, 'createPendingOrder']);
