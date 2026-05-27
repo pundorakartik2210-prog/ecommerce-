@@ -45,7 +45,7 @@ export const PRODUCTS = [
       { id: 20, author: "Siddharth P.", rating: 4, date: "2026-02-05", comment: "Fast delivery, fresh product, great taste. The Himalayan salt adds a lovely subtle flavor that elevates it above standard peanut butters." },
       { id: 21, author: "Farida I.", rating: 5, date: "2026-01-30", comment: "I have tried over a dozen natural peanut butters and this is genuinely the best one in terms of quality and value ratio." }
     ],
-    image: "/src/assets/classic_creamy.png",
+    image: "/assets/classic_creamy.png",
     color: "#E29543",
     bgGradient: "linear-gradient(135deg, #F8E2C4 0%, #D4A36A 100%)"
   },
@@ -76,7 +76,7 @@ export const PRODUCTS = [
       { id: 1, author: "Rohan V.", rating: 5, date: "2026-05-24", comment: "Exactly what I wanted. Real classic peanut butter but with a perfect crunch in every mouthful." },
       { id: 2, author: "Neha S.", rating: 4, date: "2026-05-20", comment: "Great texture. Spreads easily and has a really good crunch factor. Not too salty." }
     ],
-    image: "/src/assets/classic-crunchy.png",
+    image: "/assets/classic-crunchy.png",
     color: "#D97706",
     bgGradient: "linear-gradient(135deg, #FEF3C7 0%, #D97706 100%)"
   },
@@ -126,7 +126,7 @@ export const PRODUCTS = [
       { id: 20, author: "Isha R.", rating: 5, date: "2026-01-25", comment: "Five star product without a doubt. The crunchy texture makes every bite exciting. Will never switch brands." },
       { id: 21, author: "Bhuvan K.", rating: 5, date: "2026-01-19", comment: "Ridiculously good. Better than anything I've had from premium foreign brands at double the price." }
     ],
-    image: "/src/assets/extra_crunchy.png",
+    image: "/assets/extra_crunchy.png",
     color: "#C67A32",
     bgGradient: "linear-gradient(135deg, #ECC89E 0%, #B0692D 100%)"
   },
@@ -176,7 +176,7 @@ export const PRODUCTS = [
       { id: 20, author: "Geeta N.", rating: 5, date: "2026-01-23", comment: "Bought on a friend's recommendation and this is hands down the best chocolate peanut butter I have ever tried." },
       { id: 21, author: "Chirag A.", rating: 4, date: "2026-01-17", comment: "Very good product. Taste profile is exactly what you expect from premium dark chocolate peanut butter." }
     ],
-    image: "/src/assets/chocolate-smoothy.png",
+    image: "/assets/chocolate-smoothy.png",
     color: "#543310",
     bgGradient: "linear-gradient(135deg, #AE8660 0%, #462507 100%)"
   },
@@ -226,7 +226,7 @@ export const PRODUCTS = [
       { id: 20, author: "Arun L.", rating: 5, date: "2026-01-27", comment: "This is the cleanest high-protein spread I've ever tried. No fillers, no artificial sweeteners, just real food fuel." },
       { id: 21, author: "Madhuri T.", rating: 5, date: "2026-01-21", comment: "Five stars without hesitation. The quality is world-class and you can genuinely feel the difference in your workouts." }
     ],
-    image: "/src/assets/fitness_power.png",
+    image: "/assets/fitness_power.png",
     color: "#1E3E62",
     bgGradient: "linear-gradient(135deg, #7C98B3 0%, #153250 100%)"
   },
@@ -276,7 +276,7 @@ export const PRODUCTS = [
       { id: 20, author: "Vaibhav S.", rating: 4, date: "2026-01-22", comment: "Simple, pure, effective. No marketing gimmicks here — just great peanut butter as nature intended." },
       { id: 21, author: "Chandni A.", rating: 5, date: "2026-01-16", comment: "This product has genuinely changed how I approach healthy eating. Feels good knowing exactly what's in my food." }
     ],
-    image: "/src/assets/sugar_free.png",
+    image: "/assets/sugar_free.png",
     color: "#606C38",
     bgGradient: "linear-gradient(135deg, #A3B18A 0%, #47532A 100%)"
   },
@@ -326,7 +326,7 @@ export const PRODUCTS = [
       { id: 20, author: "Rina S.", rating: 5, date: "2026-01-23", comment: "Beautiful new product from an already great brand. The almond and honey combination is inspired." },
       { id: 21, author: "Mihir P.", rating: 5, date: "2026-01-17", comment: "I've been eating this for breakfast every day since launch. The flavor is consistently excellent and never gets boring." }
     ],
-    image: "/src/assets/honey_almond.png",
+    image: "/assets/honey_almond.png",
     color: "#B5823F",
     bgGradient: "linear-gradient(135deg, #E6C594 0%, #8C5F23 100%)"
   }
