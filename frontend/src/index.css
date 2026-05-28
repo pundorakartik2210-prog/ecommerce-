@@ -59,6 +59,7 @@
   background-color: var(--bg-cream);
   line-height: 1.5;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 *,
@@ -660,11 +661,10 @@ a {
   margin: 0 auto;
   padding: 14px 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  gap: 24px;
-  min-width: 760px;
-  /* Force minimum width to enable scrolling on mobile */
+  gap: 16px;
+  /* No min-width — wrapper overflow-x: auto handles horizontal scroll */
 }
 
 .category-item {
