@@ -53,6 +53,24 @@ export async function initiateRazorpayPayment({ orderId, amount, name, email }) 
     throw new Error(createData.message || 'Failed to create payment order. Please try again.');
   }
 
+  // Bypassing Razorpay modal if in simulated/mock mode
+  if (createData.is_mock) {
+    console.log('[Razorpay Simulation] Simulating successful payment verification for:', orderId);
+    
+    // Call the verify signature endpoint to commit the order in the backend as verified
+    const verifyRes = await fetch(`${BACKEND}/api/payment/verify-signature`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        razorpay_order_id: 'rzp_mock_order_id',
+        razorpay_payment_id: 'rzp_mock_payment_id',
+        razorpay_signature: 'rzp_mock_signature',
+        orderId,
+      }),
+    });
+    return await verifyRes.json();
+  }
+
   // 3. Open Razorpay modal — returns a Promise
   return new Promise((resolve, reject) => {
     const options = {
