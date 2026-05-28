@@ -300,7 +300,7 @@ a {
 }
 
 .search-btn {
-  background: var(--brand-primary);
+  background: var(--brand-accent);
   border: none;
   border-radius: var(--radius-full);
   width: 36px;
@@ -310,12 +310,15 @@ a {
   justify-content: center;
   cursor: pointer;
   color: var(--bg-white);
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 10px rgba(226, 149, 67, 0.25);
 }
 
 .search-btn:hover {
-  background: var(--brand-accent);
-  transform: scale(1.05);
+  background: var(--brand-primary);
+  color: var(--bg-white);
+  transform: scale(1.08) rotate(5deg);
+  box-shadow: 0 6px 14px rgba(92, 58, 33, 0.2);
 }
 
 /* Search Suggestions Dropdown */
