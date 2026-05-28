@@ -32,6 +32,14 @@
   --wishlist-color: #ef4444;
   /* Vibrant Heart Red */
 
+  /* Premium Juniper Sage Auth Theme (Distinct from site brown/gold) */
+  --auth-primary: #1e352f;
+  --auth-secondary: #3b5a4d;
+  --auth-accent: #cfa47e;
+  --auth-accent-hover: #b58c67;
+  --auth-bg-light: #f3f7f5;
+  --auth-border: #ccd9d2;
+
   /* Shadows and Rounding */
   --radius-sm: 6px;
   --radius-md: 12px;
@@ -1839,6 +1847,13 @@ a {
   animation: fadeIn 0.2s ease-out;
 }
 
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: center;
+  }
+}
+
 .modal-body {
   width: 880px;
   max-width: 100%;
@@ -3198,35 +3213,359 @@ a {
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .auth-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  position: relative;
 }
 
 .auth-form-group label {
-  font-size: 13px;
-  font-weight: 750;
-  color: var(--text-secondary);
-}
-
-.auth-input {
-  padding: 12px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  outline: none;
-  background: var(--bg-cream);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--auth-primary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
   transition: var(--transition);
 }
 
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: var(--transition);
+  z-index: 5;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 16px 14px 46px;
+  border: 1.5px solid var(--auth-border);
+  border-radius: 14px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  outline: none;
+  background: var(--auth-bg-light);
+  color: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(34, 60, 48, 0.02);
+}
+
+.auth-input::placeholder {
+  color: var(--text-light);
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.auth-input:hover {
+  border-color: #b8c8be;
+  background: #ffffff;
+}
+
 .auth-input:focus {
-  border-color: var(--brand-accent);
-  background: var(--bg-white);
-  box-shadow: 0 0 0 3px rgba(226, 149, 67, 0.12);
+  border-color: var(--auth-secondary);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 90, 77, 0.15), inset 0 2px 4px rgba(34, 60, 48, 0.01);
+}
+
+.auth-input-wrapper:focus-within .auth-input-icon {
+  color: var(--auth-secondary);
+  transform: scale(1.05);
+}
+
+/* Autofill override for a premium look matching the cream/beige inputs */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover, 
+.auth-input:-webkit-autofill:focus, 
+.auth-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 100px var(--auth-bg-light) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  border: 1.5px solid var(--auth-border) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Eye button toggler styling */
+.auth-visibility-btn {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: var(--transition);
+  z-index: 5;
+}
+
+.auth-visibility-btn:hover {
+  color: var(--auth-primary);
+  background: rgba(34, 60, 48, 0.05);
+}
+
+/* Premium gradient primary action button */
+.auth-submit-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 750;
+  font-family: var(--font-sans);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-secondary) 100%);
+  box-shadow: 0 4px 15px rgba(34, 60, 48, 0.2);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34, 60, 48, 0.3);
+  background: linear-gradient(135deg, #182c23 0%, var(--auth-primary) 100%);
+}
+
+.auth-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(34, 60, 48, 0.2);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Decorative divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--auth-border), transparent);
+}
+
+.auth-divider-text {
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Premium modal frame enhancements */
+.auth-modal-body {
+  border-radius: 28px !important;
+  border: 1px solid rgba(34, 60, 48, 0.08) !important;
+  box-shadow: 0 20px 50px rgba(34, 60, 48, 0.15) !important;
+  overflow: hidden;
+  background: #ffffff;
+  position: relative;
+}
+
+/* Auth form scroll panel — desktop padding, mobile-overridden */
+.auth-form-scroll {
+  padding: 44px 36px 36px;
+}
+
+@media (max-width: 768px) {
+  .auth-form-scroll {
+    padding: 28px 20px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form-scroll {
+    padding: 20px 16px 20px;
+  }
+}
+
+/* Background radial gradient overlay inside modal */
+.auth-modal-bg-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 160px;
+  background: radial-gradient(circle at top, rgba(59, 90, 77, 0.08) 0%, rgba(59, 90, 77, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-close-btn-premium {
+  position: absolute !important;
+  top: 20px !important;
+  right: 20px !important;
+  background: var(--auth-bg-light) !important;
+  border: 1px solid var(--auth-border) !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  color: var(--auth-secondary) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(34, 60, 48, 0.04) !important;
+}
+
+.auth-close-btn-premium:hover {
+  transform: rotate(90deg);
+  background: var(--bg-white) !important;
+  color: var(--auth-primary) !important;
+  border-color: var(--auth-secondary) !important;
+  box-shadow: 0 4px 12px rgba(59, 90, 77, 0.15) !important;
+}
+
+/* --- Split Landscape Panel Layout --- */
+.auth-split-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+}
+
+.auth-split-visual-panel {
+  width: 40%;
+  background: linear-gradient(135deg, var(--auth-primary) 0%, var(--auth-secondary) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 44px 32px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset -5px 0 15px rgba(0,0,0,0.05);
+}
+
+.auth-split-form-panel {
+  width: 60%;
+  background: #ffffff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-visual-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.07;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0);
+  background-size: 16px 16px;
+}
+
+.auth-visual-glow {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--auth-accent);
+  filter: blur(80px);
+  bottom: -40px;
+  left: -20px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  /* Auth modal mobile: full-screen friendly */
+  .auth-modal-body {
+    border-radius: 20px !important;
+    max-height: 95vh !important;
+    margin: 10px !important;
+  }
+
+  .auth-split-visual-panel {
+    display: none;
+  }
+
+  .auth-split-form-panel {
+    width: 100%;
+  }
+
+  .auth-split-container {
+    min-height: unset;
+    height: auto;
+  }
+
+  /* Reduce form padding on mobile */
+  .modal-scrollable-content[style] {
+    padding: 28px 20px 24px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .auth-modal-body {
+    border-radius: 16px !important;
+    max-height: 98vh !important;
+    margin: 4px !important;
+  }
+
+  .auth-close-btn-premium {
+    top: 12px !important;
+    right: 12px !important;
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  /* Scale down inputs on very small phones */
+  .auth-input {
+    height: 44px !important;
+    font-size: 15px !important;
+  }
+
+  .auth-submit-btn {
+    height: 46px !important;
+    font-size: 14px !important;
+  }
+
+  /* Prevent Google Login iframe overflow */
+  .auth-split-form-panel iframe,
+  .auth-split-form-panel > div iframe {
+    max-width: 100% !important;
+  }
+
+  /* Tighter form gap on tiny screens */
+  .auth-form {
+    gap: 14px !important;
+  }
 }
 
 /* Navbar Profile Dropdown */
@@ -5265,5 +5604,227 @@ html.dark .benefit-card:hover .benefit-icon-wrapper {
     width: 100%;
     text-align: left;
     gap: 16px;
+  }
+}
+
+/* --- ADVANCED MOBILE RESPONSIVENESS AND AESTHETIC UPGRADES --- */
+
+/* Promo Slider mobile responsive design */
+@media (max-width: 768px) {
+  .promo-slide {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 420px;
+    padding-bottom: 28px;
+  }
+  
+  .slide-content {
+    width: 100% !important;
+    padding: 36px 24px 20px 24px !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  
+  .slide-title {
+    font-size: 28px !important;
+    text-align: center !important;
+    margin-bottom: 12px !important;
+    line-height: 1.2 !important;
+  }
+  
+  .slide-description {
+    font-size: 13.5px !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    max-width: 100% !important;
+  }
+  
+  .slide-actions {
+    width: 100% !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+  
+  .slide-illustration {
+    display: none !important; /* Hide image column on small screens to keep typography highly readable */
+  }
+}
+
+@media (max-width: 480px) {
+  .promo-slide {
+    min-height: 450px;
+  }
+  
+  .slide-content {
+    padding: 24px 16px 16px 16px !important;
+  }
+  
+  .slide-title {
+    font-size: 22px !important;
+  }
+  
+  .slide-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .slide-btn,
+  .slide-coupon-badge {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* Product Details Modal sizes chips and action buttons stacking */
+.size-cards-stack {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 28px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.size-card-row {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 14px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-white);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  text-align: center;
+  min-width: 0;
+}
+
+.size-card-row.selected {
+  border: 2.5px solid var(--brand-primary);
+  background: rgba(92, 58, 33, 0.03);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 576px) {
+  .size-cards-stack {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  .size-card-row {
+    flex: none !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  
+  .product-details-close-btn {
+    top: 12px !important;
+    right: 12px !important;
+    width: 38px !important;
+    height: 38px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-actions-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .modal-wishlist-btn,
+  .modal-add-cart-btn {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Cart Page Drawer-Item vertical stacking style for mobile viewports */
+.drawer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.drawer-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex: 1 0 auto;
+  justify-content: flex-end;
+}
+
+@media (max-width: 576px) {
+  .drawer-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 16px 12px !important;
+    background: var(--bg-cream);
+    border-radius: var(--radius-md);
+    margin-bottom: 12px;
+    border: 1px solid var(--border-color) !important;
+  }
+  
+  .drawer-item > div:first-child {
+    width: 100% !important;
+    flex: none !important;
+  }
+  
+  .drawer-item-actions {
+    width: 100% !important;
+    flex: none !important;
+    justify-content: space-between !important;
+    margin-top: 4px;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 12px;
+  }
+  
+  .item-remove-btn {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    padding: 6px !important;
+  }
+}
+
+/* Wishlist empty card adaptive padding overrides */
+.wishlist-empty-card {
+  background: linear-gradient(135deg, var(--bg-white) 0%, #faf6f0 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 56px 40px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+  .wishlist-empty-card {
+    padding: 32px 20px !important;
+    gap: 16px !important;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .wishlist-empty-card .heartbeat-pulse-badge {
+    margin: 0 auto;
+  }
+}
+
+/* General Product Grid single column safe stacking */
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 }

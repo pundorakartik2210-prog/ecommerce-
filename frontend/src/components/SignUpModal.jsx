@@ -118,315 +118,345 @@ export default function SignUpModal({ isOpen, onClose, onLoginSuccess, onSwitchT
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div
-        className="modal-body"
+        className="modal-body auth-modal-body"
         onClick={e => e.stopPropagation()}
         style={{
-          maxWidth: '440px',
-          width: '100%',
+          maxWidth: '820px',
+          width: 'calc(100% - 0px)',
           maxHeight: '90vh',
           display: 'flex',
-          flexDirection: 'column',
-          borderTop: '5px solid var(--brand-accent)',
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-white)',
-          boxShadow: 'var(--shadow-lg)'
+          flexDirection: 'column'
         }}
       >
-        <button
-          className="modal-close-btn"
-          onClick={handleClose}
-          aria-label="Close sign up modal"
-          style={{ top: '20px', right: '20px' }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+        <div className="auth-split-container">
+          {/* Left panel: Visual & Brand statement */}
+          <div className="auth-split-visual-panel">
+            <div className="auth-visual-pattern" />
+            <div className="auth-visual-glow" />
 
-        <div
-          className="modal-scrollable-content"
-          style={{
-            padding: '40px 32px 32px',
-            overflowY: 'auto',
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: 'rgba(226, 149, 67, 0.12)',
-              border: '2px solid rgba(226, 149, 67, 0.3)',
-              color: 'var(--brand-accent)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '16px',
-              boxShadow: '0 4px 12px rgba(226, 149, 67, 0.08)'
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <line x1="19" y1="8" x2="19" y2="14"></line>
-                <line x1="22" y1="11" x2="16" y2="11"></line>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: '700', letterSpacing: '0.03em', zIndex: 1 }}>
+              nuvera natural<span style={{ color: 'var(--auth-accent)' }}>.</span>
+            </div>
+
+            <div style={{ zIndex: 1, paddingRight: '20px' }}>
+              <div style={{ fontSize: '15px', fontStyle: 'italic', opacity: 0.85, lineHeight: '1.6', marginBottom: '8px' }}>
+                "Start your journey into natural well-being. Create an account to save wishlist items, track shipments and checkout faster."
+              </div>
+              <div style={{ width: '40px', height: '1.5px', background: 'var(--auth-accent)', margin: '16px 0' }} />
+              <div style={{ fontSize: '12px', letterSpacing: '1.5px', textTransform: 'uppercase', opacity: 0.7, fontWeight: '700' }}>
+                Fresh. Pure. Branded.
+              </div>
+            </div>
+
+            <div style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.5, fontWeight: '700', zIndex: 1 }}>
+              © nuvera organic Ltd.
+            </div>
+
+            {/* Botanical fine-line art vector overlay */}
+            <svg width="150" height="200" viewBox="0 0 100 150" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="auth-visual-art-overlay">
+              <path d="M50 140 C50 110, 40 70, 60 20" />
+              <path d="M48 115 C40 105, 30 100, 25 105 C20 110, 30 120, 42 122 Z" fill="currentColor" fillOpacity="0.05" />
+              <path d="M52 95 C62 85, 72 80, 78 85 C84 90, 74 100, 58 102 Z" fill="currentColor" fillOpacity="0.05" />
+              <path d="M47 80 C37 70, 27 65, 22 70 C17 75, 27 85, 41 87 Z" fill="currentColor" fillOpacity="0.05" />
+              <path d="M53 60 C63 50, 73 45, 78 50 C83 55, 73 65, 57 67 Z" fill="currentColor" fillOpacity="0.05" />
+              <path d="M49 45 C41 37, 33 32, 28 37 C23 42, 31 52, 45 50 Z" fill="currentColor" fillOpacity="0.05" />
+            </svg>
+          </div>
+
+          {/* Right panel: Sign Up form */}
+          <div className="auth-split-form-panel">
+            {/* Background glow overlay */}
+            <div className="auth-modal-bg-glow" />
+
+            <button
+              className="auth-close-btn-premium"
+              onClick={handleClose}
+              aria-label="Close sign up modal"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
-            </div>
-            <h3 style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '26px',
-              fontWeight: '800',
-              color: 'var(--brand-primary)',
-              margin: '0 0 8px'
-            }}>
-              Create Your Account
-            </h3>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-              Join nuvera natural — takes less than a minute!
-            </p>
-          </div>
+            </button>
 
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              text="signup_with"
-              shape="rectangular"
-              theme="outline"
-              size="large"
-              width="376"
-            />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '24px 0' }}>
-            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, var(--border-color))' }} />
-            <span style={{ fontSize: '11px', color: 'var(--text-light)', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              or sign up with email
-            </span>
-            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, var(--border-color))' }} />
-          </div>
-
-          {errorMsg && (
-            <div style={{
-              background: 'var(--error-light)',
-              color: 'var(--error)',
-              fontSize: '13px',
-              fontWeight: '700',
-              padding: '12px 16px',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              borderLeft: '4px solid var(--error)'
-            }}>
-              <span>⚠️</span> {errorMsg}
-            </div>
-          )}
-          {successMsg && (
-            <div style={{
-              background: 'var(--success-light)',
-              color: 'var(--success)',
-              fontSize: '13px',
-              fontWeight: '700',
-              padding: '12px 16px',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              borderLeft: '4px solid var(--success)'
-            }}>
-              <span>✓</span> {successMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="auth-form" style={{ gap: '20px' }}>
-            <div className="auth-form-group">
-              <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--brand-primary)', marginBottom: '6px' }}>Full Name</label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)', display: 'flex', alignItems: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
+            <div
+              className="modal-scrollable-content auth-form-scroll"
+              style={{
+                overflowY: 'auto',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                zIndex: 1
+              }}
+            >
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <div
+                  style={{
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, rgba(59, 90, 77, 0.12) 0%, rgba(34, 60, 48, 0.05) 100%)',
+                    border: '1.5px solid rgba(59, 90, 77, 0.25)',
+                    color: 'var(--auth-primary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '12px',
+                    boxShadow: '0 8px 20px rgba(34, 60, 48, 0.05)',
+                    transition: 'transform 0.3s ease'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  {/* Reverted back to the original add-user icon */}
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <line x1="19" y1="8" x2="19" y2="14" />
+                    <line x1="22" y1="11" x2="16" y2="11" />
                   </svg>
-                </span>
-                <input
-                  type="text"
-                  className="auth-input"
-                  style={{ paddingLeft: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
-                  placeholder="e.g. Rahul Sharma"
-                  required
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                />
+                </div>
+                <h3 style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '24px',
+                  fontWeight: '800',
+                  color: 'var(--auth-primary)',
+                  margin: '0 0 6px',
+                  letterSpacing: '-0.01em'
+                }}>
+                  Create Your Account
+                </h3>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4', fontWeight: '500' }}>
+                  Join nuvera natural — takes less than a minute!
+                </p>
               </div>
-            </div>
 
-            <div className="auth-form-group">
-              <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--brand-primary)', marginBottom: '6px' }}>Email Address</label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)', display: 'flex', alignItems: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                    <polyline points="22,6 12,13 2,6" />
-                  </svg>
-                </span>
-                <input
-                  type="email"
-                  className="auth-input"
-                  style={{ paddingLeft: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
-                  placeholder="e.g. rahul@example.com"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                <div style={{ width: '100%', maxWidth: '376px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)' }}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    text="signup_with"
+                    shape="rectangular"
+                    theme="outline"
+                    size="large"
+                    width="368"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="auth-form-group">
-              <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--brand-primary)', marginBottom: '6px' }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)', display: 'flex', alignItems: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                </span>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="auth-input"
-                  style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
-                  placeholder="Min. 6 characters"
-                  required
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
+              <div className="auth-divider">
+                <div className="auth-divider-line" />
+                <span className="auth-divider-text">or sign up with email</span>
+                <div className="auth-divider-line" />
+              </div>
+
+              {errorMsg && (
+                <div style={{
+                  background: 'var(--error-light)',
+                  color: 'var(--error)',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  borderLeft: '4px solid var(--error)',
+                  boxShadow: '0 2px 8px rgba(198, 40, 40, 0.05)'
+                }}>
+                  <span style={{ fontSize: '16px' }}>⚠️</span>
+                  <span style={{ flex: 1 }}>{errorMsg}</span>
+                </div>
+              )}
+              {successMsg && (
+                <div style={{
+                  background: 'var(--success-light)',
+                  color: 'var(--success)',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  borderLeft: '4px solid var(--success)',
+                  boxShadow: '0 2px 8px rgba(46, 125, 50, 0.05)'
+                }}>
+                  <span style={{ fontSize: '16px' }}>✓</span>
+                  <span style={{ flex: 1 }}>{successMsg}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="auth-form" style={{ gap: '14px' }}>
+                <div className="auth-form-group">
+                  <label>Full Name</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      className="auth-input"
+                      placeholder="e.g. Rahul Sharma"
+                      required
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="auth-form-group">
+                  <label>Email Address</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                    </span>
+                    <input
+                      type="email"
+                      className="auth-input"
+                      placeholder="e.g. rahul@example.com"
+                      required
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="auth-form-group">
+                  <label>Password</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="auth-input"
+                      style={{ paddingRight: '46px' }}
+                      placeholder="Min. 6 characters"
+                      required
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="auth-visibility-btn"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                          <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="auth-form-group">
+                  <label>Confirm Password</label>
+                  <div className="auth-input-wrapper">
+                    <span className="auth-input-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="auth-input"
+                      style={{ paddingRight: '46px' }}
+                      placeholder="Re-enter password"
+                      required
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="auth-visibility-btn"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showConfirmPassword ? (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                          <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="auth-submit-btn"
+                  disabled={loading}
+                  style={{ marginTop: '6px' }}
+                >
+                  {loading ? (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="spin" style={{ marginRight: '6px' }}>
+                        <line x1="12" y1="2" x2="12" y2="6"></line>
+                        <line x1="12" y1="18" x2="12" y2="22"></line>
+                        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                        <line x1="2" y1="12" x2="6" y2="12"></line>
+                        <line x1="18" y1="12" x2="22" y2="12"></line>
+                        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                      </svg>
+                      Creating Account...
+                    </>
+                  ) : 'Create Account'}
+                </button>
+              </form>
+
+              <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={onSwitchToSignIn}
                   style={{
-                    position: 'absolute',
-                    right: '16px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
+                    color: 'var(--auth-accent)',
+                    fontWeight: '700',
                     cursor: 'pointer',
-                    color: 'var(--text-light)',
-                    display: 'flex',
-                    alignItems: 'center',
                     padding: 0,
+                    fontFamily: 'inherit',
+                    textDecoration: 'underline',
+                    transition: 'color 0.2s ease'
                   }}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--auth-accent-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--auth-accent)'}
                 >
-                  {showPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                      <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                  )}
+                  Sign In
                 </button>
               </div>
             </div>
-
-            <div className="auth-form-group">
-              <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--brand-primary)', marginBottom: '6px' }}>Confirm Password</label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)', display: 'flex', alignItems: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                </span>
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  className="auth-input"
-                  style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-cream)' }}
-                  placeholder="Re-enter password"
-                  required
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={{
-                    position: 'absolute',
-                    right: '16px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--text-light)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: 0,
-                  }}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                >
-                  {showConfirmPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                      <line x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="checkout-btn"
-              disabled={loading}
-              style={{
-                width: '100%',
-                marginTop: '16px',
-                padding: '14px',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '16px',
-                fontWeight: '700',
-                boxShadow: '0 4px 14px rgba(92, 58, 33, 0.15)',
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
-
-          <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={onSwitchToSignIn}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--brand-accent)',
-                fontWeight: '700',
-                cursor: 'pointer',
-                padding: 0,
-                fontFamily: 'inherit',
-                textDecoration: 'underline'
-              }}
-            >
-              Sign In
-            </button>
           </div>
         </div>
       </div>

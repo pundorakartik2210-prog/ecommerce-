@@ -175,7 +175,7 @@ export default function ProductDetailsModal({
               <div className="size-selector-label" style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.8px', marginBottom: '10px' }}>
                 Choose Jar Weight & Quantities
               </div>
-              <div className="size-cards-stack" style={{ display: 'flex', gap: '14px', marginBottom: '28px', marginTop: '10px', width: '100%' }}>
+              <div className="size-cards-stack">
                 {Object.keys(prices).map(weight => {
                   const cleanWeight = weight.replace(/\s+/g, '');
                   const isGram = weight.toLowerCase().includes('g') && !weight.toLowerCase().includes('kg');
@@ -193,22 +193,6 @@ export default function ProductDetailsModal({
                       key={weight}
                       className={`size-card-row ${isSelected ? 'selected' : ''}`}
                       onClick={() => setSelectedWeight(cleanWeight)}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '20px 14px',
-                        borderRadius: '16px',
-                        border: isSelected ? '2.5px solid var(--brand-primary)' : '1.5px solid var(--border-color)',
-                        background: isSelected ? 'rgba(92, 58, 33, 0.03)' : 'var(--bg-white)',
-                        boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
-                        transition: 'all 0.25s ease',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        minWidth: 0
-                      }}
                     >
                       {/* Weight Label */}
                       <span style={{ fontSize: '16px', fontWeight: '850', color: 'var(--text-primary)', marginBottom: '2px' }}>

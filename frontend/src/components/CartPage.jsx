@@ -127,7 +127,33 @@ export default function CartPage({
 
   return (
     <div style={{ padding: '0 10px', width: '100%', margin: '0 auto' }}>
-      <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', color: 'var(--brand-primary)', margin: '0 0 20px 0' }}>Shopping Cart</h2>
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <h2 style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: '32px',
+          fontWeight: '800',
+          color: 'var(--brand-primary)',
+          margin: '0 0 8px 0',
+          letterSpacing: '-0.3px'
+        }}>
+          Shopping Cart
+        </h2>
+        <p style={{
+          fontSize: '14px',
+          color: 'var(--text-secondary)',
+          margin: '0',
+          fontFamily: 'var(--font-sans)'
+        }}>
+          Review your items and proceed to checkout
+        </p>
+        <div style={{
+          width: '48px',
+          height: '3px',
+          background: 'var(--brand-accent)',
+          borderRadius: '99px',
+          margin: '12px auto 0'
+        }}></div>
+      </div>
 
       {cart.length > 0 && (
         <div className="shipping-goal-tracker-card" style={{ marginBottom: '24px' }}>
@@ -171,15 +197,7 @@ export default function CartPage({
                   <div
                     key={`${item.id}-${item.selectedWeight}-${index}`}
                     className="drawer-item"
-                    style={{
-                      padding: '20px 0',
-                      borderBottom: index === cart.length - 1 ? 'none' : '1px solid var(--border-color)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '20px',
-                      flexWrap: 'wrap'
-                    }}
+                    style={{ borderBottom: index === cart.length - 1 ? 'none' : '' }}
                   >
                     {/* Left block: Image and Name details */}
                     <div style={{ display: 'flex', alignItems: 'center', flex: '2 1 300px', minWidth: 0 }}>
@@ -204,7 +222,7 @@ export default function CartPage({
                     </div>
 
                     {/* Middle-Right block: Quantity Selector & Price */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '32px', flex: '1 0 auto', justifyContent: 'flex-end' }}>
+                    <div className="drawer-item-actions">
                       <div className="qty-adjuster" style={{ padding: '4px 10px', flexShrink: 0 }}>
                         <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.selectedWeight, -1)} style={{ fontSize: '14px' }}>-</button>
                         <span className="qty-val" style={{ fontSize: '14px', minWidth: '20px' }}>{item.quantity}</span>
@@ -280,7 +298,7 @@ export default function CartPage({
                   ))}
                 </div>
               </div>
-              
+
               {appliedCode && (
                 <div style={{ fontSize: '12px', color: 'var(--success)', fontWeight: '700', marginTop: '14px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   <span>✓ Promo coupon applied: {appliedCode}</span>

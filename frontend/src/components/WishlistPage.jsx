@@ -97,17 +97,7 @@ export default function WishlistPage({
             ) : (
               /* Category Filter Empty State */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
-                <div style={{
-                  background: 'linear-gradient(135deg, var(--bg-white) 0%, #faf6f0 100%)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-sm)',
-                  padding: '48px 40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '32px',
-                  flexWrap: 'wrap'
-                }}>
+                <div className="wishlist-empty-card">
                   <div className="heartbeat-pulse-badge" style={{ width: '72px', height: '72px', flexShrink: 0 }}>
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="11" cy="11" r="8"></circle>
@@ -160,17 +150,7 @@ export default function WishlistPage({
         ) : (
           /* Entire Wishlist Empty State */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, var(--bg-white) 0%, #faf6f0 100%)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-sm)',
-              padding: '56px 40px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '32px',
-              flexWrap: 'wrap'
-            }}>
+            <div className="wishlist-empty-card">
               <div className="heartbeat-pulse-badge" style={{ width: '80px', height: '80px', flexShrink: 0 }}>
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
