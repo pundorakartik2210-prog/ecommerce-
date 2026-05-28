@@ -5626,12 +5626,19 @@ html.dark .benefit-card:hover .benefit-icon-wrapper {
     overflow: hidden !important;
     border-radius: 16px !important;
     box-sizing: border-box !important;
+    touch-action: pan-y !important;
   }
 
   .promo-slider-track {
     width: 100% !important;
     display: flex !important;
     flex-direction: row !important;
+    touch-action: pan-y !important;
+  }
+
+  .slide-blob-1,
+  .slide-blob-2 {
+    display: none !important;
   }
 
   .promo-slide {

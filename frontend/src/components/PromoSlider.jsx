@@ -118,7 +118,10 @@ export default function PromoSlider({ products = [], onShopNow }) {
     : [];
 
   // After CSS transition ends on a clone, instantly jump to the real counterpart
-  const handleTransitionEnd = useCallback(() => {
+  const handleTransitionEnd = useCallback((e) => {
+    // Only handle transition end for the track itself, not bubbled events from children
+    if (e && e.target !== e.currentTarget) return;
+
     if (displayIndex === 0) {
       // Was on cloned last → jump to real last (index = total)
       setAnimated(false);
