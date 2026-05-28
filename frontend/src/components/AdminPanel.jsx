@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import logoImg from '../assets/logo_final_white.png';
 import { API_URL } from '../config.js';
 
-
 const ADMIN_CREDENTIALS = { email: 'nuvera@gmail.com', password: '123456' };
 
 const STATUS_COLORS = {
@@ -43,6 +42,17 @@ const STEPS_STATUS_MAP = {
 export default function AdminPanel({ products, deletedProducts = [], onAddProduct, onUpdateProduct, onDeleteProduct, onRestoreProduct, onPermanentlyDeleteProduct, onDeleteSessionOrder, onClose, sessionOrders, onLogout }) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [orders, setOrders] = useState([]);
+  // Admin Panel has its own independent dark/light mode (does NOT affect main store)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('nuvera_admin_dark_mode') === 'true';
+  });
+  const toggleAdminDarkMode = () => {
+    setIsDarkMode(prev => {
+      const next = !prev;
+      localStorage.setItem('nuvera_admin_dark_mode', String(next));
+      return next;
+    });
+  };
   // Track status overrides for session (checkout-flow) orders separately
   const [sessionOrderStatuses, setSessionOrderStatuses] = useState(() => {
     const stored = localStorage.getItem('nuvera_session_order_statuses');
@@ -54,6 +64,30 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
   const [ingredientsInput, setIngredientsInput] = useState('');
   const [notification, setNotification] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
+
+  // Dynamic theme styling
+  const labelStyle = {
+    display: 'block',
+    color: isDarkMode ? '#64748b' : '#475569',
+    fontSize: '11px',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginBottom: '6px'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '10px 14px',
+    background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+    border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #cbd5e1',
+    borderRadius: '8px',
+    color: isDarkMode ? '#f8fafc' : '#0f172a',
+    fontSize: '13px',
+    outline: 'none',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit'
+  };
 
   // Fetch orders on load
   useEffect(() => {
@@ -249,7 +283,7 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
   ];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#0f172a' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', fontFamily: 'Plus Jakarta Sans, sans-serif', background: isDarkMode ? '#0f172a' : '#f8fafc', color: isDarkMode ? '#e2e8f0' : '#0f172a' }}>
       {/* Notification Toast */}
       {notification && (
         <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 10000, padding: '14px 20px', borderRadius: '12px', background: notification.type === 'error' ? '#7f1d1d' : '#14532d', border: `1px solid ${notification.type === 'error' ? '#ef4444' : '#22c55e'}`, color: '#f8fafc', fontSize: '14px', fontWeight: '600', boxShadow: '0 8px 32px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: '10px', animation: 'slideInRight 0.3s ease' }}>
@@ -258,20 +292,22 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
       )}
 
       {/* Sidebar */}
-      <div style={{ width: '240px', flexShrink: 0, background: '#1e293b', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', padding: '0' }}>
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ width: '240px', flexShrink: 0, background: isDarkMode ? '#1e293b' : '#ffffff', borderRight: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', padding: '0' }}>
+        <div style={{ padding: '20px', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src={logoImg} alt="Nuvera Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            <div style={{ background: 'white', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+              <img src={logoImg} alt="Nuvera Logo" style={{ width: '34px', height: '34px', objectFit: 'contain', display: 'block' }} />
+            </div>
             <div>
-              <div style={{ color: '#f8fafc', fontWeight: '800', fontSize: '15px' }}>Nuvera Admin</div>
-              <div style={{ color: '#64748b', fontSize: '11px' }}>Command Center</div>
+              <div style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: '800', fontSize: '15px' }}>Nuvera Admin</div>
+              <div style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '11px' }}>Command Center</div>
             </div>
           </div>
         </div>
 
         <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setActiveSection(item.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: activeSection === item.id ? 'linear-gradient(135deg, rgba(226,149,67,0.2), rgba(201,124,43,0.1))' : 'transparent', color: activeSection === item.id ? '#e29543' : '#94a3b8', fontWeight: activeSection === item.id ? '700' : '600', fontSize: '14px', textAlign: 'left', width: '100%', transition: 'all 0.2s', position: 'relative', borderLeft: activeSection === item.id ? '3px solid #e29543' : '3px solid transparent' }}>
+            <button key={item.id} onClick={() => setActiveSection(item.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: activeSection === item.id ? 'linear-gradient(135deg, rgba(226,149,67,0.2), rgba(201,124,43,0.1))' : 'transparent', color: activeSection === item.id ? '#e29543' : (isDarkMode ? '#94a3b8' : '#475569'), fontWeight: activeSection === item.id ? '700' : '600', fontSize: '14px', textAlign: 'left', width: '100%', transition: 'all 0.2s', position: 'relative', borderLeft: activeSection === item.id ? '3px solid #e29543' : '3px solid transparent' }}>
               <span style={{ fontSize: '16px' }}>{item.icon}</span>
               {item.label}
               {item.badge && <span style={{ marginLeft: 'auto', background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '2px 6px', borderRadius: '20px' }}>{item.badge}</span>}
@@ -279,8 +315,8 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
           ))}
         </nav>
 
-        <div style={{ padding: '16px 12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: 'transparent', color: '#64748b', fontSize: '13px', fontWeight: '600', width: '100%', marginBottom: '8px' }}>
+        <div style={{ padding: '16px 12px', borderTop: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0' }}>
+          <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: 'transparent', color: isDarkMode ? '#64748b' : '#475569', fontSize: '13px', fontWeight: '600', width: '100%', marginBottom: '8px' }}>
             🏪 View Store
           </button>
           <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: 'rgba(239,68,68,0.1)', color: '#f87171', fontSize: '13px', fontWeight: '600', width: '100%' }}>
@@ -292,20 +328,79 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Top Bar */}
-        <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1e293b', flexShrink: 0 }}>
+        <div style={{ padding: '20px 32px', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isDarkMode ? '#1e293b' : '#ffffff', flexShrink: 0 }}>
           <div>
-            <h1 style={{ color: '#f8fafc', fontSize: '22px', fontWeight: '800', margin: 0 }}>
+            <h1 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontSize: '22px', fontWeight: '800', margin: 0 }}>
               {navItems.find(n => n.id === activeSection)?.icon} {navItems.find(n => n.id === activeSection)?.label}
             </h1>
-            <p style={{ color: '#64748b', fontSize: '13px', margin: '2px 0 0' }}>nuvera natural Admin — {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '13px', margin: '2px 0 0' }}>nuvera natural Admin — {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src={logoImg} alt="Nuvera Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+            {/* Admin Dark/Bright Mode Toggle — only affects Admin Panel */}
+            <button
+              onClick={toggleAdminDarkMode}
+              title={isDarkMode ? 'Switch to Bright Mode' : 'Switch to Dark Mode'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: isDarkMode ? 'rgba(226,149,67,0.15)' : 'rgba(0,0,0,0.03)',
+                border: `1.5px solid ${isDarkMode ? 'rgba(226,149,67,0.4)' : '#cbd5e1'}`,
+                borderRadius: '50px',
+                padding: '6px 12px',
+                cursor: 'pointer',
+                color: isDarkMode ? '#e29543' : '#475569',
+                fontSize: '12px',
+                fontWeight: '700',
+                transition: 'all 0.25s ease',
+                fontFamily: 'Plus Jakarta Sans, sans-serif'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = '#e29543';
+                e.currentTarget.style.color = '#e29543';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = isDarkMode ? 'rgba(226,149,67,0.4)' : '#cbd5e1';
+                e.currentTarget.style.color = isDarkMode ? '#e29543' : '#475569';
+              }}
+            >
+              {isDarkMode ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5"/>
+                  <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+              )}
+              <span>{isDarkMode ? 'Dark Mode' : 'Bright Mode'}</span>
+              {/* Sliding pill track */}
+              <div style={{
+                width: '32px', height: '18px', borderRadius: '18px',
+                background: isDarkMode ? '#e29543' : 'rgba(0,0,0,0.15)',
+                position: 'relative', transition: 'background 0.3s ease', flexShrink: 0
+              }}>
+                <div style={{
+                  position: 'absolute', top: '2px',
+                  left: isDarkMode ? '14px' : '2px',
+                  width: '14px', height: '14px', borderRadius: '50%',
+                  background: 'white',
+                  transition: 'left 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                }} />
+              </div>
+            </button>
+
+            <div style={{ background: 'white', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+              <img src={logoImg} alt="Nuvera Logo" style={{ width: '30px', height: '30px', objectFit: 'contain', display: 'block' }} />
+            </div>
           </div>
         </div>
 
         {/* Page Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: '#0f172a' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px', background: isDarkMode ? '#0f172a' : '#f8fafc' }}>
 
           {/* ====== DASHBOARD ====== */}
           {activeSection === 'dashboard' && (
@@ -318,39 +413,39 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                   { label: 'Products Live', value: totalProducts, icon: '🏪', color: '#e29543', bgGrad: 'rgba(226,149,67,0.1)' },
                   { label: 'Pending Orders', value: pendingOrders, icon: '⏳', color: '#f59e0b', bgGrad: 'rgba(245,158,11,0.1)' },
                 ].map((card, i) => (
-                  <div key={i} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
+                  <div key={i} style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '80px', height: '80px', borderRadius: '50%', background: card.bgGrad, pointerEvents: 'none' }} />
                     <div style={{ fontSize: '28px', marginBottom: '12px' }}>{card.icon}</div>
                     <div style={{ color: card.color, fontSize: '28px', fontWeight: '800', lineHeight: 1 }}>{card.value}</div>
-                    <div style={{ color: '#64748b', fontSize: '13px', fontWeight: '600', marginTop: '6px' }}>{card.label}</div>
+                    <div style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '13px', fontWeight: '600', marginTop: '6px' }}>{card.label}</div>
                   </div>
                 ))}
               </div>
 
               {/* Recent Orders */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '16px', fontWeight: '700' }}>📋 Recent Orders</h3>
+                <div style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: '0 0 20px', fontSize: '16px', fontWeight: '700' }}>📋 Recent Orders</h3>
                   {allOrders.slice(0, 5).map(order => (
-                    <div key={order.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div key={order.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.04)' : '1px solid #cbd5e1' }}>
                       <div>
-                        <div style={{ color: '#f8fafc', fontWeight: '700', fontSize: '13px' }}>{order.id}</div>
-                        <div style={{ color: '#64748b', fontSize: '11px' }}>{order.customer}</div>
+                        <div style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: '700', fontSize: '13px' }}>{order.id}</div>
+                        <div style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '11px' }}>{order.customer}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ color: '#e29543', fontWeight: '700', fontSize: '13px' }}>₹{order.total.toLocaleString('en-IN')}</div>
-                        <span style={{ background: STATUS_COLORS[order.status]?.bg || '#1e293b', color: STATUS_COLORS[order.status]?.text || '#94a3b8', fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px' }}>{order.status}</span>
+                        <span style={{ background: STATUS_COLORS[order.status]?.bg || (isDarkMode ? '#1e293b' : '#f1f5f9'), color: STATUS_COLORS[order.status]?.text || (isDarkMode ? '#94a3b8' : '#475569'), fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px' }}>{order.status}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Product Summary */}
-                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '16px', fontWeight: '700' }}>🥜 Product Catalog</h3>
+                <div style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: '0 0 20px', fontSize: '16px', fontWeight: '700' }}>🥜 Product Catalog</h3>
                   {products.map((prod, i) => (
-                    <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: prod.bgGradient || '#334155', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.04)' : '1px solid #cbd5e1' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: prod.bgGradient || '#334155', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid #cbd5e1' }}>
                         {prod.image ? (
                           <img src={prod.image} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                         ) : (
@@ -358,8 +453,8 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                         )}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
-                        <div style={{ color: '#64748b', fontSize: '11px' }}>From ₹{prod.prices['250g'] !== undefined ? prod.prices['250g'] : Object.values(prod.prices)[0]}</div>
+                        <div style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
+                        <div style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '11px' }}>From ₹{prod.prices['250g'] !== undefined ? prod.prices['250g'] : Object.values(prod.prices)[0]}</div>
                       </div>
                       <span style={{ background: 'rgba(226,149,67,0.15)', color: '#e29543', fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px', whiteSpace: 'nowrap' }}>{prod.tag}</span>
                     </div>
@@ -373,14 +468,14 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
           {activeSection === 'orders' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '700' }}>All Orders ({allOrders.length})</h2>
+                <h2 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: 0, fontSize: '18px', fontWeight: '700' }}>All Orders ({allOrders.length})</h2>
               </div>
-              <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+              <div style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <tr style={{ background: isDarkMode ? 'rgba(255,255,255,0.04)' : '#f1f5f9', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0' }}>
                       {['Order ID', 'Customer', 'Date', 'Items', 'Total', 'Status', 'Action'].map(h => (
-                        <th key={h} style={{ padding: '14px 16px', color: '#64748b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>{h}</th>
+                        <th key={h} style={{ padding: '14px 16px', color: isDarkMode ? '#64748b' : '#475569', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -388,19 +483,19 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                     {allOrders.map((order, i) => {
                       const sc = STATUS_COLORS[order.status] || {};
                       return (
-                        <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                        <tr key={order.id} style={{ borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.04)' : '1px solid #cbd5e1', transition: 'background 0.2s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = isDarkMode ? 'rgba(255,255,255,0.02)' : '#f8fafc'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                           <td style={{ padding: '14px 16px', color: '#e29543', fontWeight: '700', fontSize: '13px' }}>{order.id}</td>
                           <td style={{ padding: '14px 16px' }}>
-                            <div style={{ color: '#f8fafc', fontSize: '13px', fontWeight: '600' }}>{order.customer}</div>
-                            <div style={{ color: '#64748b', fontSize: '11px' }}>{order.email}</div>
+                            <div style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontSize: '13px', fontWeight: '600' }}>{order.customer}</div>
+                            <div style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '11px' }}>{order.email}</div>
                           </td>
-                          <td style={{ padding: '14px 16px', color: '#94a3b8', fontSize: '12px' }}>{order.date}</td>
-                          <td style={{ padding: '14px 16px', color: '#94a3b8', fontSize: '12px' }}>{order.items?.length || 1} item{(order.items?.length || 1) > 1 ? 's' : ''}</td>
+                          <td style={{ padding: '14px 16px', color: isDarkMode ? '#94a3b8' : '#475569', fontSize: '12px' }}>{order.date}</td>
+                          <td style={{ padding: '14px 16px', color: isDarkMode ? '#94a3b8' : '#475569', fontSize: '12px' }}>{order.items?.length || 1} item{(order.items?.length || 1) > 1 ? 's' : ''}</td>
                           <td style={{ padding: '14px 16px', color: '#22c55e', fontWeight: '700', fontSize: '13px' }}>₹{order.total.toLocaleString('en-IN')}</td>
                           <td style={{ padding: '14px 16px' }}>
-                            <span style={{ background: sc.bg || '#1e293b', color: sc.text || '#94a3b8', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ background: sc.bg || (isDarkMode ? '#1e293b' : '#f1f5f9'), color: sc.text || (isDarkMode ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sc.dot || '#64748b', display: 'inline-block' }} />
                               {order.status}
                             </span>
@@ -408,7 +503,7 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                           <td style={{ padding: '14px 16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <select value={order.status} onChange={e => handleOrderStatusChange(order.id, e.target.value)}
-                                style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', outline: 'none' }}>
+                                style={{ background: isDarkMode ? '#0f172a' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #cbd5e1', color: isDarkMode ? '#f8fafc' : '#0f172a', borderRadius: '8px', padding: '6px 10px', fontSize: '12px', cursor: 'pointer', outline: 'none' }}>
                                 {['Ordered', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map(s => <option key={s} value={s}>{s}</option>)}
                               </select>
                               <button onClick={() => handleDeleteOrder(order.id)}
@@ -433,7 +528,7 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
           {activeSection === 'products' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '700' }}>Product Catalog ({products.length})</h2>
+                <h2 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: 0, fontSize: '18px', fontWeight: '700' }}>Product Catalog ({products.length})</h2>
                 <button onClick={openAddProduct} style={{ background: 'linear-gradient(135deg, #e29543, #c97c2b)', border: 'none', borderRadius: '10px', color: '#fff', padding: '10px 20px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 14px rgba(226,149,67,0.3)' }}>
                   🚀 Launch New Product
                 </button>
@@ -441,7 +536,7 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {products.map(prod => (
-                  <div key={prod.id} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', transition: 'transform 0.2s' }}
+                  <div key={prod.id} style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', overflow: 'hidden', transition: 'transform 0.2s' }}
                     onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                     onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                     <div style={{ height: '100px', background: prod.bgGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -459,11 +554,11 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                       <span style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px' }}>{prod.tag}</span>
                     </div>
                     <div style={{ padding: '16px' }}>
-                      <h3 style={{ color: '#f8fafc', fontSize: '15px', fontWeight: '700', margin: '0 0 4px' }}>{prod.name}</h3>
-                      <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.4' }}>{prod.tagline}</p>
+                      <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontSize: '15px', fontWeight: '700', margin: '0 0 4px' }}>{prod.name}</h3>
+                      <p style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.4' }}>{prod.tagline}</p>
                       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                         {Object.entries(prod.prices || {}).map(([w, p]) => (
-                          <span key={w} style={{ background: 'rgba(226,149,67,0.12)', color: '#e29543', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>{w}: ₹{p}</span>
+                          <span key={w} style={{ background: isDarkMode ? 'rgba(226,149,67,0.12)' : 'rgba(226,149,67,0.08)', color: '#e29543', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>{w}: ₹{p}</span>
                         ))}
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
@@ -481,7 +576,7 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
           {activeSection === 'recyclebin' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '700' }}>Recycle Bin ({deletedProducts.length})</h2>
+                <h2 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: 0, fontSize: '18px', fontWeight: '700' }}>Recycle Bin ({deletedProducts.length})</h2>
                 {deletedProducts.length > 0 && (
                   <button onClick={() => {
                     if (window.confirm("Are you sure you want to empty the Recycle Bin permanently?")) {
@@ -495,15 +590,15 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
               </div>
 
               {deletedProducts.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '48px 24px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}>
+                <div style={{ textAlign: 'center', padding: '48px 24px', background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗑️</div>
-                  <h3 style={{ color: '#f8fafc', margin: '0 0 8px', fontSize: '18px', fontWeight: '700' }}>Recycle Bin is Empty</h3>
-                  <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Deleted products will appear here. You can restore or permanently delete them.</p>
+                  <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: '0 0 8px', fontSize: '18px', fontWeight: '700' }}>Recycle Bin is Empty</h3>
+                  <p style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '14px', margin: 0 }}>Deleted products will appear here. You can restore or permanently delete them.</p>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                   {deletedProducts.map(prod => (
-                    <div key={prod.id} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', opacity: 0.85 }}
+                    <div key={prod.id} style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', overflow: 'hidden', opacity: 0.85 }}
                       onMouseEnter={e => e.currentTarget.style.opacity = 1}
                       onMouseLeave={e => e.currentTarget.style.opacity = 0.85}>
                       <div style={{ height: '100px', background: prod.bgGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -521,11 +616,11 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                         <span style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px' }}>{prod.tag}</span>
                       </div>
                       <div style={{ padding: '16px' }}>
-                        <h3 style={{ color: '#f8fafc', fontSize: '15px', fontWeight: '700', margin: '0 0 4px' }}>{prod.name}</h3>
-                        <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.4' }}>{prod.tagline}</p>
+                        <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontSize: '15px', fontWeight: '700', margin: '0 0 4px' }}>{prod.name}</h3>
+                        <p style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '12px', margin: '0 0 12px', lineHeight: '1.4' }}>{prod.tagline}</p>
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                           {Object.entries(prod.prices || {}).map(([w, p]) => (
-                            <span key={w} style={{ background: 'rgba(255,255,255,0.06)', color: '#94a3b8', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>{w}: ₹{p}</span>
+                            <span key={w} style={{ background: isDarkMode ? 'rgba(255,255,255,0.06)' : '#f1f5f9', color: isDarkMode ? '#94a3b8' : '#475569', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>{w}: ₹{p}</span>
                           ))}
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
@@ -551,10 +646,10 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
           {/* ====== ANALYTICS ====== */}
           {activeSection === 'analytics' && (
             <div>
-              <h2 style={{ color: '#f8fafc', margin: '0 0 24px', fontSize: '18px', fontWeight: '700' }}>Revenue & Performance Analytics</h2>
+              <h2 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: '0 0 24px', fontSize: '18px', fontWeight: '700' }}>Revenue & Performance Analytics</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '15px', fontWeight: '700' }}>📊 Order Status Distribution</h3>
+                <div style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: '0 0 20px', fontSize: '15px', fontWeight: '700' }}>📊 Order Status Distribution</h3>
                   {['Ordered', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map(status => {
                     const count = allOrders.filter(o => o.status === status).length;
                     const pct = allOrders.length > 0 ? (count / allOrders.length) * 100 : 0;
@@ -562,10 +657,10 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                     return (
                       <div key={status} style={{ marginBottom: '14px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                          <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '600' }}>{status}</span>
-                          <span style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '700' }}>{count} orders</span>
+                          <span style={{ color: isDarkMode ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: '600' }}>{status}</span>
+                          <span style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontSize: '12px', fontWeight: '700' }}>{count} orders</span>
                         </div>
-                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '6px', background: isDarkMode ? 'rgba(255,255,255,0.06)' : '#cbd5e1', borderRadius: '3px', overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${pct}%`, background: sc.dot || '#64748b', borderRadius: '3px', transition: 'width 0.6s ease' }} />
                         </div>
                       </div>
@@ -573,17 +668,17 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                   })}
                 </div>
 
-                <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px' }}>
-                  <h3 style={{ color: '#f8fafc', margin: '0 0 20px', fontSize: '15px', fontWeight: '700' }}>🏆 Top Products by Revenue</h3>
+                <div style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', padding: '24px' }}>
+                  <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: '0 0 20px', fontSize: '15px', fontWeight: '700' }}>🏆 Top Products by Revenue</h3>
                   {products.slice(0, 5).map((prod, i) => {
                     const revenue = allOrders.reduce((sum, o) => {
                       const match = o.items?.find(item => item.name?.includes(prod.name.split(' ')[0]));
                       return sum + (match ? match.price * match.qty : 0);
                     }, 0);
                     return (
-                      <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div key={prod.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.04)' : '1px solid #e2e8f0' }}>
                         <span style={{ color: '#e29543', fontWeight: '800', fontSize: '14px', width: '20px' }}>#{i + 1}</span>
-                        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: prod.bgGradient || '#334155', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: prod.bgGradient || '#334155', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid #cbd5e1' }}>
                           {prod.image ? (
                             <img src={prod.image} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           ) : (
@@ -591,7 +686,7 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ color: '#f8fafc', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
+                          <div style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
                         </div>
                         <span style={{ color: '#22c55e', fontWeight: '700', fontSize: '12px' }}>₹{prod.prices['250g'] !== undefined ? prod.prices['250g'] : Object.values(prod.prices)[0]}</span>
                       </div>
@@ -607,10 +702,10 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                   { label: 'Delivered Orders', value: allOrders.filter(o => o.status === 'Delivered').length, icon: '✅' },
                   { label: 'Active Products', value: products.length, icon: '🛍️' },
                 ].map((stat, i) => (
-                  <div key={i} style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
+                  <div key={i} style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #cbd5e1', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '8px' }}>{stat.icon}</div>
                     <div style={{ color: '#e29543', fontSize: '28px', fontWeight: '800' }}>{stat.value}</div>
-                    <div style={{ color: '#64748b', fontSize: '13px', marginTop: '4px' }}>{stat.label}</div>
+                    <div style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '13px', marginTop: '4px' }}>{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -622,19 +717,19 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
       {/* ===== Product Modal (Add/Edit) ===== */}
       {productModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', width: '100%', maxWidth: '680px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.6)' }}>
-            <div style={{ padding: '24px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <h2 style={{ color: '#f8fafc', margin: 0, fontSize: '18px', fontWeight: '800' }}>
+          <div style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #cbd5e1', borderRadius: '20px', width: '100%', maxWidth: '680px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.6)' }}>
+            <div style={{ padding: '24px 28px', borderBottom: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <h2 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', margin: 0, fontSize: '18px', fontWeight: '800' }}>
                 {productModal.mode === 'add' ? '🚀 Launch New Product' : '✏️ Edit Product'}
               </h2>
-              <button onClick={() => setProductModal(null)} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: '#94a3b8', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px' }}>✕</button>
+              <button onClick={() => setProductModal(null)} style={{ background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: 'none', color: isDarkMode ? '#94a3b8' : '#475569', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px' }}>✕</button>
             </div>
 
             <div style={{ overflowY: 'auto', padding: '28px', flex: 1 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
 
                 {/* ===== IMAGE UPLOAD SECTION ===== */}
-                <div style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '20px' }}>
+                <div style={{ gridColumn: '1 / -1', background: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.01)', border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid #cbd5e1', borderRadius: '14px', padding: '20px' }}>
                   <label style={{ ...labelStyle, marginBottom: '14px', fontSize: '12px' }}>🖼️ Product Image</label>
 
                   <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -642,8 +737,8 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                     <div style={{
                       width: '120px', height: '120px', flexShrink: 0,
                       borderRadius: '12px',
-                      background: productForm.image ? 'transparent' : 'rgba(255,255,255,0.06)',
-                      border: '2px dashed rgba(226,149,67,0.4)',
+                      background: productForm.image ? 'transparent' : (isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.02)'),
+                      border: '2px dashed #e29543',
                       overflow: 'hidden',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       position: 'relative'
@@ -690,7 +785,7 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                           style={{ display: 'none' }}
                           onChange={handleImageUpload}
                         />
-                        <span style={{ color: '#475569', fontSize: '11px', marginLeft: '10px' }}>Max 2 MB · JPG, PNG, WEBP</span>
+                        <span style={{ color: isDarkMode ? '#64748b' : '#475569', fontSize: '11px', marginLeft: '10px' }}>Max 2 MB · JPG, PNG, WEBP</span>
                       </div>
 
                       {/* Clear image */}
@@ -727,8 +822,8 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
                 {/* Type */}
                 <div>
                   <label style={labelStyle}>Product Type</label>
-                  <select value={productForm.type} onChange={e => handleFormChange('type', e.target.value)} style={{ ...inputStyle, colorScheme: 'dark', backgroundColor: '#1e293b' }}>
-                    {['creamy', 'crunchy', 'chocolate', 'smoothy', 'high-protein', 'sugar-free'].map(t => <option key={t} value={t} style={{ background: '#1e293b', color: '#f8fafc' }}>{t}</option>)}
+                  <select value={productForm.type} onChange={e => handleFormChange('type', e.target.value)} style={{ ...inputStyle, colorScheme: isDarkMode ? 'dark' : 'light', backgroundColor: isDarkMode ? '#1e293b' : '#ffffff' }}>
+                    {['creamy', 'crunchy', 'chocolate', 'smoothy', 'high-protein', 'sugar-free'].map(t => <option key={t} value={t} style={{ background: isDarkMode ? '#1e293b' : '#ffffff', color: isDarkMode ? '#f8fafc' : '#0f172a' }}>{t}</option>)}
                   </select>
                 </div>
                 {/* Tagline */}
@@ -781,8 +876,8 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
               </div>
             </div>
 
-            <div style={{ padding: '20px 28px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', justifyContent: 'flex-end', flexShrink: 0 }}>
-              <button onClick={() => setProductModal(null)} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#94a3b8', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+            <div style={{ padding: '20px 28px', borderTop: isDarkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0', display: 'flex', gap: '12px', justifyContent: 'flex-end', flexShrink: 0 }}>
+              <button onClick={() => setProductModal(null)} style={{ padding: '10px 24px', background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #cbd5e1', color: isDarkMode ? '#94a3b8' : '#475569', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
               <button onClick={handleSaveProduct} style={{ padding: '10px 28px', background: 'linear-gradient(135deg, #e29543, #c97c2b)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '14px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 14px rgba(226,149,67,0.3)' }}>
                 {productModal.mode === 'add' ? '🚀 Launch Product' : '✅ Save Changes'}
               </button>
@@ -794,14 +889,14 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
       {/* ===== Delete Confirm Modal ===== */}
       {deleteConfirm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#1e293b', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 32px 80px rgba(239,68,68,0.2)' }}>
+          <div style={{ background: isDarkMode ? '#1e293b' : '#ffffff', border: `1px solid ${isDarkMode ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.5)'}`, borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 32px 80px rgba(239,68,68,0.2)' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗑️</div>
-            <h3 style={{ color: '#f8fafc', fontWeight: '800', fontSize: '20px', margin: '0 0 8px' }}>Delete Product?</h3>
-            <p style={{ color: '#94a3b8', fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' }}>
-              Are you sure you want to remove <strong style={{ color: '#f8fafc' }}>"{deleteConfirm.name}"</strong> from the catalog? This action cannot be undone.
+            <h3 style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: '800', fontSize: '20px', margin: '0 0 8px' }}>Delete Product?</h3>
+            <p style={{ color: isDarkMode ? '#94a3b8' : '#475569', fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' }}>
+              Are you sure you want to remove <strong style={{ color: isDarkMode ? '#f8fafc' : '#0f172a' }}>"{deleteConfirm.name}"</strong> from the catalog? This action cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button onClick={() => setDeleteConfirm(null)} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#94a3b8', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
+              <button onClick={() => setDeleteConfirm(null)} style={{ padding: '10px 24px', background: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #cbd5e1', color: isDarkMode ? '#94a3b8' : '#475569', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
               <button onClick={confirmDelete} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #dc2626, #b91c1c)', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: '800', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 14px rgba(220,38,38,0.3)' }}>🗑️ Delete</button>
             </div>
           </div>
@@ -810,12 +905,3 @@ export default function AdminPanel({ products, deletedProducts = [], onAddProduc
     </div>
   );
 }
-
-const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: '8px', color: '#f8fafc', fontSize: '13px', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit'
-};
-const labelStyle = {
-  display: 'block', color: '#64748b', fontSize: '11px', fontWeight: '700',
-  textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px'
-};

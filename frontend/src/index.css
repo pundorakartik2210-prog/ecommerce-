@@ -59,11 +59,180 @@
   box-sizing: border-box;
 }
 
+/* ============================================
+   DARK MODE VARIABLES
+   Toggled by adding class 'dark' to <html>
+   ============================================ */
+html.dark {
+  --bg-cream: #0f172a;
+  --bg-white: #1e293b;
+  --bg-card: #263248;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-light: #64748b;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: #e29543;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+html.dark .navbar-sticky {
+  background: #1e293b !important;
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+html.dark .search-bar-container {
+  background: #263248;
+  border-color: rgba(255,255,255,0.1);
+}
+
+html.dark .search-bar-container:focus-within {
+  background: #2d3f58;
+  border-color: var(--brand-accent);
+}
+
+html.dark .search-input {
+  color: #e2e8f0;
+}
+
+html.dark .search-input::placeholder {
+  color: #475569;
+}
+
+html.dark .search-suggestions {
+  background: #1e293b;
+  border-color: rgba(255,255,255,0.08);
+}
+
+html.dark .suggestion-item:hover {
+  background: #263248;
+}
+
+html.dark .user-profile-dropdown {
+  background: #1e293b !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+html.dark .dropdown-nav-btn {
+  color: #94a3b8 !important;
+}
+
+html.dark .dropdown-nav-btn:hover {
+  background: #263248 !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .dropdown-nav-btn.active {
+  background: rgba(226, 149, 67, 0.15) !important;
+  color: #e29543 !important;
+}
+
+html.dark .dropdown-divider {
+  background: rgba(255,255,255,0.07) !important;
+}
+
+html.dark .product-card {
+  background: #1e293b !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+html.dark .product-card:hover {
+  border-color: var(--brand-accent) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4) !important;
+}
+
+html.dark .product-card .product-info-section {
+  background: #1e293b !important;
+}
+
+html.dark .price-tag {
+  background: rgba(226,149,67,0.12) !important;
+  border-color: rgba(226,149,67,0.2) !important;
+}
+
+html.dark .footer-wrapper {
+  background: #0a1628 !important;
+  border-top-color: rgba(255,255,255,0.06) !important;
+}
+
+html.dark .section-card,
+html.dark .quality-card,
+html.dark .benefit-card {
+  background: #1e293b !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+html.dark .promo-slide {
+  opacity: 0.95;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background: var(--bg-cream);
+  border: 1.5px solid var(--border-color);
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 80px;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 3px rgba(226, 149, 67, 0.15);
+  transform: translateY(-1px);
+}
+
+.theme-toggle-btn .toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 20px;
+  background: var(--border-color);
+  position: relative;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn .toggle-track.dark-active {
+  background: var(--brand-accent);
+}
+
+.theme-toggle-btn .toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.theme-toggle-btn .toggle-thumb.dark-active {
+  transform: translateX(16px);
+}
+
 body {
   margin: 0;
   padding: 0;
   background-color: var(--bg-cream);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 button,
@@ -187,9 +356,10 @@ a {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #ffffff;
+  background: var(--bg-white);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .navbar-container {
