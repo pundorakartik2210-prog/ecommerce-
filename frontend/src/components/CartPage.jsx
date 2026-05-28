@@ -17,18 +17,49 @@ export default function CartPage({
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [generatedOrderId, setGeneratedOrderId] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState("");
+  const [isPendingLoading, setIsPendingLoading] = useState(false);
 
   const subtotal = cart.reduce((sum, item) => sum + (item.prices[item.selectedWeight] * item.quantity), 0);
   const discountAmount = Math.round(subtotal * discount);
   const deliveryFee = subtotal > 500 || subtotal === 0 ? 0 : 49;
   const total = subtotal - discountAmount + deliveryFee;
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!user) {
       onLoginPrompt();
       return;
     }
-    setIsVerifying(true);
+
+    setIsPendingLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/orders/pending`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.name,
+          cart: cart,
+          total: total
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setPendingOrderId(data.orderId);
+        setIsVerifying(true);
+      } else {
+        alert(data.message || "Failed to initiate secure order checkout. Please try again.");
+      }
+    } catch (err) {
+      alert("Network error: Could not reach the server to initiate checkout.");
+    } finally {
+      setIsPendingLoading(false);
+    }
   };
 
   const handleVerificationSuccess = (verifiedOrder) => {
@@ -325,14 +356,17 @@ export default function CartPage({
               <button
                 className="checkout-btn"
                 onClick={handleCheckout}
+                disabled={isPendingLoading}
                 style={{
                   width: '100%',
                   padding: '12px',
                   fontSize: '14px',
                   background: !user ? 'var(--brand-secondary)' : 'var(--brand-primary)',
+                  opacity: isPendingLoading ? 0.7 : 1,
+                  cursor: isPendingLoading ? 'not-allowed' : 'pointer'
                 }}
               >
-                {!user ? 'Login to Place Order' : '🔐 Place Order (Secure)'}
+                {isPendingLoading ? "Sending Verification Mail..." : (!user ? "Login to Place Order" : "Place Order (Secure)")}
               </button>
             </div>
           </div>
@@ -366,9 +400,10 @@ export default function CartPage({
 
       <OrderVerificationModal
         isOpen={isVerifying}
-        cart={cart}
+        orderId={pendingOrderId}
+        name={user ? user.name : ""}
+        email={user ? user.email : ""}
         total={total}
-        user={user}
         onClose={() => setIsVerifying(false)}
         onVerificationSuccess={handleVerificationSuccess}
       />

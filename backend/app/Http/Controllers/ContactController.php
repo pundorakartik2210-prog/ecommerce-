@@ -6,8 +6,6 @@ use App\Services\EmailJsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
@@ -92,7 +90,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Create a pending order, generate a 6-digit OTP, cache details, and send OTP via SMS.
+     * Create a pending order, generate an OTP, cache details, and send confirmation email.
      *
      * @param Request $request
      * @return JsonResponse
@@ -100,92 +98,87 @@ class ContactController extends Controller
     public function createPendingOrder(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'phone' => 'required|string|min:10|max:15',
             'email' => 'required|email|max:255',
-            'name'  => 'required|string|max:255',
-            'cart'  => 'required|array',
+            'name' => 'required|string|max:255',
+            'cart' => 'required|array',
             'total' => 'required|numeric',
         ]);
 
-        $phone = preg_replace('/\D/', '', $validated['phone']);
         $email = $validated['email'];
-        $name  = $validated['name'];
-        $cart  = $validated['cart'];
+        $name = $validated['name'];
+        $cart = $validated['cart'];
         $total = $validated['total'];
 
-        $otp     = rand(100000, 999999);
+        $code = rand(100000, 999999);
         $orderId = 'NUV-' . rand(10000, 99999);
 
         $cachedData = [
-            'orderId'    => $orderId,
-            'otp'        => $otp,
-            'phone'      => $phone,
-            'email'      => $email,
-            'name'       => $name,
-            'cart'       => $cart,
-            'total'      => $total,
-            'expires_at' => now()->addMinutes(5)->timestamp,
+            'orderId' => $orderId,
+            'code' => $code,
+            'email' => $email,
+            'name' => $name,
+            'cart' => $cart,
+            'total' => $total,
+            'expires_at' => now()->addMinutes(5)->timestamp
         ];
 
         // Cache pending order for 5 minutes (300 seconds)
         Cache::put("pending_order:{$orderId}", $cachedData, 300);
 
-        // Send OTP via Fast2SMS — falls back to log entry if API key not set
-        $this->sendOtpSms($phone, $otp, $orderId);
+        // Format orders for the EmailJS template loop
+        $orders = [];
+        foreach ($cart as $item) {
+            $selectedWeight = $item['selectedWeight'] ?? '1kg';
+            $price = $item['prices'][$selectedWeight] ?? 0;
+            $orders[] = [
+                'name' => $item['name'] . ' (' . $selectedWeight . ')',
+                'units' => (int)($item['quantity'] ?? 1),
+                'price' => number_format($price, 2),
+                'image_url' => isset($item['image']) ? config('app.frontend_url') . $item['image'] : ''
+            ];
+        }
+
+        // Send Email via EmailJS service using the specified template
+        $templateParams = [
+            'to_name' => $name,
+            'name' => $name,
+            'to_email' => $email,
+            'email' => $email,
+            'order_id' => $orderId,
+            'verification_code' => (string) $code,
+            'verification_link' => config('app.frontend_url') . "/?confirm_order=1&order_id={$orderId}&code={$code}",
+            'total' => '₹' . $total,
+            'orders' => $orders,
+            'cost' => [
+                'shipping' => '0.00',
+                'tax' => '0.00',
+                'total' => number_format($total, 2)
+            ],
+            'message' => "Please click the link to confirm your order of ₹{$total} with Nuvera Naturals.",
+            'from_name' => 'Nuvera Naturals Orders'
+        ];
+
+        $success = $this->emailService->send($templateParams, 'template_4z4jxzn');
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'orderId' => $orderId,
+                'expires_in' => 300
+            ], 200);
+        }
+
+        // If email failed to dispatch, cleanup cached record
+        Cache::forget("pending_order:{$orderId}");
 
         return response()->json([
-            'success'    => true,
-            'orderId'    => $orderId,
-            'expires_in' => 300,
-        ], 200);
+            'success' => false,
+            'message' => 'Failed to send order verification email. Please check server logs.'
+        ], 500);
     }
 
     /**
-     * Send a 6-digit OTP to the given phone number via Fast2SMS.
-     * Falls back to logging if FAST2SMS_API_KEY is not configured.
-     *
-     * @param string $phone  10-digit mobile number
-     * @param int    $otp    The generated OTP
-     * @param string $orderId For log traceability
-     * @return bool  true if SMS was dispatched, false otherwise
-     */
-    private function sendOtpSms(string $phone, int $otp, string $orderId): bool
-    {
-        $apiKey = env('FAST2SMS_API_KEY');
-
-        if (!$apiKey) {
-            Log::info("[OTP] No FAST2SMS_API_KEY set. Order {$orderId} OTP: {$otp}");
-            return false;
-        }
-
-        try {
-            $response = Http::withHeaders([
-                'authorization' => $apiKey,
-                'Content-Type'  => 'application/json',
-            ])->post('https://www.fast2sms.com/dev/bulkV2', [
-                'route'            => 'otp',
-                'variables_values' => (string) $otp,
-                'numbers'          => $phone,
-                'flash'            => 0,
-            ]);
-
-            if ($response->successful()) {
-                Log::info("[OTP] SMS sent to {$phone} for order {$orderId}");
-                return true;
-            }
-
-            Log::error("[OTP] Fast2SMS error for {$orderId}: " . $response->body());
-            Log::info("[OTP] Fallback OTP for order {$orderId}: {$otp}");
-            return false;
-        } catch (\Exception $e) {
-            Log::error("[OTP] Fast2SMS exception for {$orderId}: " . $e->getMessage());
-            Log::info("[OTP] Fallback OTP for order {$orderId}: {$otp}");
-            return false;
-        }
-    }
-
-    /**
-     * Verify pending order using the 6-digit OTP sent to the customer's phone.
+     * Verify pending order with code.
      *
      * @param Request $request
      * @return JsonResponse
@@ -194,60 +187,71 @@ class ContactController extends Controller
     {
         $validated = $request->validate([
             'orderId' => 'required|string',
-            'otp'     => 'required|string|size:6',
+            'code' => 'required|string',
         ]);
 
         $orderId = $validated['orderId'];
-        $otp     = $validated['otp'];
+        $code = $validated['code'];
 
         $cached = Cache::get("pending_order:{$orderId}");
 
         if (!$cached) {
+            // Check if it was already verified in another session/tab
+            $alreadyVerified = Cache::get("verified_order:{$orderId}");
+            if ($alreadyVerified) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order verified and placed successfully!',
+                    'order' => $alreadyVerified
+                ], 200);
+            }
+
             return response()->json([
                 'success' => false,
-                'message' => 'Order session expired or not found. Please place your order again.',
+                'message' => 'Order verification session expired or not found. Please re-place your order.'
             ], 400);
         }
 
-        if ((string) $cached['otp'] !== (string) $otp) {
+        if ((string)$cached['code'] !== (string)$code) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid OTP. Please check and try again.',
+                'message' => 'Invalid verification code. Please check your email and try again.'
             ], 400);
         }
 
         $verifiedOrder = [
-            'orderId'    => $cached['orderId'],
-            'email'      => $cached['email'],
-            'name'       => $cached['name'],
-            'phone'      => $cached['phone'],
-            'cart'       => $cached['cart'],
-            'total'      => $cached['total'],
-            'date'       => date('Y-m-d'),
-            'statusStep' => 0,
+            'orderId' => $cached['orderId'],
+            'email' => $cached['email'],
+            'name' => $cached['name'],
+            'cart' => $cached['cart'],
+            'total' => $cached['total'],
+            'date' => date('Y-m-d'),
+            'statusStep' => 0
         ];
 
         // Save order to the database
         \App\Models\Order::updateOrCreate(
             ['id' => $orderId],
             [
-                'name'           => $cached['name'],
-                'email'          => $cached['email'],
-                'phone'          => $cached['phone'],
-                'cart'           => $cached['cart'],
-                'total'          => $cached['total'],
-                'statusStep'     => 0,
-                'payment_method' => 'pending',
+                'name' => $cached['name'],
+                'email' => $cached['email'],
+                'cart' => $cached['cart'],
+                'total' => $cached['total'],
+                'statusStep' => 0,
+                'payment_method' => 'cod',
             ]
         );
 
-        // Clear the cached pending order
+        // Cache the verified order details for 5 minutes so original tabs can poll and verify
+        Cache::put("verified_order:{$orderId}", $verifiedOrder, 300);
+
+        // Success: Clear the cached pending order
         Cache::forget("pending_order:{$orderId}");
 
         return response()->json([
             'success' => true,
-            'message' => 'OTP verified successfully!',
-            'order'   => $verifiedOrder,
+            'message' => 'Order verified and placed successfully!',
+            'order' => $verifiedOrder
         ], 200);
     }
 
@@ -443,47 +447,5 @@ class ContactController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         return response()->json($orders, 200);
-    }
-
-    /**
-     * Store order after firebase OTP verification on client side.
-     */
-    public function verifyFirebaseOrder(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'phone' => 'required|string',
-            'email' => 'required|email|max:255',
-            'name'  => 'required|string|max:255',
-            'cart'  => 'required|array',
-            'total' => 'required|numeric',
-        ]);
-
-        $orderId = 'NUV-' . rand(10000, 99999);
-
-        $verifiedOrder = \App\Models\Order::create([
-            'id'             => $orderId,
-            'name'           => $validated['name'],
-            'email'          => $validated['email'],
-            'phone'          => $validated['phone'],
-            'cart'           => $validated['cart'],
-            'total'          => $validated['total'],
-            'statusStep'     => 0,
-            'payment_method' => 'pending',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Order stored successfully!',
-            'order'   => [
-                'orderId'    => $orderId,
-                'email'      => $verifiedOrder->email,
-                'name'       => $verifiedOrder->name,
-                'phone'      => $verifiedOrder->phone,
-                'cart'       => $verifiedOrder->cart,
-                'total'      => $verifiedOrder->total,
-                'date'       => date('Y-m-d'),
-                'statusStep' => 0,
-            ],
-        ], 200);
     }
 }
