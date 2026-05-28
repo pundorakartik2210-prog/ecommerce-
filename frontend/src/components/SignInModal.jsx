@@ -5,9 +5,18 @@ import { API_URL } from '../config.js';
 // Inline JWT decoder - no extra package needed
 const decodeJWT = (token) => {
   try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
-  } catch { return null; }
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
 };
 
 export default function SignInModal({ isOpen, onClose, onLoginSuccess, onSwitchToSignUp }) {

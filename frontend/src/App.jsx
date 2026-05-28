@@ -18,6 +18,16 @@ import QualityBenefits from './components/QualityBenefits';
 import AboutUs from './components/AboutUs';
 
 export default function App() {
+  // Always bright mode
+  const isDarkMode = false;
+
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('nuvera_dark_mode', 'false');
+  }, []);
+
+  const toggleDarkMode = () => {};
+
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -863,6 +873,8 @@ export default function App() {
           onClose={() => setShowAdmin(false)}
           sessionOrders={sessionOrders}
           onLogout={() => setUser(null)}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={toggleDarkMode}
         />
       )}
 
