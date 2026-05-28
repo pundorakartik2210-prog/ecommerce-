@@ -14,11 +14,28 @@ export default function WishlistPage({
 }) {
   const [selectedTag, setSelectedTag] = useState("all");
 
+  const formatType = (type) => {
+    if (!type) return "";
+    return type
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('-');
+  };
+
+  // Extract unique types present in the products array
+  const availableTypes = Array.from(
+    new Set(
+      products
+        .map(p => p.type)
+        .filter(Boolean)
+    )
+  );
+
   const filteredWishlist = selectedTag === "all"
     ? wishlist
     : wishlist.filter(item => {
-        if (!item.tag) return false;
-        return item.tag.toLowerCase().includes(selectedTag.toLowerCase());
+        if (!item.type) return false;
+        return item.type.toLowerCase() === selectedTag.toLowerCase();
       });
 
   // Get recommended flavors (not in wishlist, up to 4 items)
@@ -47,30 +64,15 @@ export default function WishlistPage({
               >
                 All Jars ({wishlist.length})
               </button>
-              <button 
-                className={`filter-pill-btn ${selectedTag === 'creamy' ? 'active' : ''}`} 
-                onClick={() => setSelectedTag('creamy')}
-              >
-                Creamy
-              </button>
-              <button 
-                className={`filter-pill-btn ${selectedTag === 'crunchy' ? 'active' : ''}`} 
-                onClick={() => setSelectedTag('crunchy')}
-              >
-                Crunchy
-              </button>
-              <button 
-                className={`filter-pill-btn ${selectedTag === 'fitness' ? 'active' : ''}`} 
-                onClick={() => setSelectedTag('fitness')}
-              >
-                Fitness
-              </button>
-              <button 
-                className={`filter-pill-btn ${selectedTag === 'chocolate' ? 'active' : ''}`} 
-                onClick={() => setSelectedTag('chocolate')}
-              >
-                Choco
-              </button>
+              {availableTypes.map(type => (
+                <button
+                  key={type}
+                  className={`filter-pill-btn ${selectedTag === type ? 'active' : ''}`}
+                  onClick={() => setSelectedTag(type)}
+                >
+                  {formatType(type)}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -118,7 +120,7 @@ export default function WishlistPage({
                       No Match in Category
                     </h3>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5', margin: '0 0 20px 0', maxWidth: '600px' }}>
-                      You don't have any saved variants under the "{selectedTag}" category. Try clearing the filter or checking another category to find your favorites.
+                      You don't have any saved variants under the "{formatType(selectedTag)}" category. Try clearing the filter or checking another category to find your favorites.
                     </p>
                     <button 
                       className="checkout-btn" 

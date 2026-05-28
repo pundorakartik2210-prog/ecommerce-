@@ -89,7 +89,7 @@ html.dark .navbar-sticky {
 
 html.dark .search-bar-container {
   background: #263248;
-  border-color: rgba(255,255,255,0.1);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 html.dark .search-bar-container:focus-within {
@@ -107,7 +107,7 @@ html.dark .search-input::placeholder {
 
 html.dark .search-suggestions {
   background: #1e293b;
-  border-color: rgba(255,255,255,0.08);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 html.dark .suggestion-item:hover {
@@ -116,7 +116,7 @@ html.dark .suggestion-item:hover {
 
 html.dark .user-profile-dropdown {
   background: #1e293b !important;
-  border-color: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark .dropdown-nav-btn {
@@ -134,17 +134,17 @@ html.dark .dropdown-nav-btn.active {
 }
 
 html.dark .dropdown-divider {
-  background: rgba(255,255,255,0.07) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
 }
 
 html.dark .product-card {
   background: #1e293b !important;
-  border-color: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
 }
 
 html.dark .product-card:hover {
   border-color: var(--brand-accent) !important;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.4) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4) !important;
 }
 
 html.dark .product-card .product-info-section {
@@ -152,20 +152,20 @@ html.dark .product-card .product-info-section {
 }
 
 html.dark .price-tag {
-  background: rgba(226,149,67,0.12) !important;
-  border-color: rgba(226,149,67,0.2) !important;
+  background: rgba(226, 149, 67, 0.12) !important;
+  border-color: rgba(226, 149, 67, 0.2) !important;
 }
 
 html.dark .footer-wrapper {
   background: #0a1628 !important;
-  border-top-color: rgba(255,255,255,0.06) !important;
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark .section-card,
 html.dark .quality-card,
 html.dark .benefit-card {
   background: #1e293b !important;
-  border-color: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark .promo-slide {
@@ -188,7 +188,7 @@ html.dark .promo-slide {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 80px;
   justify-content: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .theme-toggle-btn:hover {
@@ -220,7 +220,7 @@ html.dark .promo-slide {
   border-radius: 50%;
   background: white;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .theme-toggle-btn .toggle-thumb.dark-active {
@@ -3722,7 +3722,7 @@ a {
 
 .filter-pill-btn {
   background: var(--bg-white);
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 750;
@@ -3730,20 +3730,31 @@ a {
   border-radius: var(--radius-full);
   cursor: pointer;
   white-space: nowrap;
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  will-change: transform;
+  -webkit-font-smoothing: antialiased;
 }
 
 .filter-pill-btn:hover {
   background: var(--bg-cream);
-  color: var(--brand-primary);
-  border-color: var(--brand-secondary);
+  color: #9a3412;
+  border-color: #c2410c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(194, 65, 12, 0.08);
 }
 
 .filter-pill-btn.active {
-  background: var(--brand-primary);
+  background: linear-gradient(135deg, #c2410c 0%, #9a3412 100%);
   color: var(--bg-white);
-  border-color: var(--brand-primary);
-  box-shadow: 0 4px 12px rgba(92, 58, 33, 0.15);
+  border: 1.5px solid transparent;
+  box-shadow: 0 4px 14px rgba(194, 65, 12, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.filter-pill-btn.active:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(194, 65, 12, 0.4);
 }
 
 /* Organically pulsing heartbeat empty state badge */
@@ -4901,7 +4912,7 @@ a {
   .horizontal-stepper-line {
     display: none;
   }
-  
+
   .horizontal-stepper-row {
     flex-direction: column;
     align-items: flex-start;
@@ -4910,7 +4921,7 @@ a {
     border-left: 3px solid var(--border-color);
     margin-left: 10px;
   }
-  
+
   .horizontal-stepper-item {
     flex-direction: row;
     align-items: center;
