@@ -16,7 +16,7 @@ export default function ProductCard({
   const quantityInCart = cartItem ? cartItem.quantity : 0;
 
   return (
-    <div className="product-card">
+    <div className="product-card" onClick={() => onProductClick(product)}>
       {/* Badge Tag */}
       {tag && (
         <span className={`card-badge ${tag.toLowerCase().includes('fitness') ? 'fitness' : tag.toLowerCase().includes('keto') ? 'keto' : ''}`}>
@@ -41,7 +41,6 @@ export default function ProductCard({
       {/* Graphic Media Section */}
       <div
         className="card-media"
-        onClick={() => onProductClick(product)}
       >
         {image ? (
           <img
@@ -77,7 +76,7 @@ export default function ProductCard({
       {/* Info Body */}
       <div className="card-body">
         <span className="card-category">{product.type.replace('-', ' ')}</span>
-        <h3 className="card-title" onClick={() => onProductClick(product)}>
+        <h3 className="card-title">
           {name}
         </h3>
         <p className="card-tagline">{tagline}</p>

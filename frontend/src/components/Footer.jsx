@@ -141,16 +141,61 @@ export default function Footer({ products = [], onPolicyClick, onTrackClick, onA
 
           {/* Column 1: Brand Info */}
           <div>
-            <div className="brand-logo" style={{ cursor: 'default' }}>
-              <div style={{ background: 'white', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                <img src={`${logoImg}?v=10`} alt="nuvera natural Logo" className="footer-logo-img" style={{ mixBlendMode: 'normal', display: 'block' }} />
+            <div className="brand-logo" style={{ 
+              cursor: 'default',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: '#ffffff',
+              borderRadius: '9999px',
+              padding: '6px 20px 6px 6px',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)',
+              width: 'fit-content',
+              marginBottom: '20px'
+            }}>
+              {/* Circular Icon */}
+              <div style={{ 
+                background: '#ffffff', 
+                borderRadius: '50%', 
+                width: '38px', 
+                height: '38px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                flexShrink: 0, 
+                overflow: 'hidden' 
+              }}>
+                <img 
+                  src={`${logoImg}?v=10`} 
+                  alt="nuvera natural Logo" 
+                  style={{ 
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    display: 'block' 
+                  }} 
+                />
               </div>
-              <div style={{ background: 'white', borderRadius: '6px', padding: '4px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '36px', boxSizing: 'border-box' }}>
-                <img src={logoTextImg} alt="nuvera natural" className="footer-logo-text-img" style={{ height: '22px' }} />
+              {/* Logo Text */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                boxSizing: 'border-box' 
+              }}>
+                <img 
+                  src={logoTextImg} 
+                  alt="nuvera natural" 
+                  style={{ 
+                    height: '24px', 
+                    objectFit: 'contain',
+                    display: 'block' 
+                  }} 
+                />
               </div>
             </div>
             <p className="footer-brand-desc">
-              Dedicated to crafting the world's finest organic peanut butter variants. Stone-ground, slow dry-roasted, and filled with protein goodness. No palm oils, no preservatives.
+              Nuvera Natural is committed to crafting premium, slow-roasted organic peanut butters. Using stone-ground methods and 100% natural ingredients, we deliver pure taste and plant-based nutrition—completely free from palm oil, stabilizers, and preservatives.
             </p>
             <div className="footer-socials-container">
               <p className="footer-socials-label">Follow Us</p>
@@ -247,7 +292,7 @@ export default function Footer({ products = [], onPolicyClick, onTrackClick, onA
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
               </span>
-              <a href="https://www.google.com/maps?q=28.332778,77.342417" target="_blank" rel="noopener noreferrer" style={{ fontSize: '13.5px', lineHeight: '1.4', color: 'inherit', textDecoration: 'none' }} className="footer-mail-link">Ballabgarh, Faridabad, Haryana 121004, India</a>
+              <a href="https://www.google.com/maps?q=28.332778,77.342417" target="_blank" rel="noopener noreferrer" style={{ fontSize: '13.5px', lineHeight: '1.4', color: 'inherit', textDecoration: 'none' }} className="footer-mail-link">Faridabad, Haryana 121004, India</a>
             </div>
             <div className="footer-contact-item">
               <span className="policy-icon-container policy-icon-mail" style={{ marginTop: '2px', cursor: 'default' }}>
@@ -258,24 +303,14 @@ export default function Footer({ products = [], onPolicyClick, onTrackClick, onA
               </span>
               <a href="https://mail.google.com/mail/?view=cm&fs=1&to=nuveranatural@gmail.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: '13.5px', lineHeight: '1.4', color: 'inherit', textDecoration: 'none' }} className="footer-mail-link">nuveranatural@gmail.com</a>
             </div>
-            <div className="footer-contact-item">
-              <span className="policy-icon-container policy-icon-phone" style={{ marginTop: '2px', cursor: 'pointer' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="policy-icon">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
-              </span>
-              <a href="tel:+919582913315" style={{ fontSize: '13.5px', lineHeight: '1.4', color: 'inherit', textDecoration: 'none' }} className="footer-mail-link">+91 9582913315</a>
-            </div>
+
           </div>
 
         </div>
 
         {/* Footer Bottom bar */}
-        <div className="footer-bottom">
+        <div className="footer-bottom" style={{ justifyContent: 'center', textAlign: 'center' }}>
           <span>&copy; {new Date().getFullYear()}{' '}nuvera natural. All rights reserved.</span>
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <span>Crafted with 100% Organic Love 🥜</span>
-          </div>
         </div>
 
       </div>

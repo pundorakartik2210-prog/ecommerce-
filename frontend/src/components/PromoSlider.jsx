@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const CUSTOM_PROMO_TEMPLATES = {
   "pb-classic-creamy": {
@@ -52,190 +52,250 @@ const CUSTOM_PROMO_TEMPLATES = {
   }
 };
 
-export default function PromoSlider({ products = [], onShopNow }) {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [copied, setCopied] = useState(false);
-
-  // Map products list to slides list dynamically
-  const slides = products.map((product) => {
-    const template = CUSTOM_PROMO_TEMPLATES[product.id];
-    if (template) {
-      return {
-        id: product.id,
-        badge: template.badge,
-        title: template.title,
-        desc: template.desc,
-        couponCode: template.couponCode,
-        gradient: template.gradient,
-        color: product.color || "#e29543",
-        jarColor: product.color || "#e29543",
-        lidColor: product.color || "#8c6239",
-        labelTitle: product.name,
-        image: product.image
-      };
-    }
-
-    // Fallback template for any newly added product
-    const cleanName = product.name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 6);
-    const couponCode = `${cleanName}20`;
-
-    // Highlight the last word of product name in the slider title
-    const words = product.name.split(' ');
-    let formattedTitle = product.name;
-    if (words.length > 1) {
-      const lastWord = words.pop();
-      formattedTitle = `${words.join(' ')} <span>${lastWord}</span>`;
-    }
-
+function buildSlide(product) {
+  const template = CUSTOM_PROMO_TEMPLATES[product.id];
+  if (template) {
     return {
       id: product.id,
-      badge: product.tag || "New Launch",
-      title: formattedTitle,
-      desc: product.tagline || product.description || "Experience premium, unadulterated nut butter handcrafted with love.",
-      couponCode: couponCode,
-      gradient: product.bgGradient || "linear-gradient(135deg, #7c4f30 0%, #3e2614 100%)",
+      badge: template.badge,
+      title: template.title,
+      desc: template.desc,
+      couponCode: template.couponCode,
+      gradient: template.gradient,
       color: product.color || "#e29543",
       jarColor: product.color || "#e29543",
       lidColor: product.color || "#8c6239",
       labelTitle: product.name,
       image: product.image
     };
-  });
-
-  // Clamp activeSlide if it exceeds current slides size (e.g. after deletion)
-  useEffect(() => {
-    if (slides.length > 0 && activeSlide >= slides.length) {
-      setActiveSlide(0);
-    }
-  }, [slides.length, activeSlide]);
-
-  useEffect(() => {
-    if (slides.length === 0) return;
-    const timer = setInterval(() => {
-      setActiveSlide(prev => (prev + 1) % slides.length);
-    }, 6000); // Auto scroll every 6 seconds
-    return () => clearInterval(timer);
-  }, [activeSlide, slides.length]);
-
-  // Reset copied state on slide change
-  useEffect(() => {
-    setCopied(false);
-  }, [activeSlide]);
-
-  const nextSlide = () => {
-    if (slides.length === 0) return;
-    setActiveSlide(prev => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    if (slides.length === 0) return;
-    setActiveSlide(prev => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const handleCopyCode = (code) => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  if (slides.length === 0) {
-    return null; // Don't render slider if all products are deleted
   }
+  const cleanName = product.name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 6);
+  const words = product.name.split(' ');
+  let formattedTitle = product.name;
+  if (words.length > 1) {
+    const lastWord = words.pop();
+    formattedTitle = `${words.join(' ')} <span>${lastWord}</span>`;
+  }
+  return {
+    id: product.id,
+    badge: product.tag || "New Launch",
+    title: formattedTitle,
+    desc: product.tagline || product.description || "Experience premium, unadulterated nut butter handcrafted with love.",
+    couponCode: `${cleanName}20`,
+    gradient: product.bgGradient || "linear-gradient(135deg, #7c4f30 0%, #3e2614 100%)",
+    color: product.color || "#e29543",
+    jarColor: product.color || "#e29543",
+    lidColor: product.color || "#8c6239",
+    labelTitle: product.name,
+    image: product.image
+  };
+}
 
-  const current = slides[activeSlide] || slides[0];
+export default function PromoSlider({ products = [], onShopNow }) {
+  const slides = products.map(buildSlide);
+  const total = slides.length;
+
+  // displayIndex runs from 0 to total+1:
+  //   0           = clone of last slide  (for seamless prev wrap)
+  //   1 … total   = real slides
+  //   total+1     = clone of first slide (for seamless next wrap)
+  const [displayIndex, setDisplayIndex] = useState(1);
+  const [animated, setAnimated]         = useState(true); // controls CSS transition
+  const [copiedId, setCopiedId]         = useState(null);
+  const timerRef    = useRef(null);
+  const lockRef     = useRef(false); // prevents double-fire during jump
+
+  // The "real" slide index (0-based) derived from displayIndex
+  const realIndex = displayIndex === 0
+    ? total - 1
+    : displayIndex === total + 1
+    ? 0
+    : displayIndex - 1;
+
+  // Build the extended display array: [cloneLast, ...slides, cloneFirst]
+  const displaySlides = total > 0
+    ? [slides[total - 1], ...slides, slides[0]]
+    : [];
+
+  // After CSS transition ends on a clone, instantly jump to the real counterpart
+  const handleTransitionEnd = useCallback(() => {
+    if (displayIndex === 0) {
+      // Was on cloned last → jump to real last (index = total)
+      setAnimated(false);
+      setDisplayIndex(total);
+      lockRef.current = false;
+    } else if (displayIndex === total + 1) {
+      // Was on cloned first → jump to real first (index = 1)
+      setAnimated(false);
+      setDisplayIndex(1);
+      lockRef.current = false;
+    } else {
+      lockRef.current = false;
+    }
+  }, [displayIndex, total]);
+
+  // Re-enable animation on next tick after an instant jump
+  useEffect(() => {
+    if (!animated) {
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setAnimated(true));
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [animated]);
+
+  // Auto-advance timer
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      if (!lockRef.current) {
+        lockRef.current = true;
+        setDisplayIndex(prev => prev + 1);
+      }
+    }, 5000);
+  }, []);
+
+  useEffect(() => {
+    if (total <= 1) return;
+    startTimer();
+    return () => clearInterval(timerRef.current);
+  }, [total, startTimer]);
+
+  const goNext = () => {
+    if (total <= 1 || lockRef.current) return;
+    lockRef.current = true;
+    startTimer();
+    setDisplayIndex(prev => prev + 1);
+  };
+
+  const goPrev = () => {
+    if (total <= 1 || lockRef.current) return;
+    lockRef.current = true;
+    startTimer();
+    setDisplayIndex(prev => prev - 1);
+  };
+
+  const goTo = (realIdx) => {
+    if (total <= 1 || lockRef.current || realIdx === realIndex) return;
+    lockRef.current = true;
+    startTimer();
+    setDisplayIndex(realIdx + 1); // real slides live at index 1..total
+  };
+
+  const handleCopyCode = (code, id) => {
+    navigator.clipboard.writeText(code);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  if (total === 0) return null;
 
   return (
     <div className="promo-slider-container">
-      <div 
-        className="promo-slide" 
-        style={{ background: current.gradient }}
-        key={current.id}
-      >
-        {/* Vector leaf graphic simulation overlay */}
-        <div className="slide-graphic-bg" style={{
-          backgroundImage: `radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08) 0%, transparent 60%)`
-        }}></div>
-
-        {/* Decorative glassmorphic background elements */}
-        <div className="slide-blob-1"></div>
-        <div className="slide-blob-2"></div>
-
-        <div className="slide-content">
-          <span className="slide-badge">{current.badge}</span>
-          <h2 className="slide-title" dangerouslySetInnerHTML={{ __html: current.title }}></h2>
-          <p className="slide-description">{current.desc}</p>
-          <div className="slide-actions">
-            <button className="slide-btn" onClick={onShopNow}>
-              Shop The Collection
-            </button>
-            <div 
-              className={`slide-coupon-badge ${copied ? 'copied' : ''}`}
-              onClick={() => handleCopyCode(current.couponCode)}
-              title="Click to copy coupon code"
+      {/* Clipping viewport */}
+      <div className="promo-slider-viewport">
+        {/* Sliding track */}
+        <div
+          className="promo-slider-track"
+          style={{
+            transform: `translateX(-${displayIndex * 100}%)`,
+            transition: animated ? 'transform 0.65s cubic-bezier(0.77, 0, 0.175, 1)' : 'none',
+          }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {displaySlides.map((slide, idx) => (
+            <div
+              key={`${slide.id}-${idx}`}
+              className="promo-slide"
+              style={{ background: slide.gradient }}
+              aria-hidden={idx !== displayIndex}
             >
-              <span className="coupon-label">CODE:</span>
-              <span className="coupon-code">{current.couponCode}</span>
-              <span className="coupon-icon">
-                {copied ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                )}
-              </span>
-              {copied && <span className="copied-tooltip">Copied!</span>}
-            </div>
-          </div>
-        </div>
+              <div className="slide-graphic-bg" style={{
+                backgroundImage: `radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08) 0%, transparent 60%)`
+              }}></div>
+              <div className="slide-blob-1"></div>
+              <div className="slide-blob-2"></div>
 
-        {/* Premium Jar Illustration */}
-        <div className="slide-illustration">
-          {current.image ? (
-            <img
-              src={current.image}
-              alt={current.labelTitle}
-              className="slide-jar-img"
-            />
-          ) : (
-            <div className="jar-mockup" style={{ borderColor: current.color }}>
-              <div className="jar-lid" style={{ background: current.lidColor, borderColor: current.color }}></div>
-              <div className="jar-label" style={{ borderColor: current.color }}>
-                <span className="jar-label-brand">Nuvera</span>
-                <span className="jar-label-logo">🥜</span>
-                <span className="jar-label-title" style={{ color: current.color }}>{current.labelTitle}</span>
+              <div className="slide-content">
+                <span className="slide-badge">{slide.badge}</span>
+                <h2 className="slide-title" dangerouslySetInnerHTML={{ __html: slide.title }}></h2>
+                <p className="slide-description">{slide.desc}</p>
+                <div className="slide-actions">
+                  <button className="slide-btn" onClick={onShopNow}>
+                    Shop The Collection
+                  </button>
+                  <div
+                    className={`slide-coupon-badge ${copiedId === slide.id + idx ? 'copied' : ''}`}
+                    onClick={() => handleCopyCode(slide.couponCode, slide.id + idx)}
+                    title="Click to copy coupon code"
+                  >
+                    <span className="coupon-label">CODE:</span>
+                    <span className="coupon-code">{slide.couponCode}</span>
+                    <span className="coupon-icon">
+                      {copiedId === slide.id + idx ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      )}
+                    </span>
+                    {copiedId === slide.id + idx && <span className="copied-tooltip">Copied!</span>}
+                  </div>
+                </div>
               </div>
-              <div className="jar-content-preview" style={{ background: current.jarColor }}></div>
+
+              <div className="slide-illustration">
+                {slide.image ? (
+                  <img src={slide.image} alt={slide.labelTitle} className="slide-jar-img" />
+                ) : (
+                  <div className="jar-mockup" style={{ borderColor: slide.color }}>
+                    <div className="jar-lid" style={{ background: slide.lidColor, borderColor: slide.color }}></div>
+                    <div className="jar-label" style={{ borderColor: slide.color }}>
+                      <span className="jar-label-brand">Nuvera</span>
+                      <span className="jar-label-logo">🥜</span>
+                      <span className="jar-label-title" style={{ color: slide.color }}>{slide.labelTitle}</span>
+                    </div>
+                    <div className="jar-content-preview" style={{ background: slide.jarColor }}></div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
 
       {/* Navigation Arrows */}
-      <button className="slider-arrow left" onClick={prevSlide} aria-label="Previous slide">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <button className="slider-arrow right" onClick={nextSlide} aria-label="Next slide">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
+      {total > 1 && (
+        <>
+          <button className="slider-arrow left" onClick={goPrev} aria-label="Previous slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button className="slider-arrow right" onClick={goNext} aria-label="Next slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </>
+      )}
 
-      {/* Bottom Indicator Dots */}
-      <div className="slider-dots">
-        {slides.map((_, idx) => (
-          <div
-            key={idx}
-            className={`slider-dot ${idx === activeSlide ? 'active' : ''}`}
-            onClick={() => setActiveSlide(idx)}
-          ></div>
-        ))}
-      </div>
+      {/* Dots — based on real index */}
+      {total > 1 && (
+        <div className="slider-dots">
+          {slides.map((_, idx) => (
+            <div
+              key={idx}
+              className={`slider-dot ${idx === realIndex ? 'active' : ''}`}
+              onClick={() => goTo(idx)}
+            ></div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

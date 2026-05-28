@@ -221,7 +221,7 @@ export default function ProductDetailsModal({
                       </span>
 
                       {/* Weight Price */}
-                      <span style={{ fontSize: '17px', fontWeight: '850', color: 'var(--brand-primary)', marginBottom: '14px' }}>
+                      <span style={{ fontSize: '17px', fontWeight: '850', color: '#2e7d32', marginBottom: '14px' }}>
                         ₹{price}
                       </span>
 
@@ -295,14 +295,14 @@ export default function ProductDetailsModal({
                             onClick={() => onAddToCart(product, cleanWeight)}
                             style={{
                               background: 'transparent',
-                              border: '1.5px solid var(--brand-secondary)',
-                              color: 'var(--brand-secondary)',
+                              border: '1.5px solid var(--brand-accent)',
+                              color: 'var(--brand-accent)',
                               borderRadius: '20px',
                               padding: '6px 16px',
                               fontSize: '12.5px',
-                              fontWeight: '700',
+                              fontWeight: '800',
                               cursor: 'pointer',
-                              transition: 'all 0.2s ease',
+                              transition: 'all 0.25s ease',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -310,12 +310,14 @@ export default function ProductDetailsModal({
                               width: '90%'
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'var(--brand-secondary)';
-                              e.currentTarget.style.color = 'var(--bg-white)';
+                              e.currentTarget.style.background = 'linear-gradient(135deg, #e29543 0%, #c97c2b 100%)';
+                              e.currentTarget.style.color = '#2b1b10';
+                              e.currentTarget.style.borderColor = 'transparent';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.background = 'transparent';
-                              e.currentTarget.style.color = 'var(--brand-secondary)';
+                              e.currentTarget.style.color = 'var(--brand-accent)';
+                              e.currentTarget.style.borderColor = 'var(--brand-accent)';
                             }}
                           >
                             <span>+</span> Add

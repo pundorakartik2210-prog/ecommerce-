@@ -34,9 +34,9 @@ export default function WishlistPage({
   const filteredWishlist = selectedTag === "all"
     ? wishlist
     : wishlist.filter(item => {
-        if (!item.type) return false;
-        return item.type.toLowerCase() === selectedTag.toLowerCase();
-      });
+      if (!item.type) return false;
+      return item.type.toLowerCase() === selectedTag.toLowerCase();
+    });
 
   // Get recommended flavors (not in wishlist, up to 4 items)
   const recommendations = products
@@ -46,20 +46,20 @@ export default function WishlistPage({
   return (
     <section className="store-section" style={{ padding: '10px 0 60px 0' }}>
       <div className="container">
-        
+
         {/* Unified Store-Style Header */}
         <div className="store-header" style={{ marginBottom: '28px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-          <h2 className="store-title" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <h2 className="store-title" style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', color: '#c05334' }}>
             My Wishlist
-            <span style={{ fontSize: '14px', color: 'var(--text-light)', marginLeft: '12px', fontWeight: '600' }}>
+            <span style={{ fontSize: '14px', color: 'var(--text-secondary)', marginLeft: '12px', fontWeight: '600', cursor: 'default', pointerEvents: 'none', userSelect: 'none' }}>
               {wishlist.length > 0 ? `Showing ${filteredWishlist.length} of ${wishlist.length} saved favorites` : 'Zero items saved'}
             </span>
           </h2>
 
           {wishlist.length > 0 && (
             <div className="wishlist-filter-bar" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: 0 }}>
-              <button 
-                className={`filter-pill-btn ${selectedTag === 'all' ? 'active' : ''}`} 
+              <button
+                className={`filter-pill-btn ${selectedTag === 'all' ? 'active' : ''}`}
                 onClick={() => setSelectedTag('all')}
               >
                 All Jars ({wishlist.length})
@@ -122,9 +122,9 @@ export default function WishlistPage({
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5', margin: '0 0 20px 0', maxWidth: '600px' }}>
                       You don't have any saved variants under the "{formatType(selectedTag)}" category. Try clearing the filter or checking another category to find your favorites.
                     </p>
-                    <button 
-                      className="checkout-btn" 
-                      onClick={() => setSelectedTag('all')} 
+                    <button
+                      className="checkout-btn"
+                      onClick={() => setSelectedTag('all')}
                       style={{ width: 'auto', padding: '10px 24px', fontSize: '13px', margin: 0 }}
                     >
                       Show All Saved Jars
@@ -183,9 +183,9 @@ export default function WishlistPage({
                 <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.6', margin: '0 0 24px 0', maxWidth: '650px' }}>
                   Love at first bite! Add premium, slow-roasted organic peanut butter flavors to your wishlist so you can track or purchase them easily later.
                 </p>
-                <button 
-                  className="checkout-btn" 
-                  onClick={onContinueShopping} 
+                <button
+                  className="checkout-btn"
+                  onClick={onContinueShopping}
                   style={{ width: 'auto', padding: '12px 28px', fontSize: '14px', margin: 0 }}
                 >
                   Explore Flavors

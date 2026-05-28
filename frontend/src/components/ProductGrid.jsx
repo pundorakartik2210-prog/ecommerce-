@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ProductCard from './ProductCard';
+
+const formatCategoryTitle = (category) => {
+  if (category === "all") return "Explore Our Collection";
+  return category
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ') + " Collection";
+};
 
 export default function ProductGrid({ 
   products, 
@@ -12,16 +20,6 @@ export default function ProductGrid({
   cart,
   onUpdateCartQuantity
 }) {
-  const [sortBy, setSortBy] = useState("featured");
-  const [weightFilter, setWeightFilter] = useState("all");
-
-  const handleSortChange = (e) => {
-    setSortBy(e.target.value);
-  };
-
-  const handleWeightFilterChange = (e) => {
-    setWeightFilter(e.target.value);
-  };
 
   // 1. Filter products by category/weight
   let filteredProducts = [...products];
@@ -30,18 +28,7 @@ export default function ProductGrid({
     filteredProducts = filteredProducts.filter(p => p.type === activeCategory);
   }
 
-  if (weightFilter !== "all") {
-    filteredProducts = filteredProducts.filter(p => p.prices[weightFilter] !== undefined);
-  }
 
-  // 2. Sort products
-  if (sortBy === "price-low") {
-    filteredProducts.sort((a, b) => a.prices[a.baseWeight] - b.prices[b.baseWeight]);
-  } else if (sortBy === "price-high") {
-    filteredProducts.sort((a, b) => b.prices[b.baseWeight] - a.prices[a.baseWeight]);
-  } else if (sortBy === "rating") {
-    filteredProducts.sort((a, b) => b.rating - a.rating);
-  }
 
   const isWishlisted = (product) => {
     return wishlist.some(item => item.id === product.id);
@@ -51,40 +38,11 @@ export default function ProductGrid({
     <section className="store-section" id="products-catalog">
       <div className="container">
         
-        {/* Header Controls (Flipkart Style) */}
-        <div className="store-header">
+        {/* Header Controls (Centered Premium Style) */}
+        <div className="store-header centered">
           <h2 className="store-title">
-            {activeCategory === "all" ? "Our Whole Range" : `${activeCategory.replace('-', ' ')} Collection`}
-            <span>({filteredProducts.length} Premium items)</span>
+            {formatCategoryTitle(activeCategory)}
           </h2>
-
-          <div className="filters-container">
-            {/* Filter by weight */}
-            <select 
-              className="filter-select" 
-              value={weightFilter}
-              onChange={handleWeightFilterChange}
-              aria-label="Filter by weight"
-            >
-              <option value="all">All Sizes</option>
-              <option value="250g">250g Jars</option>
-              <option value="500g">500g Jars</option>
-              <option value="1kg">1kg Jars</option>
-            </select>
-
-            {/* Sort by dropdown */}
-            <select 
-              className="filter-select" 
-              value={sortBy} 
-              onChange={handleSortChange}
-              aria-label="Sort by options"
-            >
-              <option value="featured">Featured Collection</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Customer Rating</option>
-            </select>
-          </div>
         </div>
 
         {/* Catalog Grid */}
